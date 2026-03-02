@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --paper: 247 246 241;
+        --ink: 18 25 36;
+        --crema: 236 105 46;
+
+        --canvas: 238 236 229;
+        --panel: 255 255 252;
+        --panel-muted: 228 227 220;
+        --ink-soft: 79 86 97;
+        --line: 195 199 203;
+        --signal: 33 138 111;
+        --alert: 186 59 48;
+        --focus: 250 129 72;
+    }
+
+    html,
+    body {
+        color: rgb(var(--ink));
+        @apply h-full antialiased overflow-hidden;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at 10% 0%, rgb(var(--crema) / 0.12), transparent 32%),
+            radial-gradient(circle at 90% 16%, rgb(var(--signal) / 0.1), transparent 38%),
+            linear-gradient(130deg, rgb(var(--canvas)) 0%, rgb(var(--paper)) 55%, rgb(231 230 223) 100%);
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image: radial-gradient(rgb(255 255 255 / 0.2) 0.35px, transparent 0.35px);
+        background-size: 4px 4px;
+        opacity: 0.35;
+        z-index: -1;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply font-display;
+        letter-spacing: 0.01em;
+    }
+
+    ::selection {
+        background: rgb(var(--crema) / 0.25);
+        color: rgb(var(--ink));
+    }
+
+    *:focus-visible {
+        outline: 2px solid rgb(var(--focus));
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        color: rgb(var(--panel));
+        background-color: rgb(var(--ink));
+        border-color: rgb(var(--ink));
+        box-shadow: 0 8px 24px -14px rgb(10 15 24 / 0.9);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        background-color: rgb(var(--crema));
+        border-color: rgb(var(--crema));
+        box-shadow: 0 12px 24px -12px rgb(var(--crema) / 0.55);
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        color: rgb(var(--ink));
+        background-color: rgb(var(--panel));
+        border-color: rgb(var(--line));
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-1px);
+        border-color: rgb(var(--ink));
+        box-shadow: 0 8px 16px -14px rgb(10 15 24 / 0.7);
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        color: rgb(var(--panel));
+        background-color: rgb(var(--alert));
+        border-color: rgb(var(--alert));
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -12px rgb(var(--alert) / 0.6);
+    }
+
+    .tag {
+        @apply inline-flex items-center rounded-full px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.16em];
+        background-color: rgb(var(--panel-muted));
+        color: rgb(var(--ink-soft));
+        border: 1px solid rgb(var(--line) / 0.9);
+    }
+
+    .surface-card {
+        @apply relative overflow-hidden rounded-2xl border backdrop-blur-sm;
+        border-color: rgb(var(--line) / 0.95);
+        background-color: rgb(var(--panel) / 0.96);
+        box-shadow:
+            0 24px 40px -30px rgb(8 13 23 / 0.95),
+            0 1px 0 rgb(255 255 255 / 0.75) inset;
+    }
+
+    .surface-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, rgb(var(--crema) / 0.9), transparent 70%);
+        pointer-events: none;
+    }
+
+    .section-headline {
+        @apply text-[11px] font-mono font-bold uppercase tracking-[0.24em];
+        color: rgb(var(--ink-soft));
+    }
+
+    .metric-value {
+        @apply font-display text-3xl font-extrabold leading-none md:text-[2.2rem];
+        color: rgb(var(--ink));
+    }
+
+    .field {
+        @apply w-full rounded-md border px-3.5 py-2.5 text-sm transition-colors duration-200;
+        color: rgb(var(--ink));
+        background-color: rgb(var(--panel));
+        border-color: rgb(var(--line));
+    }
+
+    .field::placeholder {
+        color: rgb(var(--ink-soft) / 0.8);
+    }
+
+    .field:hover {
+        border-color: rgb(var(--ink-soft) / 0.8);
+    }
+
+    .field:focus {
+        border-color: rgb(var(--focus));
+        box-shadow: 0 0 0 3px rgb(var(--focus) / 0.15);
+    }
+
+    .status-dot {
+        @apply inline-block h-2 w-2 rounded-full;
+    }
+
+    .status-live {
+        background: rgb(var(--signal));
+        box-shadow: 0 0 0 6px rgb(var(--signal) / 0.18);
+    }
+
+    .card-grid {
+        border: 1px solid rgb(var(--line));
+        background-color: rgb(var(--panel));
+        @apply rounded-xl transition-all duration-200;
+    }
+
+    .grid-shell {
+        @apply grid gap-4 md:gap-6;
+    }
+}
+
+@layer utilities {
+    .fade-rise {
+        animation: fade-rise 420ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+
+    .fade-rise-delay {
+        animation: fade-rise 560ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+}
+
+@keyframes fade-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
