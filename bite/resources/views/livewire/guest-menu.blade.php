@@ -13,12 +13,6 @@
     </header>
 
     <main class="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-6 pb-32 sm:px-6">
-        @if (session()->has('message'))
-            <div class="rounded-xl border border-signal/35 bg-signal/10 px-4 py-3 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
-                {{ session('message') }}
-            </div>
-        @endif
-
         <section class="surface-card p-5 sm:p-6">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>

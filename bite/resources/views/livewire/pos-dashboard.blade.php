@@ -1,12 +1,6 @@
 <div class="h-full space-y-6 fade-rise" wire:poll.5s>
     <x-slot:header>POS Register</x-slot:header>
 
-    @if (session()->has('message'))
-        <div class="rounded-xl border border-signal/35 bg-signal/10 px-4 py-3 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
-            {{ session('message') }}
-        </div>
-    @endif
-
     <div class="grid h-full gap-6 xl:grid-cols-4">
         <section class="space-y-5 xl:col-span-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

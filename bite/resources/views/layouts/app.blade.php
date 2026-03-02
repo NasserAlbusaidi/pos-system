@@ -40,6 +40,8 @@
         @endif
     </head>
     <body class="min-h-full font-sans text-ink antialiased">
+        <x-toast />
+
         @if(session('impersonator_id'))
             <div class="sticky top-0 z-[100] border-b border-alert/40 bg-alert text-panel">
                 <div class="mx-auto flex max-w-7xl items-center justify-center gap-4 px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em]">

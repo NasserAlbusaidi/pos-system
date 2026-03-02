@@ -39,6 +39,8 @@
         @endif
     </head>
     <body class="h-full font-sans text-ink">
+        <x-toast />
+
         <div class="flex h-full overflow-hidden">
             <livewire:layout.admin-navigation />
 
