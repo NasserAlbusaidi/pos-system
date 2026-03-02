@@ -24,8 +24,11 @@ class ShopSettingsTest extends TestCase
             ->set('paper', '#ffffff')
             ->set('ink', '#000000')
             ->set('accent', '#ff0000')
+            ->set('currency_code', 'OMR')
+            ->set('currency_symbol', 'ر.ع.')
+            ->set('currency_decimals', 3)
             ->call('save')
-            ->assertSee('Shop configuration updated successfully');
+            ->assertDispatched('toast', message: 'Shop settings saved.', variant: 'success');
 
         $shop->refresh();
         $this->assertEquals('Updated Shop Name', $shop->name);
