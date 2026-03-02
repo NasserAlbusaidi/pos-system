@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -12,9 +13,16 @@ use Livewire\Component;
 
 class MenuBuilder extends Component
 {
+    public Shop $shop;
+
     public $search = '';
 
     public $newCategoryName = '';
+
+    public function mount(): void
+    {
+        $this->shop = Auth::user()->shop;
+    }
 
     public function createCategory()
     {

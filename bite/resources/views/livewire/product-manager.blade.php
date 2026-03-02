@@ -100,7 +100,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-12">
-                                <div class="font-mono font-black text-sm">${{ number_format($product->price, 2) }}</div>
+                                <div class="font-mono font-black text-sm">{{ formatPrice($product->price, $shop) }}</div>
                                 <button wire:click="editProduct({{ $product->id }})" class="opacity-0 group-hover:opacity-100 font-mono text-[9px] uppercase font-black tracking-widest text-crema underline transition-opacity">Edit</button>
                                 <button wire:click="openRecipe({{ $product->id }})" class="opacity-0 group-hover:opacity-100 font-mono text-[9px] uppercase font-black tracking-widest text-ink/60 underline transition-opacity">Recipe</button>
                             </div>

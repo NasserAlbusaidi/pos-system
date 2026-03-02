@@ -80,7 +80,7 @@
                                 <div class="w-8 h-8 bg-muted flex items-center justify-center font-mono text-[9px] opacity-40">{{ $product->id }}</div>
                                 <div>
                                     <div class="font-mono font-bold text-xs uppercase">{{ $product->name }}</div>
-                                    <div class="font-mono text-[10px] text-ink/30">${{ number_format($product->price, 2) }}</div>
+                                    <div class="font-mono text-[10px] text-ink/30">{{ formatPrice($product->price, $shop) }}</div>
                                 </div>
                             </div>
 

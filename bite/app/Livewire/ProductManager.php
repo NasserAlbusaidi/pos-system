@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -12,6 +13,8 @@ use Livewire\WithFileUploads;
 class ProductManager extends Component
 {
     use WithFileUploads;
+
+    public Shop $shop;
 
     public $editingProductId = null;
 
@@ -35,6 +38,7 @@ class ProductManager extends Component
 
     public function mount()
     {
+        $this->shop = Auth::user()->shop;
         $editId = request()->query('edit');
         if ($editId) {
             $this->editProduct($editId);

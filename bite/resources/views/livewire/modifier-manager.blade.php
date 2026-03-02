@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="space-y-2">
-                            <label class="font-mono text-[9px] uppercase font-bold tracking-[0.3em] opacity-40">Extra Cost ($)</label>
+                            <label class="font-mono text-[9px] uppercase font-bold tracking-[0.3em] opacity-40">Extra Cost</label>
                             <input type="number" step="0.01" wire:model="optionPrice" class="w-full bg-transparent border-b border-ink/20 focus:border-crema focus:ring-0 font-mono text-lg transition-all" placeholder="1.00">
                             @error('optionPrice') <span class="text-berry text-[9px] font-mono uppercase">{{ $message }}</span> @enderror
                         </div>
@@ -86,7 +86,7 @@
                                     @foreach($group->options as $option)
                                         <div class="p-3 border border-ink/5 bg-paper/50 flex justify-between items-center">
                                             <span class="font-mono text-[10px] font-bold uppercase truncate pr-2">{{ $option->name }}</span>
-                                            <span class="font-mono text-[10px] text-crema font-black">+${{ number_format($option->price_adjustment, 2) }}</span>
+                                            <span class="font-mono text-[10px] text-crema font-black">+{{ formatPrice($option->price_adjustment, $shop) }}</span>
                                         </div>
                                     @endforeach
                                 </div>

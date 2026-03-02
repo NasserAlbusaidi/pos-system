@@ -4,12 +4,15 @@ namespace App\Livewire;
 
 use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class ModifierManager extends Component
 {
+    public Shop $shop;
+
     // Group properties
     public $name;
 
@@ -23,6 +26,11 @@ class ModifierManager extends Component
     public $optionName;
 
     public $optionPrice = 0;
+
+    public function mount(): void
+    {
+        $this->shop = Auth::user()->shop;
+    }
 
     public function addOption()
     {
