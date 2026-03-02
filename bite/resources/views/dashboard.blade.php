@@ -7,7 +7,7 @@
         <!-- Stat Cards -->
         <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#1A1918]">
             <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-2">Daily Revenue</div>
-            <div class="text-3xl font-mono font-bold">$0.00</div>
+            <div class="text-3xl font-mono font-bold">OMR 0.000</div>
         </div>
 
         <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#4A7A58]">
