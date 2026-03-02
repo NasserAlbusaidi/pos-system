@@ -8,11 +8,10 @@ COPY resources ./resources
 RUN npm run build
 
 # ── Production stage ─────────────────────────────────────────────
-FROM php:8.2-cli-bookworm
+# Pre-built image with pdo_mysql, mbstring, gd, zip, bcmath, intl, pcntl, etc.
+FROM serversideup/php:8.2-cli
 
-# Install extensions via mlocati installer (handles all deps automatically)
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN install-php-extensions pdo_mysql mbstring zip gd bcmath intl
+USER root
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
