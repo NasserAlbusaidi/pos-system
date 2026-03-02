@@ -41,6 +41,15 @@
                                     {{ $order->status }}
                                 </span>
                                 <p class="mt-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ $order->created_at->format('H:i') }}</p>
+                                @php
+                                    $minutesElapsed = now()->diffInMinutes($order->created_at);
+                                    $urgencyClass = match(true) {
+                                        $minutesElapsed >= 10 => 'text-alert',
+                                        $minutesElapsed >= 5  => 'text-crema',
+                                        default               => 'text-ink-soft',
+                                    };
+                                @endphp
+                                <p class="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $urgencyClass }}">{{ $order->created_at->diffForHumans() }}</p>
                             </div>
                         </header>
 
@@ -49,6 +58,20 @@
                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Channel</p>
                                 <p class="mt-1 text-sm font-medium text-ink">Guest Counter Order</p>
                             </div>
+
+                            @if($order->items->isNotEmpty())
+                                <div>
+                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Items</p>
+                                    <div class="mt-1 space-y-0.5">
+                                        @foreach($order->items->take(3) as $item)
+                                            <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->product_name_snapshot }}</p>
+                                        @endforeach
+                                        @if($order->items->count() > 3)
+                                            <p class="font-mono text-[10px] text-ink-soft">+{{ $order->items->count() - 3 }} more</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
 
                             @if($order->payments->isNotEmpty())
                                 <div class="grid grid-cols-2 gap-2">
@@ -65,11 +88,19 @@
 
                             <div class="space-y-2">
                                 @if($order->status === 'unpaid')
-                                    <button wire:click="openPayment({{ $order->id }})" class="btn-primary w-full justify-center">
-                                        Take Payment
-                                    </button>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button wire:click="markAsPaid({{ $order->id }}, 'cash')" class="btn-primary justify-center">
+                                            Cash
+                                        </button>
+                                        <button wire:click="markAsPaid({{ $order->id }}, 'card')" class="btn-primary justify-center">
+                                            Card
+                                        </button>
+                                    </div>
                                     <button wire:click="openSplit({{ $order->id }})" class="btn-secondary w-full justify-center">
                                         Split Items
+                                    </button>
+                                    <button wire:click="openPayment({{ $order->id }})" class="w-full text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-colors">
+                                        Split Payment&hellip;
                                     </button>
                                 @elseif($order->status === 'ready')
                                     <button wire:click="markAsDelivered({{ $order->id }})" class="btn-primary w-full justify-center !bg-signal !border-signal">

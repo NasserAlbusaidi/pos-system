@@ -621,6 +621,7 @@ class PosDashboard extends Component
 
         $orders = Order::where('shop_id', Auth::user()->shop_id)
             ->whereIn('status', ['unpaid', 'ready'])
+            ->with(['items', 'payments'])
             ->latest()
             ->get();
 
