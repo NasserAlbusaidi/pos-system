@@ -32,9 +32,22 @@ class ShopDashboard extends Component
 
     public $weeklyRevenue = [];
 
+    // Notification state
+    public $showNotifications = false;
+
+    public $previousUnreadCount = 0;
+
     public function mount()
     {
-        $this->shop = Auth::user()->shop;
+        $user = Auth::user();
+        $this->shop = $user->shop;
+
+        if ($user->shouldRedirectToOnboarding()) {
+            $this->redirect(route('onboarding'), navigate: true);
+
+            return;
+        }
+
         $this->loadStats();
     }
 
@@ -129,10 +142,45 @@ class ShopDashboard extends Component
             ->all();
     }
 
+    public function toggleNotifications()
+    {
+        $this->showNotifications = ! $this->showNotifications;
+
+        // Mark all as read when opening
+        if ($this->showNotifications) {
+            $this->shop->unreadNotifications->markAsRead();
+        }
+    }
+
+    public function clearAllNotifications()
+    {
+        $this->shop->notifications()->delete();
+        $this->showNotifications = false;
+    }
+
+    public function checkForNewNotifications()
+    {
+        $currentUnread = $this->shop->unreadNotifications()->count();
+
+        if ($currentUnread > $this->previousUnreadCount && $this->previousUnreadCount >= 0) {
+            $this->dispatch('new-order-sound');
+        }
+
+        $this->previousUnreadCount = $currentUnread;
+    }
+
     #[Layout('layouts.admin')]
     public function render()
     {
         $this->loadStats();
+        $this->checkForNewNotifications();
+
+        $notifications = $this->shop->notifications()
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $unreadCount = $this->shop->unreadNotifications()->count();
 
         return view('livewire.shop-dashboard', [
             'recentOrders' => Order::where('shop_id', Auth::user()->shop_id)
@@ -145,6 +193,8 @@ class ShopDashboard extends Component
                 ->latest()
                 ->take(5)
                 ->get(),
+            'notifications' => $notifications,
+            'unreadCount' => $unreadCount,
         ]);
     }
 }

@@ -13,7 +13,7 @@ class SuperAdminTest extends TestCase
 
     public function test_super_admin_can_access_dashboard()
     {
-        $admin = User::factory()->create(['is_super_admin' => true, 'role' => 'admin']);
+        $admin = User::factory()->superAdmin()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->get(route('super-admin.dashboard'));
 
@@ -31,7 +31,7 @@ class SuperAdminTest extends TestCase
 
     public function test_super_admin_can_create_shop()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($admin)->get(route('super-admin.shops.create'));
         $response->assertStatus(200);
@@ -39,7 +39,7 @@ class SuperAdminTest extends TestCase
 
     public function test_impersonation()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
         $shop = Shop::factory()->create();
         $targetUser = User::factory()->create(['shop_id' => $shop->id]);
 

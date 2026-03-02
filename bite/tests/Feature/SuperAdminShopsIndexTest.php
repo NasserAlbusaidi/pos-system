@@ -13,10 +13,10 @@ class SuperAdminShopsIndexTest extends TestCase
 
     public function test_shops_index_page_loads_with_shop_data()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
 
         // Create a shop with an owner to trigger the $shop->users()->first() logic in the view
-        $shop = Shop::factory()->create(['status' => 'active']);
+        $shop = Shop::factory()->create();
         $owner = User::factory()->create(['shop_id' => $shop->id]);
 
         $response = $this->actingAs($admin)->get(route('super-admin.shops.index'));

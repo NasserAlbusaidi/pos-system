@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use App\Services\BillingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -30,6 +31,14 @@ class ShopSettings extends Component
 
     // Receipt header
     public $receipt_header = '';
+
+    // Default language
+    public $language = 'en';
+
+    // WhatsApp notifications
+    public $whatsapp_number = '';
+
+    public $whatsapp_notifications_enabled = false;
 
     // Staff management
     public $staffName = '';
@@ -60,6 +69,13 @@ class ShopSettings extends Component
 
         // Receipt header from branding JSON
         $this->receipt_header = $branding['receipt_header'] ?? '';
+
+        // Default language
+        $this->language = $branding['language'] ?? 'en';
+
+        // WhatsApp
+        $this->whatsapp_number = $branding['whatsapp_number'] ?? '';
+        $this->whatsapp_notifications_enabled = ! empty($branding['whatsapp_notifications_enabled']);
     }
 
     protected function normalizeHex(string $value, string $fallback): string
@@ -88,6 +104,9 @@ class ShopSettings extends Component
             'currency_symbol' => 'required|string|min:1|max:10',
             'currency_decimals' => 'required|integer|in:0,2,3',
             'receipt_header' => 'nullable|string|max:500',
+            'language' => 'required|in:en,ar',
+            'whatsapp_number' => 'nullable|string|max:20',
+            'whatsapp_notifications_enabled' => 'boolean',
         ]);
 
         $shop = Auth::user()->shop;
@@ -106,6 +125,9 @@ class ShopSettings extends Component
                 'ink' => $ink,
                 'accent' => $accent,
                 'receipt_header' => $this->receipt_header ?? '',
+                'language' => $this->language,
+                'whatsapp_number' => $this->whatsapp_number ?? '',
+                'whatsapp_notifications_enabled' => (bool) $this->whatsapp_notifications_enabled,
             ]),
         ]);
 
@@ -123,11 +145,24 @@ class ShopSettings extends Component
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email',
-            'staffRole' => 'required|in:owner,manager,cashier,kitchen',
+            'staffRole' => 'required|in:manager,cashier,kitchen',
             'staffPin' => 'nullable|digits:4',
         ]);
 
         $shop = Auth::user()->shop;
+
+        // Check plan limits before adding staff.
+        $billing = app(BillingService::class);
+        if (! $billing->canAccess($shop, 'add_staff')) {
+            $limits = $billing->getPlanLimits($shop);
+            $limitLabel = $limits['staff_limit'] === 1 ? '1 staff member' : "{$limits['staff_limit']} staff members";
+            $this->dispatch('toast',
+                message: "Staff limit reached ({$limitLabel} on your current plan). Upgrade to Pro for unlimited staff.",
+                variant: 'error'
+            );
+
+            return;
+        }
 
         User::create([
             'shop_id' => $shop->id,
@@ -162,7 +197,7 @@ class ShopSettings extends Component
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email,'.$user->id,
-            'staffRole' => 'required|in:owner,manager,cashier,kitchen',
+            'staffRole' => 'required|in:manager,cashier,kitchen',
             'staffPin' => 'nullable|digits:4',
         ]);
 

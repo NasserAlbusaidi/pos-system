@@ -22,7 +22,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'server']);
 
         $component = Volt::test('pages.auth.login')
             ->set('form.email', $user->email)
@@ -33,6 +33,23 @@ class AuthenticationTest extends TestCase
         $component
             ->assertHasNoErrors()
             ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_admin_with_incomplete_onboarding_is_redirected_to_onboarding(): void
+    {
+        $user = User::factory()->create(['role' => 'admin']);
+
+        $component = Volt::test('pages.auth.login')
+            ->set('form.email', $user->email)
+            ->set('form.password', 'password');
+
+        $component->call('login');
+
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect('/onboarding');
 
         $this->assertAuthenticated();
     }
@@ -56,7 +73,7 @@ class AuthenticationTest extends TestCase
 
     public function test_navigation_menu_can_be_rendered(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'server']);
 
         $this->actingAs($user);
 
@@ -65,6 +82,15 @@ class AuthenticationTest extends TestCase
         $response
             ->assertOk()
             ->assertSeeVolt('layout.admin-navigation');
+    }
+
+    public function test_non_admin_cannot_access_onboarding_route(): void
+    {
+        $user = User::factory()->create(['role' => 'server']);
+
+        $response = $this->actingAs($user)->get('/onboarding');
+
+        $response->assertForbidden();
     }
 
     public function test_users_can_logout(): void

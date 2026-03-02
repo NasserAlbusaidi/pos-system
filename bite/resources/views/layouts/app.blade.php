@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@php
+    $shopLang = 'en';
+    if (isset($shop)) {
+        $shopLang = session('guest_locale', $shop->branding['language'] ?? 'en');
+    }
+    $direction = $shopLang === 'ar' ? 'rtl' : 'ltr';
+@endphp
+<html lang="{{ $shopLang }}" dir="{{ $direction }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="manifest" href="/manifest.json">
-        <meta name="theme-color" content="#CC5500">
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+        <meta name="theme-color" content="#EC6D2E">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 

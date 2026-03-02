@@ -9,12 +9,13 @@
                     <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">Front Counter Queue</h2>
                 </div>
                 <div class="flex items-center gap-2">
+                    <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
                     <span class="tag">Refresh 5s</span>
                     <span class="tag">{{ count($orders) }} open</span>
                 </div>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
                 @forelse($orders as $order)
                     @php
                         $statusTone = match ($order->status) {
@@ -30,6 +31,14 @@
                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Order #{{ $order->id }}</p>
                                 <p class="mt-1 font-display text-2xl font-extrabold leading-none text-ink">{{ formatPrice($order->total_amount, $shop) }}</p>
                             </div>
+                            <div class="flex items-start gap-2">
+                                <button
+                                    onclick="window.open('/receipt/{{ $order->id }}', '_blank', 'width=380,height=700')"
+                                    class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink transition-colors print-hidden"
+                                    title="Print Receipt"
+                                >
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                </button>
                             <div class="text-right">
                                 <span class="inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $statusTone }}">
                                     {{ $order->status }}
@@ -44,6 +53,7 @@
                                     };
                                 @endphp
                                 <p class="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $urgencyClass }}">{{ $order->created_at->diffForHumans() }}</p>
+                            </div>
                             </div>
                         </header>
 
@@ -129,7 +139,7 @@
             </div>
         </section>
 
-        <aside class="space-y-5 xl:col-span-1">
+        <aside class="space-y-5 xl:col-span-1 transition-opacity duration-300" wire:loading.class="opacity-60">
             <section class="surface-card overflow-hidden border-panel/20 bg-ink text-panel">
                 <div class="border-b border-panel/10 px-5 py-4">
                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-panel/60">Today</p>

@@ -23,7 +23,7 @@ class SuperAdminLogicTest extends TestCase
 
     public function test_user_has_super_admin_flag(): void
     {
-        $user = User::factory()->create(['is_super_admin' => true]);
+        $user = User::factory()->superAdmin()->create();
         $this->assertTrue($user->is_super_admin);
     }
 
@@ -38,7 +38,7 @@ class SuperAdminLogicTest extends TestCase
 
     public function test_super_admin_is_allowed_into_admin_routes(): void
     {
-        $user = User::factory()->create(['is_super_admin' => true]);
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/test-super-admin')

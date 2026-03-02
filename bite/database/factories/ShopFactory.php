@@ -22,11 +22,23 @@ class ShopFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name),
-            'status' => 'active',
             'branding' => null,
             'currency_code' => 'OMR',
             'currency_symbol' => 'OMR',
             'currency_decimals' => 3,
         ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (\App\Models\Shop $shop) {
+            if (! $shop->status) {
+                $shop->status = 'active';
+                $shop->save();
+            }
+        });
     }
 }

@@ -43,4 +43,15 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user is a super admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(function (\App\Models\User $user) {
+            $user->is_super_admin = true;
+            $user->save();
+        });
+    }
 }

@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
 
 class Shop extends Model
 {
-    use HasFactory;
+    // NOTE: Run `composer require laravel/cashier` before using this model.
+    use Billable, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'slug',
-        'status',
         'branding',
         'tax_rate',
         'currency_code',
@@ -22,6 +24,7 @@ class Shop extends Model
 
     protected $casts = [
         'branding' => 'json',
+        'trial_ends_at' => 'datetime',
     ];
 
     public function categories()

@@ -14,7 +14,13 @@ new #[Layout('layouts.guest')] class extends Component
     public function sendVerification(): void
     {
         if (Auth::user()->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+            $branding = Auth::user()->shop?->branding ?? [];
+            $onboardingCompleted = $branding['onboarding_completed'] ?? false;
+            $default = $onboardingCompleted
+                ? route('dashboard', absolute: false)
+                : '/onboarding';
+
+            $this->redirectIntended(default: $default, navigate: true);
 
             return;
         }

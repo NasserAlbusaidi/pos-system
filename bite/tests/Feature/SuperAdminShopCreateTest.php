@@ -15,7 +15,7 @@ class SuperAdminShopCreateTest extends TestCase
 
     public function test_create_shop_page_loads()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($admin)->get(route('super-admin.shops.create'));
 
@@ -25,7 +25,7 @@ class SuperAdminShopCreateTest extends TestCase
 
     public function test_can_create_new_shop()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
 
         Livewire::actingAs($admin)
             ->test(Manage::class)
@@ -52,7 +52,7 @@ class SuperAdminShopCreateTest extends TestCase
 
     public function test_can_edit_existing_shop()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
+        $admin = User::factory()->superAdmin()->create();
         $shop = Shop::factory()->create(['name' => 'Old Name']);
 
         Livewire::actingAs($admin)

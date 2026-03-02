@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,18 +17,34 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'shop_id',
-        'role',
-        'is_super_admin',
         'name',
         'email',
         'password',
         'pin_code',
+        'role',
+        'shop_id',
     ];
 
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function canAccessOnboarding(): bool
+    {
+        return ! $this->is_super_admin && $this->role === 'admin';
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        $branding = $this->shop?->branding ?? [];
+
+        return ! empty($branding['onboarding_completed']);
+    }
+
+    public function shouldRedirectToOnboarding(): bool
+    {
+        return $this->canAccessOnboarding() && ! $this->hasCompletedOnboarding();
     }
 
     /**
@@ -53,6 +68,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_admin' => 'boolean',
         ];
     }
 }

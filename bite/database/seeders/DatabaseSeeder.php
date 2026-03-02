@@ -19,6 +19,16 @@ class DatabaseSeeder extends Seeder
         $shop = \App\Models\Shop::create([
             'name' => 'Bite Demo Coffee',
             'slug' => 'demo',
+            'currency_code' => 'OMR',
+            'currency_symbol' => 'ر.ع.',
+            'currency_decimals' => 3,
+            'tax_rate' => 0,
+            'branding' => [
+                'accent' => '#cc5500',
+                'paper' => '#fdfcf8',
+                'ink' => '#1a1918',
+                'onboarding_completed' => true,
+            ],
         ]);
 
         // 2. Create the Admin User
@@ -28,55 +38,20 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@bite.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'is_super_admin' => false,
         ]);
 
         // 2.5 Create the Super Admin User
-        \App\Models\User::create([
+        $superAdmin = \App\Models\User::create([
             'shop_id' => $shop->id,
             'name' => 'Bite Platform Owner',
             'email' => 'super@bite.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'is_super_admin' => true,
         ]);
+        $superAdmin->is_super_admin = true;
+        $superAdmin->save();
 
-        // 3. Create Categories
-        $coffee = \App\Models\Category::create([
-            'shop_id' => $shop->id,
-            'name' => 'Coffee',
-            'sort_order' => 1,
-        ]);
-
-        $pastries = \App\Models\Category::create([
-            'shop_id' => $shop->id,
-            'name' => 'Pastries',
-            'sort_order' => 2,
-        ]);
-
-        // 4. Create Products
-        \App\Models\Product::create([
-            'shop_id' => $shop->id,
-            'category_id' => $coffee->id,
-            'name' => 'Latte',
-            'description' => 'Espresso with steamed milk',
-            'price' => 4.50,
-        ]);
-
-        \App\Models\Product::create([
-            'shop_id' => $shop->id,
-            'category_id' => $coffee->id,
-            'name' => 'Americano',
-            'description' => 'Espresso with hot water',
-            'price' => 3.00,
-        ]);
-
-        \App\Models\Product::create([
-            'shop_id' => $shop->id,
-            'category_id' => $pastries->id,
-            'name' => 'Croissant',
-            'description' => 'Buttery flaky pastry',
-            'price' => 3.50,
-        ]);
+        // 3. Seed demo menu (categories, products, modifiers)
+        (new DemoMenuSeeder)->seedForShop($shop);
     }
 }

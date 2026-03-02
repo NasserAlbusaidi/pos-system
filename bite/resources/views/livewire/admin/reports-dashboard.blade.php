@@ -1,90 +1,90 @@
-<div class="h-full" wire:poll.30s>
+<div class="space-y-6 fade-rise" wire:poll.30s>
     <x-slot:header>Reports</x-slot:header>
 
-    <div class="mb-6 flex flex-wrap items-center gap-4">
-        <div class="font-mono text-[9px] uppercase tracking-widest opacity-40">Export completed orders</div>
-        <a href="{{ route('admin.reports.export') }}" class="px-4 py-2 border border-ink font-mono text-[9px] uppercase tracking-widest hover:bg-ink hover:text-paper">Export CSV (30 days)</a>
+    <div class="flex flex-wrap items-center gap-4">
+        <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Export completed orders</div>
+        <a href="{{ route('admin.reports.export') }}" class="btn-secondary">Export CSV (30 days)</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
-            <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Revenue ({{ $rangeDays }} days)</div>
-            <div class="text-3xl font-mono font-black">{{ formatPrice($totalRevenue, $shop) }}</div>
-        </div>
-        <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
-            <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Orders ({{ $rangeDays }} days)</div>
-            <div class="text-3xl font-mono font-black">{{ $totalOrders }}</div>
-        </div>
-        <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
-            <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Avg Order Value</div>
-            <div class="text-3xl font-mono font-black">{{ formatPrice($avgOrder, $shop) }}</div>
-        </div>
+        <article class="rounded-xl border border-line bg-panel p-5">
+            <p class="section-headline">Revenue ({{ $rangeDays }} days)</p>
+            <p class="metric-value mt-4">{{ formatPrice($totalRevenue, $shop) }}</p>
+        </article>
+        <article class="rounded-xl border border-line bg-panel p-5">
+            <p class="section-headline">Orders ({{ $rangeDays }} days)</p>
+            <p class="metric-value mt-4">{{ $totalOrders }}</p>
+        </article>
+        <article class="rounded-xl border border-line bg-panel p-5">
+            <p class="section-headline">Avg Order Value</p>
+            <p class="metric-value mt-4">{{ formatPrice($avgOrder, $shop) }}</p>
+        </article>
     </div>
 
-    <div class="mt-10 grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <div class="bg-paper border-2 border-ink p-6 shadow-[6px_6px_0_0_#000000]">
-            <h2 class="font-mono font-black text-xs uppercase tracking-[0.4em] mb-6">Revenue by Day</h2>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="surface-card p-5 sm:p-6">
+            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">Revenue by Day</h2>
             <canvas id="revenueChart" height="120"></canvas>
         </div>
-        <div class="bg-paper border-2 border-ink p-6 shadow-[6px_6px_0_0_#000000]">
-            <h2 class="font-mono font-black text-xs uppercase tracking-[0.4em] mb-6">Orders by Hour</h2>
+        <div class="surface-card p-5 sm:p-6">
+            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">Orders by Hour</h2>
             <canvas id="hourChart" height="120"></canvas>
         </div>
     </div>
 
-    <div class="mt-10 grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div class="xl:col-span-2 bg-paper border-2 border-ink shadow-[8px_8px_0_0_#000000] overflow-hidden">
-            <div class="p-6 bg-muted border-b border-ink">
-                <h2 class="font-mono font-black text-xs uppercase tracking-[0.4em]">Top Products ({{ $rangeDays }} days)</h2>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <section class="xl:col-span-2 surface-card overflow-hidden">
+            <div class="border-b border-line bg-muted/35 px-5 py-4">
+                <h2 class="font-display text-xl font-extrabold leading-none">Top Products ({{ $rangeDays }} days)</h2>
             </div>
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-ink/10 font-mono text-[10px] uppercase tracking-widest text-ink/40">
-                        <th class="p-6">Product</th>
-                        <th class="p-6">Qty</th>
-                        <th class="p-6">Revenue</th>
+                    <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                        <th class="px-5 py-4">Product</th>
+                        <th class="px-5 py-4">Qty</th>
+                        <th class="px-5 py-4">Revenue</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-ink/5">
+                <tbody class="divide-y divide-line/65">
                     @forelse($topProducts as $product)
-                        <tr class="hover:bg-muted/50 transition-colors">
-                            <td class="p-6 font-mono text-xs uppercase tracking-tighter">{{ $product->product_name_snapshot }}</td>
-                            <td class="p-6 font-mono text-xs font-black">{{ $product->qty }}</td>
-                            <td class="p-6 font-mono text-xs font-black">{{ formatPrice($product->revenue, $shop) }}</td>
+                        <tr class="hover:bg-muted/35 transition-colors">
+                            <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot }}</td>
+                            <td class="px-5 py-4 font-mono text-xs font-bold">{{ $product->qty }}</td>
+                            <td class="px-5 py-4 font-mono text-xs font-bold">{{ formatPrice($product->revenue, $shop) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="p-12 text-center font-mono text-xs opacity-30 italic uppercase tracking-widest">No sales yet...</td>
+                            <td colspan="3" class="px-5 py-10 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No sales yet...</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
-        </div>
+        </section>
 
-        <div class="bg-paper border-2 border-ink shadow-[8px_8px_0_0_#000000] overflow-hidden">
-            <div class="p-6 bg-muted border-b border-ink">
-                <h2 class="font-mono font-black text-xs uppercase tracking-[0.4em]">Payments</h2>
+        <section class="surface-card overflow-hidden">
+            <div class="border-b border-line bg-muted/35 px-5 py-4">
+                <h2 class="font-display text-xl font-extrabold leading-none">Payments</h2>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-5 space-y-4">
                 @forelse($paymentSummary as $row)
-                    <div class="border border-ink/10 p-4 flex justify-between items-center">
+                    <div class="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3">
                         <div>
-                            <div class="font-mono text-[10px] uppercase tracking-widest opacity-40">{{ strtoupper($row->payment_method) }}</div>
-                            <div class="font-mono text-xs">{{ $row->orders }} orders</div>
+                            <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($row->payment_method) }}</div>
+                            <div class="mt-1 text-sm font-medium text-ink">{{ $row->orders }} orders</div>
                         </div>
-                        <div class="font-mono font-black text-sm">{{ formatPrice($row->total, $shop) }}</div>
+                        <div class="font-mono text-sm font-bold">{{ formatPrice($row->total, $shop) }}</div>
                     </div>
                 @empty
-                    <div class="text-center font-mono text-[10px] uppercase tracking-widest opacity-30">No payments yet</div>
+                    <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">No payments yet</div>
                 @endforelse
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
 @push('scripts')
     @once
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
     @endonce
     <script>
         const revenueLabels = @json($revenueSeries->pluck('day')->map(fn ($day) => \Carbon\Carbon::parse($day)->format('M d')));

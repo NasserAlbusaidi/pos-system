@@ -11,13 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->validateCsrfTokens([
             'webhooks/stripe',
+            'webhooks/stripe/subscription',
         ]);
 
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\EnsureUserIsSuperAdmin::class,
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'subscribed' => \App\Http\Middleware\CheckSubscription::class,
         ]);
 
         $middleware->redirectTo(

@@ -7,6 +7,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\Shop;
+use App\Notifications\NewOrderNotification;
+use App\Services\WhatsAppService;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -33,9 +37,24 @@ class GuestMenu extends Component
 
     public $modifierError = null;
 
+    public $locale = 'en';
+
     public function mount(Shop $shop)
     {
         $this->shop = $shop;
+
+        // Determine locale: session override > shop default > 'en'
+        $branding = $shop->branding ?? [];
+        $this->locale = session('guest_locale', $branding['language'] ?? 'en');
+        App::setLocale($this->locale);
+    }
+
+    public function switchLanguage(string $lang)
+    {
+        $lang = in_array($lang, ['en', 'ar']) ? $lang : 'en';
+        $this->locale = $lang;
+        session()->put('guest_locale', $lang);
+        App::setLocale($lang);
     }
 
     #[Computed]
@@ -68,7 +87,7 @@ class GuestMenu extends Component
         $tax = 0;
 
         foreach ($this->cart as $item) {
-            $product = \App\Models\Product::find($item['id']);
+            $product = $this->shop->products()->find($item['id']);
             if (! $product) {
                 continue;
             }
@@ -77,7 +96,15 @@ class GuestMenu extends Component
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
             if (! empty($modifierIds)) {
-                $itemTotal += \App\Models\ModifierOption::whereIn('id', $modifierIds)->sum('price_adjustment');
+                $allowedOptionIds = $this->shop->modifierGroups()
+                    ->with('options')
+                    ->get()
+                    ->pluck('options')
+                    ->flatten()
+                    ->pluck('id')
+                    ->all();
+                $scopedIds = array_values(array_intersect($modifierIds, $allowedOptionIds));
+                $itemTotal += ModifierOption::whereIn('id', $scopedIds)->sum('price_adjustment');
             }
 
             $lineTotal = $itemTotal * $item['quantity'];
@@ -101,11 +128,20 @@ class GuestMenu extends Component
 
         $base = $this->customizingProduct->final_price;
         $modifierIds = $this->normalizeModifierIds($this->selectedModifiers);
-        $modifiers = empty($modifierIds)
-            ? 0
-            : \App\Models\ModifierOption::whereIn('id', $modifierIds)->sum('price_adjustment');
+        if (empty($modifierIds)) {
+            return $base;
+        }
 
-        return $base + $modifiers;
+        $allowedOptionIds = $this->shop->modifierGroups()
+            ->with('options')
+            ->get()
+            ->pluck('options')
+            ->flatten()
+            ->pluck('id')
+            ->all();
+        $scopedIds = array_values(array_intersect($modifierIds, $allowedOptionIds));
+
+        return $base + ModifierOption::whereIn('id', $scopedIds)->sum('price_adjustment');
     }
 
     public function incrementItem($key)
@@ -161,7 +197,7 @@ class GuestMenu extends Component
                 $count = count($selected);
 
                 if ($group->min_selection > 0 && $count < $group->min_selection) {
-                    $this->modifierError = "Select at least {$group->min_selection} option(s) for {$group->name}.";
+                    $this->modifierError = __('guest.select_at_least', ['count' => $group->min_selection, 'group' => $group->name]);
                     $this->showModifierModal = true;
 
                     return;
@@ -209,10 +245,18 @@ class GuestMenu extends Component
             return;
         }
 
+        $rateLimitKey = 'guest-order:'.request()->ip();
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            session()->flash('message', __('guest.too_many_orders'));
+
+            return;
+        }
+        RateLimiter::hit($rateLimitKey, 60);
+
         $this->loyaltyError = null;
         $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
         if ($this->loyaltyPhone !== '' && ! $loyaltyPhone) {
-            $this->loyaltyError = 'Enter a valid phone number.';
+            $this->loyaltyError = __('guest.invalid_phone');
             $this->showReviewModal = true;
 
             return;
@@ -314,6 +358,12 @@ class GuestMenu extends Component
             }
         }
 
+        // Send WhatsApp notification to shop if enabled
+        $whatsapp = app(WhatsAppService::class);
+        if ($whatsapp->isEnabled($this->shop)) {
+            $this->shop->notify(new NewOrderNotification($order));
+        }
+
         $this->cart = [];
         $this->loyaltyPhone = '';
         $this->loyaltyError = null;
@@ -324,7 +374,7 @@ class GuestMenu extends Component
     public function saveFavorite()
     {
         if (empty($this->cart)) {
-            session()->flash('message', 'Add items to your cart before saving a favorite.');
+            session()->flash('message', __('guest.favorite_add_first'));
 
             return;
         }
@@ -339,7 +389,7 @@ class GuestMenu extends Component
             ->all();
 
         $this->dispatch('favorite:save', items: $items, shop: $this->shop->id);
-        session()->flash('message', 'Favorite saved on this device.');
+        session()->flash('message', __('guest.favorite_saved'));
     }
 
     #[On('favorite:apply')]
@@ -347,7 +397,7 @@ class GuestMenu extends Component
     {
         $items = collect($items)->filter(fn ($item) => isset($item['id']))->values();
         if ($items->isEmpty()) {
-            session()->flash('message', 'No favorite saved on this device yet.');
+            session()->flash('message', __('guest.favorite_empty'));
 
             return;
         }
@@ -408,13 +458,13 @@ class GuestMenu extends Component
         }
 
         if (empty($newCart)) {
-            session()->flash('message', 'Favorite items are no longer available.');
+            session()->flash('message', __('guest.favorite_unavailable'));
 
             return;
         }
 
         $this->cart = $newCart;
-        session()->flash('message', 'Favorite loaded.');
+        session()->flash('message', __('guest.favorite_loaded'));
     }
 
     protected function normalizeModifierIds($value): array
@@ -455,6 +505,9 @@ class GuestMenu extends Component
 
     public function render()
     {
+        // Ensure locale is set on every render (Livewire may reset it between requests)
+        App::setLocale($this->locale);
+
         $categories = $this->shop->categories()
             ->with(['products' => function ($query) {
                 $query->where('is_visible', true)
@@ -468,6 +521,8 @@ class GuestMenu extends Component
 
         return view('livewire.guest-menu', [
             'categories' => $categories,
+            'locale' => $this->locale,
+            'isRtl' => $this->locale === 'ar',
         ])->layout('layouts.app', ['shop' => $this->shop]);
     }
 }

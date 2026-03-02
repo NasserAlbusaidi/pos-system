@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -23,7 +23,7 @@
     html,
     body {
         color: rgb(var(--ink));
-        @apply h-full antialiased overflow-hidden;
+        @apply h-full antialiased;
     }
 
     body {
@@ -264,5 +264,147 @@
     100% {
         opacity: 1;
         transform: scale(1) translateY(0);
+    }
+}
+
+/* ==========================================================================
+   RTL (Right-to-Left) Support for Arabic
+   ========================================================================== */
+
+[dir="rtl"] {
+    font-family: 'IBM Plex Sans Arabic', 'Manrope', system-ui, sans-serif;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4 {
+    font-family: 'IBM Plex Sans Arabic', 'Bricolage Grotesque', system-ui, sans-serif;
+    letter-spacing: 0;
+}
+
+/* Keep monospace/display fonts for numbers and codes in RTL */
+[dir="rtl"] .font-mono {
+    font-family: 'JetBrains Mono', 'IBM Plex Sans Arabic', monospace;
+}
+
+[dir="rtl"] .font-display {
+    font-family: 'IBM Plex Sans Arabic', 'Bricolage Grotesque', system-ui, sans-serif;
+}
+
+/* Reduce letter-spacing for Arabic (wide tracking looks wrong in Arabic) */
+[dir="rtl"] .tracking-\[0\.18em\],
+[dir="rtl"] .tracking-\[0\.16em\],
+[dir="rtl"] .tracking-\[0\.14em\],
+[dir="rtl"] .tracking-\[0\.24em\],
+[dir="rtl"] .tracking-\[0\.2em\],
+[dir="rtl"] .tracking-tight,
+[dir="rtl"] .tracking-widest {
+    letter-spacing: 0.02em;
+}
+
+[dir="rtl"] .section-headline,
+[dir="rtl"] .tag {
+    letter-spacing: 0.02em;
+}
+
+/* Flip the surface-card top accent line from left to right */
+[dir="rtl"] .surface-card::before {
+    background: linear-gradient(270deg, rgb(var(--crema) / 0.9), transparent 70%);
+}
+
+/* Flip nav-progress transform origin */
+[dir="rtl"] .nav-progress {
+    transform-origin: right;
+}
+
+/* Flip text alignment where explicitly set */
+[dir="rtl"] .text-left {
+    text-align: right;
+}
+
+[dir="rtl"] .text-right {
+    text-align: left;
+}
+
+/* Language toggle button styles */
+.lang-toggle {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-200;
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--panel));
+    color: rgb(var(--ink-soft));
+}
+
+.lang-toggle:hover {
+    border-color: rgb(var(--ink));
+    color: rgb(var(--ink));
+}
+
+.lang-toggle-active {
+    background-color: rgb(var(--ink));
+    color: rgb(var(--panel));
+    border-color: rgb(var(--ink));
+}
+
+.lang-toggle-active:hover {
+    background-color: rgb(var(--crema));
+    border-color: rgb(var(--crema));
+    color: rgb(var(--panel));
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    /* Hide everything except the printable content */
+    body {
+        background: #fff !important;
+        overflow: visible !important;
+    }
+
+    body::before {
+        display: none !important;
+    }
+
+    /* Hide admin chrome */
+    .nav-progress,
+    aside,
+    header,
+    nav,
+    .print-hidden,
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .confirm-modal,
+    [wire\:loading],
+    .screen-controls {
+        display: none !important;
+    }
+
+    /* Shift report print: clean A4 formatting */
+    .shift-report-printable {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .shift-report-printable .surface-card {
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        break-inside: avoid;
+    }
+
+    .shift-report-printable .surface-card::before {
+        display: none !important;
+    }
+
+    /* Receipt print: 80mm thermal */
+    .printable-receipt {
+        width: 80mm !important;
+        margin: 0 auto !important;
+        padding: 3mm !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 }

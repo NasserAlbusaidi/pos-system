@@ -36,7 +36,11 @@ new class extends Component
                 <a href="{{ route('pos.dashboard') }}" wire:navigate class="tag {{ request()->routeIs('pos.dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">POS</a>
                 <a href="{{ route('kds.view') }}" wire:navigate class="tag {{ request()->routeIs('kds.view') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Kitchen</a>
                 <a href="{{ route('admin.reports') }}" wire:navigate class="tag {{ request()->routeIs('admin.reports') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Reports</a>
+                <a href="{{ route('admin.shift-report') }}" wire:navigate class="tag {{ request()->routeIs('admin.shift-report') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Shift Report</a>
                 <a href="{{ route('admin.settings') }}" wire:navigate class="tag {{ request()->routeIs('admin.settings') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Settings</a>
+                @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('billing') }}" wire:navigate class="tag {{ request()->routeIs('billing') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Billing</a>
+                @endif
             </div>
         </nav>
     </div>
@@ -77,6 +81,9 @@ new class extends Component
                 <x-admin-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')" icon="dashboard">
                     Reports
                 </x-admin-nav-link>
+                <x-admin-nav-link :href="route('admin.shift-report')" :active="request()->routeIs('admin.shift-report')" icon="dashboard">
+                    Shift Report
+                </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.inventory')" :active="request()->routeIs('admin.inventory')" icon="dashboard">
                     Inventory
                 </x-admin-nav-link>
@@ -106,6 +113,11 @@ new class extends Component
                 <x-admin-nav-link :href="route('admin.settings')" :active="request()->routeIs('admin.settings')" icon="dashboard">
                     Settings
                 </x-admin-nav-link>
+                @if(Auth::user()->role === 'admin')
+                    <x-admin-nav-link :href="route('billing')" :active="request()->routeIs('billing')" icon="billing">
+                        Billing
+                    </x-admin-nav-link>
+                @endif
             </section>
         </nav>
 

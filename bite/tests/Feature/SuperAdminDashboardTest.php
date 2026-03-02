@@ -15,8 +15,8 @@ class SuperAdminDashboardTest extends TestCase
 
     public function test_dashboard_stats_and_actions()
     {
-        $admin = User::factory()->create(['is_super_admin' => true]);
-        $shop = Shop::factory()->create(['status' => 'active']);
+        $admin = User::factory()->superAdmin()->create();
+        $shop = Shop::factory()->create();
 
         Livewire::actingAs($admin)
             ->test(Dashboard::class)

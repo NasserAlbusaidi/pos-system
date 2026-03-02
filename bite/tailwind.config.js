@@ -15,6 +15,7 @@ export default {
                 sans: ['"Manrope"', ...defaultTheme.fontFamily.sans],
                 display: ['"Bricolage Grotesque"', ...defaultTheme.fontFamily.sans],
                 mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
+                arabic: ['"IBM Plex Sans Arabic"', '"Manrope"', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 paper: 'rgb(var(--paper) / <alpha-value>)',

@@ -21,9 +21,15 @@ new #[Layout('layouts.guest')] class extends Component
         Session::regenerate();
 
         $user = auth()->user();
-        
+
         if ($user->is_super_admin) {
             $this->redirectIntended(default: route('super-admin.dashboard', absolute: false), navigate: true);
+
+            return;
+        }
+
+        if ($user->shouldRedirectToOnboarding()) {
+            $this->redirect('/onboarding', navigate: true);
 
             return;
         }

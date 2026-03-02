@@ -8,6 +8,7 @@
                 <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">Back-of-House Flow</h2>
             </div>
             <div class="flex items-center gap-2">
+                <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
                 <span class="tag">Live</span>
                 <span class="inline-flex items-center rounded-full px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.16em]"
                       style="background-color: rgb(var(--crema)); color: rgb(var(--panel)); border: 1px solid rgb(var(--crema));">
@@ -17,7 +18,7 @@
         </div>
     </section>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
         @forelse($orders as $order)
             @php
                 $action = $order->status === 'paid' ? 'preparing' : ($order->status === 'preparing' ? 'ready' : null);

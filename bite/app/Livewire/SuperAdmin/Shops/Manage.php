@@ -58,15 +58,17 @@ class Manage extends Component
             $this->shop->update([
                 'name' => $this->name,
                 'slug' => $this->slug,
-                'status' => $this->status,
             ]);
+            $this->shop->status = $this->status;
+            $this->shop->save();
         } else {
             $shop = Shop::create([
                 'name' => $this->name,
                 'slug' => $this->slug,
-                'status' => $this->status,
                 'branding' => null,
             ]);
+            $shop->status = $this->status;
+            $shop->save();
 
             // Create Owner
             User::create([
@@ -75,7 +77,6 @@ class Manage extends Component
                 'email' => $this->ownerEmail,
                 'password' => bcrypt($this->ownerPassword),
                 'role' => 'admin',
-                'is_super_admin' => false,
             ]);
         }
 

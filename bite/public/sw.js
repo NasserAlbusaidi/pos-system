@@ -1,9 +1,9 @@
 const CACHE_PREFIX = 'bite-static-';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const LEGACY_CACHES = ['bite-pos-cache-v1'];
 const OFFLINE_URL = '/offline';
-const PRECACHE_URLS = [OFFLINE_URL];
+const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/dashboard'];
 
 const STATIC_DESTINATIONS = new Set([
   'style',
@@ -102,7 +102,7 @@ function isStaticAssetRequest(request) {
     return true;
   }
 
-  if (url.pathname === '/favicon.ico' || url.pathname === '/manifest.webmanifest') {
+  if (url.pathname === '/favicon.ico' || url.pathname === '/manifest.webmanifest' || url.pathname === '/manifest.json' || url.pathname.startsWith('/icons/')) {
     return true;
   }
 

@@ -10,6 +10,11 @@ class ReportsExportController extends Controller
 {
     public function orders(Request $request)
     {
+        $request->validate([
+            'from' => 'nullable|date|before_or_equal:today',
+            'to' => 'nullable|date|before_or_equal:today|after_or_equal:from',
+        ]);
+
         $shopId = Auth::user()->shop_id;
         $from = $request->query('from') ? now()->parse($request->query('from'))->startOfDay() : now()->subDays(30)->startOfDay();
         $to = $request->query('to') ? now()->parse($request->query('to'))->endOfDay() : now()->endOfDay();

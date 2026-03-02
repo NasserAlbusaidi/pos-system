@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use App\Models\Shop;
+use App\Services\BillingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -127,6 +128,20 @@ class ProductManager extends Component
     public function save()
     {
         $this->validate();
+
+        // Check plan limits before creating a new product (not when editing).
+        if (! $this->editingProductId) {
+            $billing = app(BillingService::class);
+            if (! $billing->canAccess($this->shop, 'add_product')) {
+                $limits = $billing->getPlanLimits($this->shop);
+                $this->dispatch('toast',
+                    message: "Product limit reached ({$limits['product_limit']} products on your current plan). Upgrade to Pro for unlimited products.",
+                    variant: 'error'
+                );
+
+                return;
+            }
+        }
 
         if ($this->editingProductId) {
             $product = Product::where('shop_id', Auth::user()->shop_id)
