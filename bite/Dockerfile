@@ -1,50 +1,34 @@
-# ── Build stage: frontend assets ──────────────────────────────────
-FROM node:20-alpine AS frontend
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY vite.config.js ./
-COPY resources ./resources
-RUN npm run build
+FROM php:8.2-cli-bookworm
 
-# ── Production stage ─────────────────────────────────────────────
-# Pre-built image with pdo_mysql, mbstring, gd, zip, bcmath, intl, pcntl, etc.
-FROM serversideup/php:8.2-cli
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unzip libsqlite3-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-USER root
-
-# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-
-# Install PHP dependencies
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
-
-# Copy application code
 COPY . .
 
-# Copy built frontend assets from build stage
-COPY --from=frontend /app/public/build ./public/build
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction \
+    && composer dump-autoload --optimize
 
-# Create storage directories
-RUN mkdir -p storage/framework/{sessions,views,cache} \
-    storage/logs \
-    bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache database \
+    && touch database/database.sqlite \
+    && chmod -R 775 storage bootstrap/cache database
 
-# Generate a temporary key for build-time artisan commands
 RUN cp .env.example .env \
+    && sed -i 's/APP_ENV=local/APP_ENV=production/' .env \
+    && sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env \
     && echo "APP_KEY=base64:$(head -c 32 /dev/urandom | base64)" >> .env \
-    && composer dump-autoload --optimize \
-    && php artisan package:discover --ansi \
-    && php artisan view:cache \
-    && php artisan event:cache \
+    && php artisan package:discover --ansi 2>&1 \
+    && php artisan view:cache 2>&1 \
+    && php artisan event:cache 2>&1 \
     && rm .env
 
 EXPOSE ${PORT:-8080}
 
-CMD php artisan migrate --force && \
+CMD cp .env.example .env 2>/dev/null; \
+    php artisan migrate --force && \
+    php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null; \
     php artisan storage:link 2>/dev/null; \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
