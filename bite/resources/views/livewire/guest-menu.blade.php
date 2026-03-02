@@ -173,12 +173,8 @@
                                 componentId: $wire.id,
                                 destructive: false,
                             })"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-wait"
-                            wire:target="submitOrder"
                             class="btn-primary w-full justify-center">
-                        <span wire:loading.remove wire:target="submitOrder">Place Order</span>
-                        <span wire:loading wire:target="submitOrder" class="loading-spinner"></span>
+                        Place Order
                     </button>
                 </div>
             </div>
