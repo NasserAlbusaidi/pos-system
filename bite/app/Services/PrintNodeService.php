@@ -50,7 +50,7 @@ class PrintNodeService
         $lines[] = 'Order Type: Guest Pickup';
         $lines[] = '-------------------------';
 
-        $order->loadMissing('items.modifiers');
+        $order->loadMissing('items.modifiers', 'shop');
 
         foreach ($order->items as $item) {
             $lines[] = $item->quantity.'x '.$item->product_name_snapshot;
@@ -62,7 +62,7 @@ class PrintNodeService
         }
 
         $lines[] = '-------------------------';
-        $lines[] = 'Total: $'.number_format($order->total_amount, 2);
+        $lines[] = 'Total: '.formatPrice($order->total_amount, $order->shop);
         $lines[] = now()->format('Y-m-d H:i');
 
         return implode("\n", $lines)."\n";
