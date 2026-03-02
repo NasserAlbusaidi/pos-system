@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -11,7 +12,14 @@ use Livewire\Component;
 
 class ReportsDashboard extends Component
 {
+    public Shop $shop;
+
     public $rangeDays = 30;
+
+    public function mount(): void
+    {
+        $this->shop = Auth::user()->shop;
+    }
 
     #[Layout('layouts.admin')]
     public function render()

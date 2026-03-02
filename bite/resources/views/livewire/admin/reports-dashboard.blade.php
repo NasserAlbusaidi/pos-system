@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
             <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Revenue ({{ $rangeDays }} days)</div>
-            <div class="text-3xl font-mono font-black">${{ number_format($totalRevenue, 2) }}</div>
+            <div class="text-3xl font-mono font-black">{{ formatPrice($totalRevenue, $shop) }}</div>
         </div>
         <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
             <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Orders ({{ $rangeDays }} days)</div>
@@ -17,7 +17,7 @@
         </div>
         <div class="bg-paper border border-ink p-6 shadow-[4px_4px_0_0_#000000]">
             <div class="font-mono text-[10px] uppercase font-bold text-ink/40 mb-3 tracking-widest">Avg Order Value</div>
-            <div class="text-3xl font-mono font-black">${{ number_format($avgOrder, 2) }}</div>
+            <div class="text-3xl font-mono font-black">{{ formatPrice($avgOrder, $shop) }}</div>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
                         <tr class="hover:bg-muted/50 transition-colors">
                             <td class="p-6 font-mono text-xs uppercase tracking-tighter">{{ $product->product_name_snapshot }}</td>
                             <td class="p-6 font-mono text-xs font-black">{{ $product->qty }}</td>
-                            <td class="p-6 font-mono text-xs font-black">${{ number_format($product->revenue, 2) }}</td>
+                            <td class="p-6 font-mono text-xs font-black">{{ formatPrice($product->revenue, $shop) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -72,7 +72,7 @@
                             <div class="font-mono text-[10px] uppercase tracking-widest opacity-40">{{ strtoupper($row->payment_method) }}</div>
                             <div class="font-mono text-xs">{{ $row->orders }} orders</div>
                         </div>
-                        <div class="font-mono font-black text-sm">${{ number_format($row->total, 2) }}</div>
+                        <div class="font-mono font-black text-sm">{{ formatPrice($row->total, $shop) }}</div>
                     </div>
                 @empty
                     <div class="text-center font-mono text-[10px] uppercase tracking-widest opacity-30">No payments yet</div>
