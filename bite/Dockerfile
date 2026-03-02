@@ -48,17 +48,20 @@ COPY . .
 # Copy built frontend assets from build stage
 COPY --from=frontend /app/public/build ./public/build
 
-# Run post-install scripts and cache
-RUN composer dump-autoload --optimize \
-    && php artisan package:discover --ansi \
-    && php artisan view:cache \
-    && php artisan event:cache
-
-# Create storage directories and set permissions
+# Create storage directories
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     storage/logs \
     bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
+
+# Generate a temporary key for build-time artisan commands, then clear it
+RUN cp .env.example .env \
+    && echo "APP_KEY=base64:$(head -c 32 /dev/urandom | base64)" >> .env \
+    && composer dump-autoload --optimize \
+    && php artisan package:discover --ansi \
+    && php artisan view:cache \
+    && php artisan event:cache \
+    && rm .env
 
 EXPOSE ${PORT:-8080}
 

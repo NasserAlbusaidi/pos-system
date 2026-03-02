@@ -12,5 +12,8 @@ storage/framework/views/*
 .git
 .DS_Store
 tests
-*.md
 docs
+CLAUDE.md
+claude-journal.md
+bite-pos-roadmap.docx
+tree.txt
