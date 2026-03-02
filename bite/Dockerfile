@@ -8,30 +8,11 @@ COPY resources ./resources
 RUN npm run build
 
 # ── Production stage ─────────────────────────────────────────────
-FROM php:8.2-cli
+FROM php:8.2-cli-bookworm
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    libicu-dev \
-    libonig-dev \
-    libxml2-dev \
-    unzip \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
-        mbstring \
-        xml \
-        zip \
-        gd \
-        bcmath \
-        intl \
-        pcntl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install extensions via mlocati installer (handles all deps automatically)
+ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN install-php-extensions pdo_mysql mbstring zip gd bcmath intl
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -54,7 +35,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Generate a temporary key for build-time artisan commands, then clear it
+# Generate a temporary key for build-time artisan commands
 RUN cp .env.example .env \
     && echo "APP_KEY=base64:$(head -c 32 /dev/urandom | base64)" >> .env \
     && composer dump-autoload --optimize \
