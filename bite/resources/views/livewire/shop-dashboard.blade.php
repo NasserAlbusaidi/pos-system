@@ -122,13 +122,41 @@
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
                     <h2 class="font-display text-2xl font-extrabold leading-none">Weekly Revenue</h2>
                 </div>
-                <div class="space-y-3 p-5">
-                    @foreach($weeklyRevenue as $row)
-                        <div class="flex items-center justify-between rounded-lg border border-line/75 bg-panel px-3 py-2">
-                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ \Carbon\Carbon::parse($row['day'])->format('D') }}</span>
-                            <span class="font-mono text-xs font-bold uppercase">{{ formatPrice($row['total'], $shop) }}</span>
-                        </div>
-                    @endforeach
+                <div class="p-5" x-data="weeklyRevenueChart({{ Js::from($weeklyRevenue) }}, '{{ $shop->currency ?? 'OMR' }}')" x-init="initChart()">
+                    <canvas x-ref="revenueChart" height="220"></canvas>
+                </div>
+            </section>
+
+            <section class="surface-card" x-data="{ copied: false }">
+                <div class="border-b border-line bg-muted/35 px-5 py-4">
+                    <h2 class="font-display text-2xl font-extrabold leading-none">Guest Menu QR</h2>
+                </div>
+                <div class="flex flex-col items-center gap-4 p-5">
+                    <div class="rounded-xl border border-line bg-white p-3">
+                        <img
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode(url('/menu/' . $shop->slug)) }}"
+                            alt="QR code for guest menu"
+                            width="200"
+                            height="200"
+                            class="block"
+                            loading="lazy"
+                        />
+                    </div>
+                    <p class="max-w-full break-all text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                        {{ url('/menu/' . $shop->slug) }}
+                    </p>
+                    <button
+                        type="button"
+                        class="btn-secondary !px-4 !py-2"
+                        x-on:click="
+                            navigator.clipboard.writeText('{{ url('/menu/' . $shop->slug) }}');
+                            copied = true;
+                            setTimeout(() => copied = false, 2000);
+                        "
+                    >
+                        <span x-show="!copied">Copy Link</span>
+                        <span x-show="copied" x-cloak>Copied!</span>
+                    </button>
                 </div>
             </section>
         </div>
@@ -182,3 +210,88 @@
         </table>
     </section>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('weeklyRevenueChart', (revenueData, currency) => ({
+            chart: null,
+
+            initChart() {
+                const canvas = this.$refs.revenueChart;
+                const style = getComputedStyle(document.documentElement);
+                const crema = style.getPropertyValue('--crema').trim();
+                const ink = style.getPropertyValue('--ink').trim();
+
+                const labels = revenueData.map(row => {
+                    const d = new Date(row.day + 'T00:00:00');
+                    return d.toLocaleDateString('en-US', { weekday: 'short' });
+                });
+                const values = revenueData.map(row => parseFloat(row.total) || 0);
+
+                this.chart = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: `rgb(${crema} / 0.75)`,
+                            hoverBackgroundColor: `rgb(${crema})`,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            maxBarThickness: 40,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: `rgb(${ink})`,
+                                titleFont: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
+                                bodyFont: { family: 'ui-monospace, monospace', size: 12, weight: '700' },
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: ctx => currency + ' ' + ctx.parsed.y.toFixed(3)
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: {
+                                    color: `rgb(${ink} / 0.45)`,
+                                    font: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
+                                    padding: 4,
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: `rgb(${ink} / 0.07)`,
+                                    drawTicks: false,
+                                },
+                                border: { display: false },
+                                ticks: {
+                                    color: `rgb(${ink} / 0.4)`,
+                                    font: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
+                                    padding: 8,
+                                    callback: val => currency + ' ' + val.toFixed(0)
+                                },
+                                beginAtZero: true,
+                            }
+                        }
+                    }
+                });
+            },
+
+            destroy() {
+                if (this.chart) this.chart.destroy();
+            }
+        }));
+    });
+</script>
+@endpush
