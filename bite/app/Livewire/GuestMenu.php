@@ -108,6 +108,28 @@ class GuestMenu extends Component
         return $base + $modifiers;
     }
 
+    public function incrementItem($key)
+    {
+        if (isset($this->cart[$key])) {
+            $this->cart[$key]['quantity']++;
+        }
+    }
+
+    public function decrementItem($key)
+    {
+        if (isset($this->cart[$key])) {
+            $this->cart[$key]['quantity']--;
+            if ($this->cart[$key]['quantity'] <= 0) {
+                unset($this->cart[$key]);
+            }
+        }
+    }
+
+    public function removeItem($key)
+    {
+        unset($this->cart[$key]);
+    }
+
     public function toggleReview()
     {
         $this->showReviewModal = ! $this->showReviewModal;
@@ -154,8 +176,11 @@ class GuestMenu extends Component
         $itemKey = $productId.'-'.$modifierKey;
 
         $displayPrice = (float) $product->final_price;
+        $modifierNames = [];
         if (! empty($modifierIds)) {
-            $displayPrice += ModifierOption::whereIn('id', $modifierIds)->sum('price_adjustment');
+            $modifierOptions = ModifierOption::whereIn('id', $modifierIds)->get();
+            $displayPrice += $modifierOptions->sum('price_adjustment');
+            $modifierNames = $modifierOptions->pluck('name')->all();
         }
 
         if (isset($this->cart[$itemKey])) {
@@ -167,6 +192,7 @@ class GuestMenu extends Component
                 'price' => $displayPrice,
                 'quantity' => 1,
                 'selectedModifiers' => $modifierIds,
+                'modifierNames' => $modifierNames,
             ];
         }
 
@@ -353,8 +379,11 @@ class GuestMenu extends Component
             $validModifierIds = array_values(array_intersect($modifierIds, $allowedModifierIds));
 
             $displayPrice = (float) $product->final_price;
+            $modifierNames = [];
             if (! empty($validModifierIds)) {
-                $displayPrice += \App\Models\ModifierOption::whereIn('id', $validModifierIds)->sum('price_adjustment');
+                $modifierOptions = \App\Models\ModifierOption::whereIn('id', $validModifierIds)->get();
+                $displayPrice += $modifierOptions->sum('price_adjustment');
+                $modifierNames = $modifierOptions->pluck('name')->all();
             }
 
             $modifierKey = ! empty($validModifierIds)
@@ -374,6 +403,7 @@ class GuestMenu extends Component
                 'price' => $displayPrice,
                 'quantity' => $quantity,
                 'selectedModifiers' => $validModifierIds,
+                'modifierNames' => $modifierNames,
             ];
         }
 

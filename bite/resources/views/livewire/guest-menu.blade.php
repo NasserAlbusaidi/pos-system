@@ -53,6 +53,10 @@
                             @endif
 
                             <div>
+                                @if($product->image_url)
+                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="mb-4 h-40 w-full rounded-xl object-cover">
+                                @endif
+
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
                                         <h4 class="text-xl font-bold uppercase tracking-tight text-ink">{{ $product->name }}</h4>
@@ -112,15 +116,24 @@
                             @foreach($cart as $key => $item)
                                 <div class="flex items-start justify-between gap-3 px-4 py-3">
                                     <div class="flex items-start gap-3">
-                                        <span class="inline-flex h-8 min-w-8 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold uppercase">{{ $item['quantity'] }}x</span>
+                                        <div class="flex items-center gap-1">
+                                            <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
+                                            <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
+                                            <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+                                        </div>
                                         <div>
                                             <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
-                                            @if(!empty($item['selectedModifiers']))
-                                                <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">+ {{ count($item['selectedModifiers']) }} options</p>
+                                            @if(!empty($item['modifierNames']))
+                                                <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
                                             @endif
                                         </div>
                                     </div>
-                                    <p class="font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($item['price'] * $item['quantity'], $shop) }}</p>
+                                    <div class="flex items-start gap-2">
+                                        <p class="font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($item['price'] * $item['quantity'], $shop) }}</p>
+                                        <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
