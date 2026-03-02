@@ -60,10 +60,10 @@
                                     </div>
                                     <div class="text-right">
                                         @if($product->is_on_sale)
-                                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through">${{ number_format($product->price, 2) }}</p>
-                                            <p class="font-display text-2xl font-extrabold leading-none text-crema">${{ number_format($product->final_price, 2) }}</p>
+                                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through">{{ formatPrice($product->price, $shop) }}</p>
+                                            <p class="font-display text-2xl font-extrabold leading-none text-crema">{{ formatPrice($product->final_price, $shop) }}</p>
                                         @else
-                                            <p class="font-display text-2xl font-extrabold leading-none text-ink">${{ number_format($product->price, 2) }}</p>
+                                            <p class="font-display text-2xl font-extrabold leading-none text-ink">{{ formatPrice($product->price, $shop) }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -91,7 +91,7 @@
                         <span class="inline-flex items-center rounded-full border border-panel/20 bg-panel/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/90">Ready</span>
                         <span class="font-display text-2xl font-bold leading-none">Review Order</span>
                     </div>
-                    <span class="font-display text-3xl font-extrabold leading-none">${{ number_format($this->total, 2) }}</span>
+                    <span class="font-display text-3xl font-extrabold leading-none">{{ formatPrice($this->total, $shop) }}</span>
                 </button>
             </div>
         </div>
@@ -120,7 +120,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <p class="font-mono text-xs font-bold uppercase text-ink">${{ number_format($item['price'] * $item['quantity'], 2) }}</p>
+                                    <p class="font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($item['price'] * $item['quantity'], $shop) }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -129,15 +129,15 @@
                     <section class="grid grid-cols-3 gap-3">
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Subtotal</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">${{ number_format($this->subtotal, 2) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->subtotal, $shop) }}</p>
                         </div>
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Tax</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">${{ number_format($this->tax, 2) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->tax, $shop) }}</p>
                         </div>
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Total</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">${{ number_format($this->total, 2) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->total, $shop) }}</p>
                         </div>
                     </section>
 
@@ -197,7 +197,7 @@
                 <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
                     <div>
                         <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->name }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Price: ${{ number_format($this->customizingProductPrice, 2) }}</p>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Price: {{ formatPrice($this->customizingProductPrice, $shop) }}</p>
                     </div>
                     <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -234,7 +234,7 @@
                                             <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->name }}</span>
                                         </span>
                                         @if($option->price_adjustment > 0)
-                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+${{ number_format($option->price_adjustment, 2) }}</span>
+                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+{{ formatPrice($option->price_adjustment, $shop) }}</span>
                                         @endif
                                     </label>
                                 @endforeach
@@ -246,7 +246,7 @@
                 <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-6 sm:p-8">
                     <button wire:click="$set('showModifierModal', false)" class="btn-secondary w-full justify-center">Cancel</button>
                     <button wire:click="addToCart({{ $customizingProduct->id }})" class="btn-primary w-full justify-center">
-                        Add for ${{ number_format($this->customizingProductPrice, 2) }}
+                        Add for {{ formatPrice($this->customizingProductPrice, $shop) }}
                     </button>
                 </div>
             </div>
