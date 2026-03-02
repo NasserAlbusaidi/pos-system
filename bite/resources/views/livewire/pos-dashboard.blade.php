@@ -83,11 +83,21 @@
                             <div class="space-y-2">
                                 @if($order->status === 'unpaid')
                                     <div class="grid grid-cols-2 gap-2">
-                                        <button wire:click="markAsPaid({{ $order->id }}, 'cash')" class="btn-primary justify-center">
-                                            Cash
+                                        <button wire:click="markAsPaid({{ $order->id }}, 'cash')"
+                                                wire:loading.attr="disabled"
+                                                wire:loading.class="opacity-50 cursor-wait"
+                                                wire:target="markAsPaid({{ $order->id }}, 'cash')"
+                                                class="btn-primary justify-center">
+                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'cash')">Cash</span>
+                                            <span wire:loading wire:target="markAsPaid({{ $order->id }}, 'cash')" class="loading-spinner"></span>
                                         </button>
-                                        <button wire:click="markAsPaid({{ $order->id }}, 'card')" class="btn-primary justify-center">
-                                            Card
+                                        <button wire:click="markAsPaid({{ $order->id }}, 'card')"
+                                                wire:loading.attr="disabled"
+                                                wire:loading.class="opacity-50 cursor-wait"
+                                                wire:target="markAsPaid({{ $order->id }}, 'card')"
+                                                class="btn-primary justify-center">
+                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'card')">Card</span>
+                                            <span wire:loading wire:target="markAsPaid({{ $order->id }}, 'card')" class="loading-spinner"></span>
                                         </button>
                                     </div>
                                     <button wire:click="openSplit({{ $order->id }})" class="btn-secondary w-full justify-center">
@@ -97,8 +107,13 @@
                                         Split Payment&hellip;
                                     </button>
                                 @elseif($order->status === 'ready')
-                                    <button wire:click="markAsDelivered({{ $order->id }})" class="btn-primary w-full justify-center !bg-signal !border-signal">
-                                        Mark Delivered
+                                    <button wire:click="markAsDelivered({{ $order->id }})"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-50 cursor-wait"
+                                            wire:target="markAsDelivered({{ $order->id }})"
+                                            class="btn-primary w-full justify-center !bg-signal !border-signal">
+                                        <span wire:loading.remove wire:target="markAsDelivered({{ $order->id }})">Mark Delivered</span>
+                                        <span wire:loading wire:target="markAsDelivered({{ $order->id }})" class="loading-spinner"></span>
                                     </button>
                                 @endif
                             </div>
@@ -143,10 +158,28 @@
 
             <section class="surface-card space-y-3 p-5">
                 <p class="section-headline">System Actions</p>
-                <button wire:click="clearOldOrders" onclick="return confirm('Clear expired unpaid orders and ready orders older than 30 minutes?')" class="btn-secondary w-full justify-center">
+                <button
+                    x-on:click="$dispatch('confirm-action', {
+                        title: 'Clear Old Orders',
+                        message: 'Clear expired unpaid orders and ready orders older than 30 minutes?',
+                        action: 'clearOldOrders',
+                        componentId: $wire.id,
+                        destructive: false,
+                    })"
+                    class="btn-secondary w-full justify-center"
+                >
                     Clear Old Orders
                 </button>
-                <button wire:click="systemReset" onclick="return confirm('Cancel all unpaid orders and complete all ready orders?')" class="btn-danger w-full justify-center">
+                <button
+                    x-on:click="$dispatch('confirm-action', {
+                        title: 'System Reset',
+                        message: 'Cancel all unpaid orders and complete all ready orders? This action cannot be undone.',
+                        action: 'systemReset',
+                        componentId: $wire.id,
+                        destructive: true,
+                    })"
+                    class="btn-danger w-full justify-center"
+                >
                     System Reset
                 </button>
             </section>

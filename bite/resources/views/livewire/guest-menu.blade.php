@@ -67,8 +67,13 @@
                                 </div>
                             </div>
 
-                            <button wire:click="addToCart({{ $product->id }})" class="btn-primary mt-5 w-full justify-center">
-                                Add to Order
+                            <button wire:click="addToCart({{ $product->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:loading.class="opacity-50 cursor-wait"
+                                    wire:target="addToCart({{ $product->id }})"
+                                    class="btn-primary mt-5 w-full justify-center">
+                                <span wire:loading.remove wire:target="addToCart({{ $product->id }})">Add to Order</span>
+                                <span wire:loading wire:target="addToCart({{ $product->id }})" class="loading-spinner"></span>
                             </button>
                         </article>
                     @endforeach
@@ -161,8 +166,19 @@
 
                 <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-6 sm:p-8">
                     <button wire:click="toggleReview" class="btn-secondary w-full justify-center">Cancel</button>
-                    <button wire:click="submitOrder" wire:confirm="Send order to kitchen?" class="btn-primary w-full justify-center">
-                        Place Order
+                    <button x-on:click="$dispatch('confirm-action', {
+                                title: 'Place Order',
+                                message: 'Send order to kitchen?',
+                                action: 'submitOrder',
+                                componentId: $wire.id,
+                                destructive: false,
+                            })"
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="submitOrder"
+                            class="btn-primary w-full justify-center">
+                        <span wire:loading.remove wire:target="submitOrder">Place Order</span>
+                        <span wire:loading wire:target="submitOrder" class="loading-spinner"></span>
                     </button>
                 </div>
             </div>
@@ -252,8 +268,13 @@
 
                 <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-6 sm:p-8">
                     <button wire:click="$set('showModifierModal', false)" class="btn-secondary w-full justify-center">Cancel</button>
-                    <button wire:click="addToCart({{ $customizingProduct->id }})" class="btn-primary w-full justify-center">
-                        Add for {{ formatPrice($this->customizingProductPrice, $shop) }}
+                    <button wire:click="addToCart({{ $customizingProduct->id }})"
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="addToCart({{ $customizingProduct->id }})"
+                            class="btn-primary w-full justify-center">
+                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})">Add for {{ formatPrice($this->customizingProductPrice, $shop) }}</span>
+                        <span wire:loading wire:target="addToCart({{ $customizingProduct->id }})" class="loading-spinner"></span>
                     </button>
                 </div>
             </div>

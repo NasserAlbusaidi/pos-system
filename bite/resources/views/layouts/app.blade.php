@@ -69,6 +69,8 @@
             </main>
         </div>
 
+        <x-confirm-modal />
+
         <script>
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js');

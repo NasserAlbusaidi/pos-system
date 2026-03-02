@@ -39,6 +39,22 @@
         @endif
     </head>
     <body class="h-full font-sans text-ink">
+        {{-- Navigation progress bar for wire:navigate --}}
+        <div
+            x-data="{ navigating: false }"
+            x-on:livewire:navigate-start.window="navigating = true"
+            x-on:livewire:navigate-end.window="navigating = false"
+            x-show="navigating"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="nav-progress"
+            style="display: none;"
+        ></div>
+
         <x-toast />
 
         <div class="flex h-full overflow-hidden">
@@ -69,6 +85,8 @@
                 </main>
             </div>
         </div>
+
+        <x-confirm-modal />
 
         @stack('scripts')
         <script>
