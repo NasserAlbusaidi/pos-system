@@ -21,7 +21,7 @@
         <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <article class="rounded-xl border border-line bg-panel p-5">
                 <p class="section-headline">Today's Revenue</p>
-                <p class="metric-value mt-4">${{ number_format($dailyRevenue, 2) }}</p>
+                <p class="metric-value mt-4">{{ formatPrice($dailyRevenue, $shop) }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
@@ -52,7 +52,7 @@
 
         <article class="surface-card p-5">
             <p class="section-headline">Average Order Value</p>
-            <p class="metric-value mt-4">${{ number_format($avgOrderValue, 2) }}</p>
+            <p class="metric-value mt-4">{{ formatPrice($avgOrderValue, $shop) }}</p>
         </article>
 
         <article class="surface-card p-5">
@@ -85,7 +85,7 @@
                         <tr class="transition-colors hover:bg-muted/35">
                             <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot }}</td>
                             <td class="px-5 py-4 font-mono text-xs font-bold uppercase">{{ $product->qty }}</td>
-                            <td class="px-5 py-4 font-mono text-xs font-bold uppercase">${{ number_format($product->revenue, 2) }}</td>
+                            <td class="px-5 py-4 font-mono text-xs font-bold uppercase">{{ formatPrice($product->revenue, $shop) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -109,7 +109,7 @@
                                     <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($method) }}</div>
                                     <div class="mt-1 text-sm font-medium text-ink">{{ $summary['orders'] }} orders</div>
                                 </div>
-                                <div class="font-mono text-sm font-bold uppercase">${{ number_format($summary['total'], 2) }}</div>
+                                <div class="font-mono text-sm font-bold uppercase">{{ formatPrice($summary['total'], $shop) }}</div>
                             </div>
                         @endforeach
                     @else
@@ -126,7 +126,7 @@
                     @foreach($weeklyRevenue as $row)
                         <div class="flex items-center justify-between rounded-lg border border-line/75 bg-panel px-3 py-2">
                             <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ \Carbon\Carbon::parse($row['day'])->format('D') }}</span>
-                            <span class="font-mono text-xs font-bold uppercase">${{ number_format($row['total'], 2) }}</span>
+                            <span class="font-mono text-xs font-bold uppercase">{{ formatPrice($row['total'], $shop) }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -157,7 +157,7 @@
                     <tr class="transition-colors hover:bg-muted/35">
                         <td class="px-5 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">#{{ $order->id }}</td>
                         <td class="px-5 py-4 text-sm font-medium text-ink">Guest</td>
-                        <td class="px-5 py-4 font-mono text-xs font-bold uppercase text-ink">${{ number_format($order->total_amount, 2) }}</td>
+                        <td class="px-5 py-4 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->total_amount, $shop) }}</td>
                         <td class="px-5 py-4">
                             @php
                                 $statusClass = match ($order->status) {

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class ShopDashboard extends Component
 {
+    public Shop $shop;
+
     public $dailyRevenue = 0;
 
     public $ordersTodayCount = 0;
@@ -31,6 +34,7 @@ class ShopDashboard extends Component
 
     public function mount()
     {
+        $this->shop = Auth::user()->shop;
         $this->loadStats();
     }
 
