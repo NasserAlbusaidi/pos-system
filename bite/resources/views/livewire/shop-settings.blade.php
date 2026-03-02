@@ -64,7 +64,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="space-y-1.5">
                                 <label for="currency-code" class="text-xs text-ink-soft">Code</label>
-                                <input id="currency-code" type="text" wire:model="currency_code" class="field font-mono uppercase" placeholder="OMR" maxlength="5">
+                                <input id="currency-code" type="text" wire:model="currency_code" class="field font-mono uppercase" placeholder="OMR" maxlength="3">
                                 @error('currency_code') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div class="space-y-1.5">

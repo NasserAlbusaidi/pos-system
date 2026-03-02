@@ -84,7 +84,7 @@ class ShopSettings extends Component
             'ink' => ['required', 'regex:/^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/'],
             'accent' => ['required', 'regex:/^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/'],
             'tax_rate' => 'required|numeric|min:0|max:100',
-            'currency_code' => 'required|string|min:1|max:5',
+            'currency_code' => 'required|string|min:1|max:3',
             'currency_symbol' => 'required|string|min:1|max:10',
             'currency_decimals' => 'required|integer|in:0,2,3',
             'receipt_header' => 'nullable|string|max:500',
@@ -134,7 +134,7 @@ class ShopSettings extends Component
             'name' => $this->staffName,
             'email' => $this->staffEmail,
             'role' => $this->staffRole,
-            'pin_code' => $this->staffPin ?: null,
+            'pin_code' => $this->staffPin ? Hash::make($this->staffPin) : null,
             'password' => Hash::make(str()->random(16)),
         ]);
 
@@ -173,7 +173,7 @@ class ShopSettings extends Component
         ];
 
         if ($this->staffPin) {
-            $data['pin_code'] = $this->staffPin;
+            $data['pin_code'] = Hash::make($this->staffPin);
         }
 
         $user->update($data);
