@@ -15,6 +15,9 @@ class Shop extends Model
         'status',
         'branding',
         'tax_rate',
+        'currency_code',
+        'currency_symbol',
+        'currency_decimals',
     ];
 
     protected $casts = [

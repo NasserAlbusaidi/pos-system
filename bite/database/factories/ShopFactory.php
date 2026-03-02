@@ -24,6 +24,9 @@ class ShopFactory extends Factory
             'slug' => Str::slug($name),
             'status' => 'active',
             'branding' => null,
+            'currency_code' => 'OMR',
+            'currency_symbol' => 'OMR',
+            'currency_decimals' => 3,
         ];
     }
 }
