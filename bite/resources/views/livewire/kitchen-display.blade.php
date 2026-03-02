@@ -9,7 +9,10 @@
             </div>
             <div class="flex items-center gap-2">
                 <span class="tag">Live</span>
-                <span class="tag">{{ count($orders) }} active</span>
+                <span class="inline-flex items-center rounded-full px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.16em]"
+                      style="background-color: rgb(var(--crema)); color: rgb(var(--panel)); border: 1px solid rgb(var(--crema));">
+                    {{ count($orders) }} active
+                </span>
             </div>
         </div>
     </section>
@@ -18,17 +21,34 @@
         @forelse($orders as $order)
             @php
                 $action = $order->status === 'paid' ? 'preparing' : ($order->status === 'preparing' ? 'ready' : null);
+                $minutesSincePaid = $order->paid_at ? now()->diffInMinutes(\Carbon\Carbon::parse($order->paid_at)) : 0;
+
+                if ($minutesSincePaid > 10) {
+                    $timeBarColor = 'rgb(var(--alert))';
+                } elseif ($minutesSincePaid >= 5) {
+                    $timeBarColor = 'rgb(var(--crema))';
+                } else {
+                    $timeBarColor = 'rgb(var(--signal))';
+                }
             @endphp
-            <article class="surface-card overflow-hidden border-ink/15 bg-ink text-panel">
+            <article class="kds-card surface-card overflow-hidden border-ink/15 bg-ink text-panel">
+                {{-- Color-coded time indicator bar --}}
+                <div class="h-1.5" style="background-color: {{ $timeBarColor }};"></div>
+
                 <span class="sr-only">Ticket_{{ $order->id }}</span>
                 <header class="flex items-center justify-between border-b border-panel/15 bg-panel/10 px-4 py-3">
                     <div>
-                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-panel/55">Order #{{ $order->id }}</p>
-                        <p class="mt-1 font-display text-2xl font-extrabold leading-none text-panel">Kitchen Ticket</p>
+                        <p class="font-mono text-xs font-bold uppercase tracking-[0.16em] text-panel/70">Order #{{ $order->id }}</p>
+                        <p class="mt-1 font-display text-3xl font-extrabold leading-none text-panel">Kitchen Ticket</p>
                     </div>
-                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-panel/65">
-                        {{ $order->paid_at ? \Carbon\Carbon::parse($order->paid_at)->format('H:i') : 'New' }}
-                    </p>
+                    <div class="text-right">
+                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-panel/65">
+                            {{ $order->paid_at ? \Carbon\Carbon::parse($order->paid_at)->format('H:i') : 'New' }}
+                        </p>
+                        <p class="mt-1 font-mono text-sm font-bold tabular-nums" style="color: {{ $timeBarColor }};">
+                            {{ $minutesSincePaid }}m
+                        </p>
+                    </div>
                 </header>
 
                 <div class="space-y-4 p-4">
@@ -38,19 +58,19 @@
 
                     <ul class="space-y-2">
                         @foreach($order->items as $item)
-                            <li class="flex items-start gap-2 rounded-lg border border-panel/15 bg-panel/10 px-3 py-2">
-                                <span class="inline-flex min-w-8 items-center justify-center rounded-md bg-crema px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-panel">{{ $item->quantity }}x</span>
-                                <span class="text-sm font-semibold uppercase tracking-tight text-panel">{{ $item->product_name_snapshot }}</span>
+                            <li class="flex items-start gap-3 rounded-lg border border-panel/15 bg-panel/10 px-3 py-2.5">
+                                <span class="inline-flex min-w-10 items-center justify-center rounded-md bg-crema px-2 py-1 font-mono text-sm font-bold uppercase text-panel">{{ $item->quantity }}x</span>
+                                <span class="text-lg font-bold uppercase tracking-tight text-panel">{{ $item->product_name_snapshot }}</span>
                             </li>
                         @endforeach
                     </ul>
 
                     @if($order->status === 'paid')
-                        <button wire:click="updateStatus({{ $order->id }}, 'preparing')" class="btn-primary w-full justify-center !bg-crema !border-crema">
+                        <button wire:click="updateStatus({{ $order->id }}, 'preparing')" class="btn-primary w-full justify-center !bg-crema !border-crema text-base">
                             Start Preparing
                         </button>
                     @elseif($order->status === 'preparing')
-                        <button wire:click="updateStatus({{ $order->id }}, 'ready')" class="btn-primary w-full justify-center !bg-signal !border-signal">
+                        <button wire:click="updateStatus({{ $order->id }}, 'ready')" class="btn-primary w-full justify-center !bg-signal !border-signal text-base">
                             Order Ready
                         </button>
                     @else
