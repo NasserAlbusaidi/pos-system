@@ -35,7 +35,7 @@ class PosDashboardTest extends TestCase
         Livewire::actingAs($user)
             ->test(PosDashboard::class)
             ->assertSee('ID_'.$order->id)
-            ->assertSee('$10.00');
+            ->assertSee(formatPrice(10.00, $shop));
     }
 
     public function test_staff_can_mark_order_as_paid(): void

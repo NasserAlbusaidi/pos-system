@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\Payment;
+use App\Models\Shop;
 use App\Models\User;
 use App\Services\InventoryService;
 use App\Services\LoyaltyService;
@@ -21,6 +22,8 @@ use Livewire\Component;
 
 class PosDashboard extends Component
 {
+    public Shop $shop;
+
     public $splitOrderId = null;
 
     public $splitQuantities = [];
@@ -56,6 +59,11 @@ class PosDashboard extends Component
     public $managerError = null;
 
     public $managerOverrideApproved = false;
+
+    public function mount(): void
+    {
+        $this->shop = Auth::user()->shop;
+    }
 
     protected function loadStats(): void
     {
