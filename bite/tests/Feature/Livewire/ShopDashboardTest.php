@@ -20,7 +20,7 @@ class ShopDashboardTest extends TestCase
         $user = User::factory()->create(['shop_id' => $shop->id]);
 
         // Create a completed order today
-        Order::create([
+        Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'completed',
             'total_amount' => 50.00,
@@ -28,21 +28,20 @@ class ShopDashboardTest extends TestCase
         ]);
 
         // Create an unpaid order today
-        Order::create([
+        Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 20.00,
         ]);
 
         // 3. Create an order from yesterday (should not be counted in daily)
-        $yesterdayOrder = new Order([
+        $yesterdayOrder = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'completed',
             'total_amount' => 100.00,
             'paid_at' => now()->subDay(),
+            'created_at' => now()->subDay(),
         ]);
-        $yesterdayOrder->created_at = now()->subDay();
-        $yesterdayOrder->save();
 
         Livewire::actingAs($user)
             ->test(ShopDashboard::class)

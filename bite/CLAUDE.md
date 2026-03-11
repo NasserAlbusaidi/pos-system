@@ -1,214 +1,126 @@
-# CLAUDE.md — Bite-POS
+# CLAUDE.md
 
-> This file is read automatically by Claude Code at the start of every session.
-> It provides the context needed to work effectively on this codebase.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Bite-POS is a multi-tenant SaaS POS (point of sale) system built for restaurants and cafes in Oman. It includes a POS terminal, kitchen display system (KDS), guest digital menu with QR ordering, reporting dashboard, menu builder, and super admin panel.
+Bite-POS is a multi-tenant SaaS POS system for restaurants and cafes in Oman. Features include a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel.
 
-**Target market:** Small-to-medium restaurants and cafes in Muscat, Oman.
-**Currency:** OMR (Omani Rial) — uses 3 decimal places, not 2.
-**Language:** English first, Arabic (RTL) planned for future.
+**Currency:** OMR (Omani Rial) — 3 decimal places, not 2. Use `formatPrice($amount, $shop)` (auto-loaded global helper in `app/Helpers/currency.php`).
 
 ## Tech Stack
 
-- **Framework:** Laravel 11 with Livewire 3 (full-stack, no separate frontend)
-- **Views:** Blade templates + Livewire components (NO Inertia, NO Vue, NO React)
-- **Styling:** Vanilla CSS with CSS custom properties (design tokens). No Tailwind.
-- **Database:** MySQL 8.0
-- **Multi-tenancy:** stancl/tenancy package (see `create_tenants_table` and `create_domains_table` migrations)
-- **Auth:** Laravel Breeze (modified) + custom Staff PIN login system
-- **Payments:** Stripe via webhook handler (NOT Laravel Cashier yet)
-- **Printing:** PrintNode API integration for kitchen tickets and receipts
-- **PWA:** Service worker with offline page, manifest.json, static asset caching
+- **Framework:** Laravel 12 + Livewire 3 (full-stack, no separate frontend)
+- **Styling:** Vanilla CSS with CSS custom properties (design tokens). **Do NOT use Tailwind** — the Tailwind deps in `package.json` are from Breeze scaffolding only.
+- **Database:** MySQL 8.0 (production), SQLite in-memory (tests — see `phpunit.xml`)
+- **Billing:** Laravel Cashier with `Shop` as the billable model (configured in `AppServiceProvider`). Stripe webhooks handled in `StripeWebhookController` and `StripeSubscriptionWebhookController`.
+- **Auth:** Laravel Breeze (modified) + custom Staff PIN login (`PinLogin.php`)
+- **Build:** Vite with `laravel-vite-plugin`
 
-## Project Structure
-
-```
-bite/
-├── app/
-│   ├── Http/
-│   │   └── Middleware/
-│   │       ├── EnsureUserHasRole.php
-│   │       └── EnsureUserIsSuperAdmin.php
-│   ├── Livewire/              # All interactive UI lives here
-│   │   ├── Actions/Logout.php
-│   │   ├── Admin/
-│   │   │   ├── AuditLogs.php
-│   │   │   ├── InventoryManager.php
-│   │   │   ├── MenuBuilder.php
-│   │   │   └── ReportsDashboard.php
-│   │   ├── Forms/LoginForm.php
-│   │   ├── Guest/
-│   │   │   └── OrderTracker.php
-│   │   ├── SuperAdmin/
-│   │   │   ├── Dashboard.php
-│   │   │   └── Shops/
-│   │   │       ├── Index.php
-│   │   │       └── Manage.php
-│   │   ├── Profile/UpdatePinForm.php
-│   │   ├── GuestMenu.php       # QR-based guest ordering
-│   │   ├── KitchenDisplay.php  # Real-time KDS
-│   │   ├── ModifierManager.php
-│   │   ├── PinLogin.php        # Staff 4-digit PIN auth
-│   │   ├── PosDashboard.php    # Main POS terminal
-│   │   ├── ProductManager.php
-│   │   ├── ShopDashboard.php   # Owner dashboard
-│   │   └── ShopSettings.php
-│   ├── Models/
-│   │   ├── AuditLog.php
-│   │   ├── Category.php
-│   │   ├── Ingredient.php
-│   │   ├── LoyaltyCustomer.php
-│   │   ├── ModifierGroup.php
-│   │   ├── ModifierOption.php
-│   │   ├── Order.php
-│   │   ├── OrderItem.php
-│   │   ├── OrderItemModifier.php
-│   │   ├── Payment.php
-│   │   ├── Product.php
-│   │   ├── Shop.php
-│   │   ├── Supplier.php
-│   │   └── User.php
-│   └── Providers/
-│       ├── AppServiceProvider.php
-│       └── VoltServiceProvider.php
-├── database/
-│   ├── factories/              # CategoryFactory, ShopFactory, UserFactory, ProductFactory
-│   ├── migrations/             # ~30 migrations covering full schema
-│   └── seeders/DatabaseSeeder.php
-├── routes/
-│   ├── web.php                 # Main routes (3.4KB — all app routes)
-│   ├── auth.php                # Auth routes (Breeze)
-│   └── console.php             # Artisan commands
-├── resources/views/            # Blade templates (check here for all UI)
-├── public/                     # Assets, manifest.json, service worker
-├── config/
-├── tests/                      # 40+ feature tests
-└── .env                        # Environment config
-```
-
-## Key Architecture Decisions
-
-### Multi-tenancy
-Uses `stancl/tenancy`. Each shop is a tenant. Routes, data, and branding are scoped per tenant. Always ensure tenant context when querying data.
-
-### Livewire Components Are the App
-There are NO traditional controllers for app functionality. All UI interaction flows through Livewire components in `app/Livewire/`. The Blade views in `resources/views/` are paired with these components.
-
-### Role System
-- **Super Admin:** Can manage all shops, impersonate shop owners. Middleware: `EnsureUserIsSuperAdmin`
-- **Owner/Manager:** Shop-level admin. Can access dashboard, reports, menu builder, settings.
-- **Staff:** POS terminal and kitchen display access only. Authenticated via 4-digit PIN (`PinLogin.php`).
-- **Manager Override:** PIN-gated actions for sensitive operations with rate limiting.
-
-### Order Lifecycle
-`paid → preparing → ready → completed`
-- Orders are created from POS or Guest Menu
-- KDS shows real-time status transitions
-- Split orders and split payments supported with DB transactions + row locking
-- Guest orders tracked via UUID tokens
-
-### Design System
-- CSS custom properties for theming (colors, spacing, typography)
-- Custom fonts: Bricolage Grotesque
-- Warm, editorial aesthetic: cream/orange tones, surface cards
-- Per-shop branding support
-- **Do NOT introduce Tailwind.** Keep using the existing CSS custom property system.
-
-## Coding Conventions
-
-### General
-- Follow existing Laravel conventions in the codebase
-- Use Livewire 3 syntax (not Livewire 2)
-- Keep components focused — one component per feature/page
-- Use Blade directives and components for reusable UI pieces
-- Always scope queries to the current shop/tenant
-
-### Naming
-- Livewire components: PascalCase (e.g., `PosDashboard`, `MenuBuilder`)
-- Blade views: kebab-case (e.g., `pos-dashboard.blade.php`, `guest-menu.blade.php`)
-- Models: Singular PascalCase (e.g., `Order`, `OrderItem`)
-- Migrations: Laravel default timestamp format
-
-### Database
-- MySQL 8.0 — not SQLite
-- Use proper migrations for all schema changes
-- Use DB transactions for financial operations (orders, payments, splits)
-- Row locking where concurrent access is possible
-- Always include `shop_id` foreign key on tenant-scoped tables
-
-### Security
-- Rate limiting on PIN login attempts
-- Manager override PIN for sensitive actions
-- Stripe webhook signature verification + idempotency
-- Tenant isolation — never leak data across shops
-- Audit logging for sensitive operations
-
-### Testing
-- 40+ existing feature tests in `tests/`
-- Tests cover: RBAC, tenant isolation, security, modifier validation, order lifecycle
-- Run tests with `php artisan test`
-- When adding new features, add or update relevant tests
-- Always run the test suite before committing
-
-## When Working on Tasks
-
-1. **Read first.** Before changing a file, read it fully to understand the existing patterns.
-2. **Match the style.** Don't introduce new patterns — follow what's already there.
-3. **Don't install new CSS frameworks.** Use the existing CSS custom property design system.
-4. **Test your changes.** Run `php artisan test` and fix any failures.
-5. **One feature per session.** Keep PRs/commits focused on a single task.
-6. **Migration safety.** New migrations should be additive. Don't modify existing migration files.
-7. **Don't touch .env.** Never commit secrets. If you need a new env variable, document it.
-
-## Current Priorities (Ship-to-Revenue Roadmap)
-
-Working through the task list in order. Current phase is **Phase 1: Polish & Ship**.
-
-Priority tasks (in order):
-1. Currency system fix (OMR with 3 decimal places)
-2. Product images in guest menu
-3. Cart quantity controls in guest menu
-4. Modifier names in review modal
-5. Order item preview in POS ticket cards
-6. Quick-pay buttons on POS cards
-
-See the full roadmap in the Google Doc for the complete 28-task list.
-
-## Common Commands
+## Commands
 
 ```bash
-# Run the app
-php artisan serve
+# Full dev environment (server + queue + logs + vite concurrently)
+composer dev
 
-# Run tests
-php artisan test
+# Individual services
+php artisan serve          # Laravel dev server
+npm run dev                # Vite dev server
 
-# Run a specific test
-php artisan test --filter=TestClassName
+# Tests
+php artisan test                          # All tests
+php artisan test --filter=ClassName       # Single test class
+php artisan test --filter=testMethodName  # Single test method
 
-# Fresh migrate + seed
-php artisan migrate:fresh --seed
+# Database
+php artisan migrate
+php artisan migrate:fresh --seed          # Reset with demo data
 
-# Create a migration
-php artisan make:migration create_example_table
+# Lint
+./vendor/bin/pint
 
-# Create a Livewire component
-php artisan make:livewire ComponentName
+# Build frontend
+npm run build
 
-# Clear caches
-php artisan optimize:clear
-
-# Queue worker (for jobs like printing, emails)
-php artisan queue:work
+# First-time setup
+composer setup
 ```
+
+## Architecture
+
+### Tenancy Model
+
+There is **no tenancy package**. Multi-tenancy is manual: every tenant-scoped table has a `shop_id` FK. Always scope queries to the current shop. Models that guard `shop_id` (via `$guarded`): `Order`, `Product`, `User`. The `shop_id` must be set via `forceCreate()` or explicit assignment to prevent tenant isolation bypass.
+
+### Livewire-First Architecture
+
+All interactive UI is Livewire components in `app/Livewire/`. There are **no traditional controllers** for app features — controllers only exist for webhooks (`StripeWebhookController`, `StripeSubscriptionWebhookController`), document rendering (`InvoiceController`, `ReceiptController`), reports export (`ReportsExportController`), and impersonation (`ImpersonationController`).
+
+### Role System & Middleware
+
+Roles: `admin` (owner/manager), `manager`, `server`, `kitchen`. Super admin is a boolean flag `is_super_admin` on User.
+
+- `role:admin` — middleware alias for `EnsureUserHasRole`, accepts comma-separated roles
+- `super_admin` — middleware alias for `EnsureUserIsSuperAdmin`
+- `CheckSubscription` — verifies shop has active subscription or trial; redirects to billing page
+
+Routes are grouped by role access in `routes/web.php`. Public routes (guest menu, PIN login, webhooks) require no auth.
+
+### Order Lifecycle
+
+`unpaid → paid → preparing → ready → completed` (also `cancelled` for expired unpaid orders)
+
+- Orders created from POS (`PosDashboard`) or guest menu (`GuestMenu`)
+- `Order::cancelExpired()` cleans up unpaid orders past `expires_at`
+- Split orders via `parent_order_id` / `split_group_id`
+- Guest orders tracked via UUID `tracking_token`
+- `Payment` model uses full `$guarded = ['id']` — all fields set explicitly for financial safety
+
+### Billing
+
+`Shop` uses the `Billable` trait (Laravel Cashier). `BillingService` handles subscription status checks. `BillingSettings` Livewire component manages the UI. `CheckSubscription` middleware enforces active subscription. New shops get a 14-day trial set in `ShopProvisioningService`.
+
+### Services
+
+| Service | Purpose |
+|---------|---------|
+| `ShopProvisioningService` | Creates shop + owner user in a transaction |
+| `BillingService` | Subscription status checks |
+| `PrintNodeService` | Kitchen ticket and receipt printing |
+| `LoyaltyService` | Customer loyalty program |
+| `WhatsAppService` | WhatsApp messaging integration |
+
+### Key Public Routes
+
+- `/menu/{shop:slug}` — Guest digital menu (no auth)
+- `/track/{trackingToken}` — Guest order tracking (UUID)
+- `/pos/pin/{shop:slug}` — Staff PIN login
+- `/webhooks/stripe` and `/webhooks/stripe/subscription` — Stripe webhooks
+
+## Testing
+
+Tests use **SQLite in-memory** (not MySQL). This means some MySQL-specific features may behave differently in tests.
+
+Factories available: `ShopFactory`, `UserFactory`, `ProductFactory`, `CategoryFactory`. `ShopFactory` auto-sets `status = 'active'` in `afterCreating`.
+
+Test seeder credentials (from `DatabaseSeeder`):
+- Admin: `admin@bite.com` / `password`
+- Super admin: `super@bite.com` / `password`
+- Demo shop slug: `demo`
+
+## Conventions
+
+- **Livewire 3 syntax** (not Livewire 2)
+- Blade views: kebab-case (`pos-dashboard.blade.php`)
+- Currency: always use `formatPrice()` helper, never hardcode decimals or symbols
+- Financial operations: use DB transactions + row locking
+- New migrations only — never modify existing migration files
+- Design tokens: CSS custom properties for theming (colors via `branding` JSON on Shop)
+- Fonts: Bricolage Grotesque
 
 ## Don'ts
 
+- **Don't use Tailwind.** Use the existing CSS custom property design system.
 - **Don't create API controllers** for features that should be Livewire components.
-- **Don't hardcode currency.** Always use the shop's currency config.
-- **Don't skip tenant scoping.** Every query on tenant data must be scoped to the current shop.
+- **Don't skip tenant scoping.** Every query on tenant data must be scoped to `shop_id`.
 - **Don't modify existing migrations.** Create new ones for schema changes.
-- **Don't install Laravel Cashier yet.** That's Phase 5. Stripe is currently webhook-based.

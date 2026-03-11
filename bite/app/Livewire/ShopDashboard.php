@@ -154,6 +154,11 @@ class ShopDashboard extends Component
 
     public function clearAllNotifications()
     {
+        $role = Auth::user()->role;
+        if (! in_array($role, ['admin', 'manager'])) {
+            return;
+        }
+
         $this->shop->notifications()->delete();
         $this->showNotifications = false;
     }

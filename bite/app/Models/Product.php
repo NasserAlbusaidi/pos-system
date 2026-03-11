@@ -10,7 +10,6 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_id',
         'category_id',
         'name',
         'description',
@@ -23,6 +22,14 @@ class Product extends Model
         'is_available',
         'sort_order',
         'is_visible',
+    ];
+
+    /**
+     * shop_id must be set explicitly to prevent tenant isolation bypass.
+     */
+    protected $guarded = [
+        'id',
+        'shop_id',
     ];
 
     public function getFinalPriceAttribute()
@@ -51,10 +58,5 @@ class Product extends Model
     public function modifierGroups()
     {
         return $this->belongsToMany(ModifierGroup::class, 'product_modifier_group');
-    }
-
-    public function ingredients()
-    {
-        return $this->belongsToMany(Ingredient::class)->withPivot('quantity')->withTimestamps();
     }
 }

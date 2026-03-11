@@ -18,7 +18,7 @@
         </div>
     </section>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
+    <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
         @forelse($orders as $order)
             @php
                 $action = $order->status === 'paid' ? 'preparing' : ($order->status === 'preparing' ? 'ready' : null);

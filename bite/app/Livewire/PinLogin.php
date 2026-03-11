@@ -33,7 +33,7 @@ class PinLogin extends Component
         }
 
         $pin = trim($this->pin);
-        if ($pin === '') {
+        if ($pin === '' || ! preg_match('/^\d{4,6}$/', $pin)) {
             RateLimiter::hit($throttleKey, 60);
             $this->error = 'Authentication failed.';
 

@@ -210,7 +210,7 @@ class OnboardingWizard extends Component
                 continue;
             }
 
-            Product::create([
+            Product::forceCreate([
                 'shop_id' => $shop->id,
                 'category_id' => $category->id,
                 'name' => $name,
@@ -238,7 +238,7 @@ class OnboardingWizard extends Component
 
         $shop = $user->shop;
 
-        User::create([
+        User::forceCreate([
             'shop_id' => $shop->id,
             'name' => $this->staffName,
             'email' => $this->staffEmail,

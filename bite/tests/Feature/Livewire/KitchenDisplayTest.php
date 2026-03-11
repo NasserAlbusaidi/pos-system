@@ -19,13 +19,13 @@ class KitchenDisplayTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'kitchen']);
 
-        $paidOrder = Order::create([
+        $paidOrder = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'paid',
             'total_amount' => 15.00,
         ]);
 
-        $unpaidOrder = Order::create([
+        $unpaidOrder = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 10.00,
@@ -42,7 +42,7 @@ class KitchenDisplayTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'kitchen']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'paid',
             'total_amount' => 15.00,

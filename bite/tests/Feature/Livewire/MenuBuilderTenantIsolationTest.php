@@ -23,7 +23,7 @@ class MenuBuilderTenantIsolationTest extends TestCase
         $categoryA = Category::create(['shop_id' => $shopA->id, 'name' => 'Coffee']);
         $categoryB = Category::create(['shop_id' => $shopB->id, 'name' => 'Other']);
 
-        $productA = Product::create([
+        $productA = Product::forceCreate([
             'shop_id' => $shopA->id,
             'category_id' => $categoryA->id,
             'name' => 'Espresso',
@@ -45,14 +45,14 @@ class MenuBuilderTenantIsolationTest extends TestCase
 
         $categoryA = Category::create(['shop_id' => $shopA->id, 'name' => 'Coffee']);
 
-        Product::create([
+        Product::forceCreate([
             'shop_id' => $shopA->id,
             'category_id' => $categoryA->id,
             'name' => 'Latte',
             'price' => 4.00,
         ]);
 
-        $otherProduct = Product::create([
+        $otherProduct = Product::forceCreate([
             'shop_id' => $shopB->id,
             'category_id' => Category::create(['shop_id' => $shopB->id, 'name' => 'Tea'])->id,
             'name' => 'Other Shop Product',

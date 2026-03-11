@@ -24,7 +24,7 @@ class CurrencyDisplayTest extends TestCase
             'currency_decimals' => 3,
         ]);
         $category = Category::create(['shop_id' => $shop->id, 'name' => 'Drinks']);
-        Product::create([
+        Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Karak',
@@ -46,7 +46,7 @@ class CurrencyDisplayTest extends TestCase
             'currency_decimals' => 3,
         ]);
         $category = Category::create(['shop_id' => $shop->id, 'name' => 'Drinks']);
-        Product::create([
+        Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Karak',

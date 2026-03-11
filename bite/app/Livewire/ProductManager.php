@@ -21,10 +21,6 @@ class ProductManager extends Component
 
     public $currentImageUrl = null;
 
-    public $recipeProductId = null;
-
-    public $recipeIngredients = [];
-
     public $name;
 
     public $price;
@@ -58,7 +54,7 @@ class ProductManager extends Component
                 'required',
                 Rule::exists('categories', 'id')->where('shop_id', $shopId),
             ],
-            'image' => 'nullable|image|max:1024', // 1MB Max
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:1024', // 1MB Max
             'selectedModifierGroups' => 'nullable|array',
             'selectedModifierGroups.*' => Rule::exists('modifier_groups', 'id')->where('shop_id', $shopId),
         ];
@@ -83,46 +79,6 @@ class ProductManager extends Component
     public function cancelEdit()
     {
         $this->reset(['editingProductId', 'currentImageUrl', 'name', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
-    }
-
-    public function openRecipe($productId)
-    {
-        $product = Product::where('shop_id', Auth::user()->shop_id)
-            ->with('ingredients')
-            ->findOrFail($productId);
-
-        $this->recipeProductId = $product->id;
-        $this->recipeIngredients = $product->ingredients
-            ->mapWithKeys(fn ($ingredient) => [$ingredient->id => $ingredient->pivot->quantity])
-            ->all();
-    }
-
-    public function closeRecipe()
-    {
-        $this->reset(['recipeProductId', 'recipeIngredients']);
-    }
-
-    public function saveRecipe()
-    {
-        if (! $this->recipeProductId) {
-            return;
-        }
-
-        $product = Product::where('shop_id', Auth::user()->shop_id)
-            ->findOrFail($this->recipeProductId);
-
-        $sync = [];
-        foreach ($this->recipeIngredients as $ingredientId => $quantity) {
-            $quantity = (float) $quantity;
-            if ($quantity > 0) {
-                $sync[$ingredientId] = ['quantity' => $quantity];
-            }
-        }
-
-        $product->ingredients()->sync($sync);
-
-        session()->flash('message', 'Recipe updated successfully.');
-        $this->closeRecipe();
     }
 
     public function save()
@@ -173,7 +129,7 @@ class ProductManager extends Component
             $imageUrl = $this->image->store('products', 'public');
         }
 
-        $product = Product::create([
+        $product = Product::forceCreate([
             'shop_id' => Auth::user()->shop_id,
             'category_id' => $this->category_id,
             'name' => $this->name,
@@ -191,8 +147,6 @@ class ProductManager extends Component
     #[Layout('layouts.admin')]
     public function render()
     {
-        return view('livewire.product-manager', [
-            'ingredients' => \App\Models\Ingredient::where('shop_id', Auth::user()->shop_id)->orderBy('name')->get(),
-        ]);
+        return view('livewire.product-manager');
     }
 }

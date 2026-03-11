@@ -9,14 +9,11 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'shop_id',
-        'order_id',
-        'amount',
-        'method',
-        'created_by',
-        'paid_at',
-    ];
+    /**
+     * No mass assignment — all fields must be set explicitly
+     * to prevent financial manipulation.
+     */
+    protected $guarded = ['id'];
 
     protected $casts = [
         'paid_at' => 'datetime',

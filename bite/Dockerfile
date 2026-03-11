@@ -1,34 +1,64 @@
-FROM php:8.2-cli-bookworm
+FROM node:22-alpine AS frontend
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    unzip libsqlite3-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY resources ./resources
+COPY public ./public
+COPY lang ./lang
+COPY postcss.config.js tailwind.config.js vite.config.js ./
+COPY storage/framework/views ./storage/framework/views
+
+# Avoid stale compiled Blade files from affecting Tailwind content scanning.
+RUN rm -f storage/framework/views/*.php
+RUN npm run build
+
+
+FROM php:8.4-cli-bookworm AS app
+
+WORKDIR /var/www/html
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        unzip \
+        libsqlite3-dev \
+    && docker-php-ext-install pdo pdo_sqlite bcmath \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
 COPY . .
+COPY --from=frontend /app/public/build ./public/build
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction \
-    && composer dump-autoload --optimize
+ENV APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr \
+    CACHE_STORE=file \
+    SESSION_DRIVER=file \
+    QUEUE_CONNECTION=sync \
+    MAIL_MAILER=log \
+    DB_CONNECTION=sqlite \
+    DB_DATABASE=/var/www/html/database/database.sqlite
 
-RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache database \
+# Throwaway key for build-time artisan commands only (migrate, seed, cache).
+# The real key is generated at container startup in start.sh.
+ARG BUILD_APP_KEY="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+RUN APP_KEY="${BUILD_APP_KEY}" \
+    composer install --prefer-dist --no-interaction --optimize-autoloader --no-scripts \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database \
+    && rm -f database/database.sqlite \
     && touch database/database.sqlite \
-    && chmod -R 775 storage bootstrap/cache database
+    && APP_KEY="${BUILD_APP_KEY}" php artisan migrate --force --seed --no-interaction \
+    && APP_KEY="${BUILD_APP_KEY}" php artisan optimize:clear \
+    && chmod +x artisan
 
-RUN cp .env.example .env \
-    && sed -i 's/APP_ENV=local/APP_ENV=production/' .env \
-    && sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env \
-    && echo "APP_KEY=base64:$(head -c 32 /dev/urandom | base64)" >> .env \
-    && php artisan package:discover --ansi 2>&1 \
-    && php artisan view:cache 2>&1 \
-    && php artisan event:cache 2>&1 \
-    && rm .env
+COPY docker/start.sh /usr/local/bin/start-laravel
+RUN chmod +x /usr/local/bin/start-laravel
 
-EXPOSE ${PORT:-8080}
+EXPOSE 8080
 
-CMD cp .env.example .env 2>/dev/null; \
-    php artisan migrate --force && \
-    php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null; \
-    php artisan storage:link 2>/dev/null; \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD ["start-laravel"]

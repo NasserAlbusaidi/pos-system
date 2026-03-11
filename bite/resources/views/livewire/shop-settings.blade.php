@@ -284,7 +284,7 @@
                                         @endif
                                     </td>
                                     <td class="px-5 py-3 text-right">
-                                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="flex items-center justify-end gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                             <button
                                                 wire:click="editStaff({{ $member->id }})"
                                                 class="btn-secondary !py-1.5 !px-3 !text-[9px]"
@@ -295,7 +295,7 @@
                                                 <button
                                                     x-on:click="$dispatch('confirm-action', {
                                                         title: 'Remove Staff',
-                                                        message: 'Remove {{ addslashes($member->name) }} from this shop? This cannot be undone.',
+                                                        message: 'Remove ' + {{ Js::from($member->name) }} + ' from this shop? This cannot be undone.',
                                                         action: 'removeStaff',
                                                         actionArgs: [{{ $member->id }}],
                                                         componentId: $wire.id,

@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "site": "ascent-web-260224-119",
+    "public": "firebase-hosting-placeholder",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "bite-pos-demo",
+          "region": "us-central1"
+        }
+      }
+    ]
+  }
+}

@@ -1,8 +1,8 @@
 <div class="h-full space-y-6 fade-rise" wire:poll.5s>
     <x-slot:header>POS Register</x-slot:header>
 
-    <div class="grid h-full gap-6 xl:grid-cols-4">
-        <section class="space-y-5 xl:col-span-3">
+    <div class="grid h-full gap-6 lg:grid-cols-4">
+        <section class="space-y-5 lg:col-span-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="section-headline">Active Tickets</p>
@@ -139,7 +139,7 @@
             </div>
         </section>
 
-        <aside class="space-y-5 xl:col-span-1 transition-opacity duration-300" wire:loading.class="opacity-60">
+        <aside class="space-y-5 lg:col-span-1 transition-opacity duration-300" wire:loading.class="opacity-60">
             <section class="surface-card overflow-hidden border-panel/20 bg-ink text-panel">
                 <div class="border-b border-panel/10 px-5 py-4">
                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-panel/60">Today</p>
@@ -197,8 +197,8 @@
     </div>
 
     @if($splitOrder)
-        <div class="fixed inset-0 z-[120] flex items-center justify-center bg-ink/75 p-4 backdrop-blur-sm sm:p-6">
-            <div class="surface-card w-full max-w-2xl overflow-hidden">
+        <div class="fixed inset-0 z-[120] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+            <div class="surface-card flex w-full max-w-2xl flex-col overflow-hidden sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
                     <div>
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Split Order #{{ $splitOrder->id }}</h3>
@@ -243,8 +243,8 @@
     @endif
 
     @if($paymentOrder)
-        <div class="fixed inset-0 z-[120] flex items-center justify-center bg-ink/75 p-4 backdrop-blur-sm sm:p-6">
-            <div class="surface-card w-full max-w-2xl overflow-hidden">
+        <div class="fixed inset-0 z-[120] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+            <div class="surface-card flex w-full max-w-2xl flex-col overflow-hidden sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
                     <div>
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Payments for Order #{{ $paymentOrder->id }}</h3>
@@ -264,7 +264,7 @@
                 @endif
 
                 <div class="space-y-5 p-5">
-                    <div class="grid gap-3 md:grid-cols-3">
+                    <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                         <div class="rounded-lg border border-line bg-panel p-3">
                             <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Guests</label>
                             <div class="mt-2 flex items-center gap-2">
@@ -279,7 +279,7 @@
                                 <button wire:click="splitByAmount" class="btn-secondary !px-3 !py-2">Split</button>
                             </div>
                         </div>
-                        <div class="rounded-lg border border-line bg-panel p-3">
+                        <div class="rounded-lg border border-line bg-panel p-3 sm:col-span-2 md:col-span-1">
                             <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Rows</label>
                             <div class="mt-2">
                                 <button wire:click="addPaymentRow" class="btn-secondary w-full justify-center !px-3 !py-2">Add Row</button>
@@ -313,8 +313,8 @@
     @endif
 
     @if($showManagerModal)
-        <div class="fixed inset-0 z-[130] flex items-center justify-center bg-ink/75 p-4 backdrop-blur-sm sm:p-6">
-            <div class="surface-card w-full max-w-md overflow-hidden">
+        <div class="fixed inset-0 z-[130] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+            <div class="surface-card w-full max-w-md overflow-hidden sm:rounded-xl">
                 <div class="border-b border-line bg-muted/30 px-5 py-4">
                     <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Manager Override</h3>
                     <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Enter manager PIN to proceed</p>

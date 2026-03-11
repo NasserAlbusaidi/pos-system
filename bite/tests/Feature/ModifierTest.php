@@ -56,7 +56,7 @@ class ModifierTest extends TestCase
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
-        $product = Product::create([
+        $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Latte',

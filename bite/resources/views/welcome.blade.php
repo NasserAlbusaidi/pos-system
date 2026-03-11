@@ -1684,7 +1684,7 @@
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Inventory management
+                            Advanced team controls
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>

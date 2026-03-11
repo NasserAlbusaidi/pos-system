@@ -21,7 +21,7 @@ class RbacRouteAccessTest extends TestCase
         parent::setUp();
 
         $this->shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $this->order = Order::create([
+        $this->order = Order::forceCreate([
             'shop_id' => $this->shop->id,
             'status' => 'paid',
             'total_amount' => 10,

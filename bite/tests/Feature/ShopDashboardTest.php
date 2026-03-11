@@ -20,7 +20,7 @@ class ShopDashboardTest extends TestCase
         $user = User::factory()->create(['shop_id' => $shop->id]);
 
         // Create some orders
-        Order::create([
+        Order::forceCreate([
             'shop_id' => $shop->id,
             'total_amount' => 100.00,
             'status' => 'completed',
@@ -28,7 +28,7 @@ class ShopDashboardTest extends TestCase
             'created_at' => now(),
         ]);
 
-        Order::create([
+        Order::forceCreate([
             'shop_id' => $shop->id,
             'total_amount' => 50.00,
             'status' => 'preparing',

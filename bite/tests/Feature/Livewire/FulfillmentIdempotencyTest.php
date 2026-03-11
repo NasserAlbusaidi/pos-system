@@ -4,7 +4,6 @@ namespace Tests\Feature\Livewire;
 
 use App\Livewire\PosDashboard;
 use App\Models\Category;
-use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -18,30 +17,20 @@ class FulfillmentIdempotencyTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_ready_to_completed_transition_consumes_inventory_only_once(): void
+    public function test_ready_to_completed_transition_is_idempotent(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $server = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
 
         $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
-        $product = Product::create([
+        $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Latte',
             'price' => 5.00,
         ]);
 
-        $ingredient = Ingredient::create([
-            'shop_id' => $shop->id,
-            'name' => 'Milk',
-            'unit' => 'ml',
-            'stock_quantity' => 100,
-            'reorder_threshold' => 10,
-        ]);
-
-        $product->ingredients()->attach($ingredient->id, ['quantity' => 1.5]);
-
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'ready',
             'total_amount' => 10.00,
@@ -63,10 +52,8 @@ class FulfillmentIdempotencyTest extends TestCase
             ->call('markAsDelivered', $order->id);
 
         $order->refresh();
-        $ingredient->refresh();
 
         $this->assertSame('completed', $order->status);
         $this->assertNotNull($order->fulfilled_at);
-        $this->assertEquals(97.0, (float) $ingredient->stock_quantity);
     }
 }

@@ -16,7 +16,7 @@ class TrackingPrivacyTest extends TestCase
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 12.50,
@@ -34,7 +34,7 @@ class TrackingPrivacyTest extends TestCase
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 9.99,

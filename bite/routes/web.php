@@ -8,7 +8,6 @@ use App\Http\Controllers\StripeSubscriptionWebhookController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Admin\AuditLogs;
 use App\Livewire\BillingSettings;
-use App\Livewire\Admin\InventoryManager;
 use App\Livewire\Admin\MenuBuilder;
 use App\Livewire\Admin\ReportsDashboard;
 use App\Livewire\Guest\OrderTracker;
@@ -60,7 +59,6 @@ Route::middleware(['auth', 'role:manager,admin'])->group(function () {
     Route::get('/products', ProductManager::class)->name('admin.products');
     Route::get('/menu-builder', MenuBuilder::class)->name('admin.menu-builder');
     Route::get('/modifiers', ModifierManager::class)->name('admin.modifiers');
-    Route::get('/inventory', InventoryManager::class)->name('admin.inventory');
     Route::get('/reports', ReportsDashboard::class)->name('admin.reports');
     Route::get('/reports/export', [ReportsExportController::class, 'orders'])->name('admin.reports.export');
     Route::get('/audit-logs', AuditLogs::class)->name('admin.audit-logs');
@@ -78,7 +76,7 @@ Route::middleware(['auth', 'super_admin'])->prefix('admin')->group(function () {
     Route::get('/shops', SuperAdminShopsIndex::class)->name('super-admin.shops.index');
     Route::get('/shops/create', SuperAdminShopsManage::class)->name('super-admin.shops.create');
     Route::get('/shops/{shop}/edit', SuperAdminShopsManage::class)->name('super-admin.shops.edit');
-    Route::get('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->name('super-admin.impersonate');
+    Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->name('super-admin.impersonate');
 });
 
 Route::get('/leave-impersonation', [ImpersonationController::class, 'leave'])->name('impersonation.leave')->middleware('auth');

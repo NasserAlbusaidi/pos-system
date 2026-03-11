@@ -9,7 +9,6 @@ use App\Models\OrderItemModifier;
 use App\Models\Payment;
 use App\Models\Shop;
 use App\Models\User;
-use App\Services\InventoryService;
 use App\Services\LoyaltyService;
 use App\Services\PrintNodeService;
 use Illuminate\Support\Facades\Auth;
@@ -50,15 +49,17 @@ class PosDashboard extends Component
 
     public $managerPin = '';
 
-    public $pendingAction = null;
+    // Protected: these must not be client-settable to prevent manager PIN bypass.
+    protected $pendingAction = null;
 
-    public $pendingPayload = [];
+    protected $pendingPayload = [];
 
     public $showManagerModal = false;
 
     public $managerError = null;
 
-    public $managerOverrideApproved = false;
+    // Protected: prevents client from setting this to true via Livewire wire protocol.
+    protected $managerOverrideApproved = false;
 
     public function mount(): void
     {
@@ -145,13 +146,9 @@ class PosDashboard extends Component
                 $scope($query);
             }
 
-            $orders = $query->with('items.product.ingredients')->get();
+            $orders = $query->with('items.product')->get();
 
             foreach ($orders as $order) {
-                if (! $order->fulfilled_at) {
-                    app(InventoryService::class)->consumeOrder($order);
-                }
-
                 $order->update([
                     'status' => 'completed',
                     'fulfilled_at' => $order->fulfilled_at ?: now(),
@@ -193,7 +190,7 @@ class PosDashboard extends Component
         }
 
         $pin = trim($this->managerPin);
-        if ($pin === '') {
+        if ($pin === '' || ! preg_match('/^\d{4,6}$/', $pin)) {
             RateLimiter::hit($throttleKey, 60);
             $this->managerError = 'Manager approval failed.';
 
@@ -239,7 +236,10 @@ class PosDashboard extends Component
 
     public function cancelManagerOverride()
     {
-        $this->reset(['showManagerModal', 'managerPin', 'managerError', 'pendingAction', 'pendingPayload', 'managerOverrideApproved']);
+        $this->reset(['showManagerModal', 'managerPin', 'managerError']);
+        $this->pendingAction = null;
+        $this->pendingPayload = [];
+        $this->managerOverrideApproved = false;
     }
 
     protected function managerOverrideThrottleKey(): string
@@ -249,6 +249,11 @@ class PosDashboard extends Component
 
     public function markAsPaid($orderId, $method = 'cash')
     {
+        $allowedMethods = ['cash', 'card', 'voucher'];
+        if (! in_array($method, $allowedMethods, true)) {
+            $method = 'cash';
+        }
+
         $order = Order::where('shop_id', Auth::user()->shop_id)
             ->where('id', $orderId)
             ->firstOrFail();
@@ -260,12 +265,16 @@ class PosDashboard extends Component
 
     protected function recordPaymentsForOrder(Order $order, array $rows): void
     {
+        $allowedMethods = ['cash', 'card', 'voucher'];
+
         $rows = collect($rows)
             ->map(fn ($row) => [
                 'amount' => round((float) ($row['amount'] ?? 0), 2),
-                'method' => trim((string) ($row['method'] ?? 'cash')),
+                'method' => in_array(trim((string) ($row['method'] ?? '')), $allowedMethods, true)
+                    ? trim((string) $row['method'])
+                    : 'cash',
             ])
-            ->filter(fn ($row) => $row['amount'] > 0 && $row['method'] !== '')
+            ->filter(fn ($row) => $row['amount'] > 0)
             ->values()
             ->all();
 
@@ -274,7 +283,7 @@ class PosDashboard extends Component
         }
 
         foreach ($rows as $row) {
-            Payment::create([
+            Payment::forceCreate([
                 'shop_id' => $order->shop_id,
                 'order_id' => $order->id,
                 'amount' => $row['amount'],
@@ -350,7 +359,6 @@ class PosDashboard extends Component
         $order = $result['order'];
 
         AuditLog::record('order.completed', $order);
-        app(InventoryService::class)->consumeOrder($order);
         app(PrintNodeService::class)->printOrder($order, 'receipt');
     }
 
@@ -419,7 +427,7 @@ class PosDashboard extends Component
                 $order->update(['split_group_id' => $splitGroupId]);
             }
 
-            $newOrder = Order::create([
+            $newOrder = Order::forceCreate([
                 'shop_id' => $order->shop_id,
                 'parent_order_id' => $order->id,
                 'split_group_id' => $splitGroupId,

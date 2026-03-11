@@ -18,7 +18,7 @@ class ProductDiscountTest extends TestCase
         $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
 
         // 1. Percentage Discount
-        $productPercent = Product::create([
+        $productPercent = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Latte',
@@ -31,7 +31,7 @@ class ProductDiscountTest extends TestCase
         $this->assertEquals(8.00, $productPercent->final_price);
 
         // 2. Fixed Discount
-        $productFixed = Product::create([
+        $productFixed = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Cake',
@@ -44,7 +44,7 @@ class ProductDiscountTest extends TestCase
         $this->assertEquals(8.00, $productFixed->final_price);
 
         // 3. Sale Inactive
-        $productInactive = Product::create([
+        $productInactive = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
             'name' => 'Water',

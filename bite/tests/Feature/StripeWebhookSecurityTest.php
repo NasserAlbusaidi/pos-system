@@ -18,7 +18,7 @@ class StripeWebhookSecurityTest extends TestCase
         config(['payments.stripe_webhook_secret' => $secret]);
 
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 15.00,
@@ -76,7 +76,7 @@ class StripeWebhookSecurityTest extends TestCase
         config(['payments.stripe_webhook_secret' => 'whsec_test_secret']);
 
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 15.00,
@@ -114,7 +114,7 @@ class StripeWebhookSecurityTest extends TestCase
         config(['payments.stripe_webhook_secret' => $secret]);
 
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 20.00,

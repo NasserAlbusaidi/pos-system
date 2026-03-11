@@ -43,10 +43,31 @@ class SuperAdminTest extends TestCase
         $shop = Shop::factory()->create();
         $targetUser = User::factory()->create(['shop_id' => $shop->id]);
 
-        $response = $this->actingAs($admin)->get(route('super-admin.impersonate', $targetUser->id));
+        $response = $this->actingAs($admin)->post(route('super-admin.impersonate', $targetUser->id));
 
         $response->assertRedirect(route('dashboard'));
         $this->assertEquals($targetUser->id, auth()->id());
         $this->assertEquals($admin->id, session('impersonator_id'));
+    }
+
+    public function test_cannot_impersonate_super_admin()
+    {
+        $admin = User::factory()->superAdmin()->create();
+        $otherSuperAdmin = User::factory()->superAdmin()->create();
+
+        $response = $this->actingAs($admin)->post(route('super-admin.impersonate', $otherSuperAdmin->id));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_impersonation_requires_post()
+    {
+        $admin = User::factory()->superAdmin()->create();
+        $shop = Shop::factory()->create();
+        $targetUser = User::factory()->create(['shop_id' => $shop->id]);
+
+        $response = $this->actingAs($admin)->get(route('super-admin.impersonate', $targetUser->id));
+
+        $response->assertStatus(405); // Method Not Allowed
     }
 }

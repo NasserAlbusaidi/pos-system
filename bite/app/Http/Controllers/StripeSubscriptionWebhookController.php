@@ -82,23 +82,28 @@ class StripeSubscriptionWebhookController extends Controller
         }
 
         try {
-            match ($type) {
-                'customer.subscription.created' => $this->handleSubscriptionCreated($data),
-                'customer.subscription.updated' => $this->handleSubscriptionUpdated($data),
-                'customer.subscription.deleted' => $this->handleSubscriptionDeleted($data),
-                'invoice.payment_succeeded' => $this->handleInvoicePaymentSucceeded($data),
-                'invoice.payment_failed' => $this->handleInvoicePaymentFailed($data),
-                default => null, // Ignore unhandled event types.
-            };
+            DB::transaction(function () use ($type, $data, $eventId) {
+                match ($type) {
+                    'customer.subscription.created' => $this->handleSubscriptionCreated($data),
+                    'customer.subscription.updated' => $this->handleSubscriptionUpdated($data),
+                    'customer.subscription.deleted' => $this->handleSubscriptionDeleted($data),
+                    'invoice.payment_succeeded' => $this->handleInvoicePaymentSucceeded($data),
+                    'invoice.payment_failed' => $this->handleInvoicePaymentFailed($data),
+                    default => null, // Ignore unhandled event types.
+                };
+
+                $this->markProcessed($eventId);
+            });
         } catch (\Exception $e) {
             Log::error('Stripe subscription webhook handler error', [
                 'event_type' => $type,
                 'event_id' => $eventId,
                 'error' => $e->getMessage(),
             ]);
-        }
 
-        $this->markProcessed($eventId);
+            // Return 500 so Stripe retries the event instead of marking it processed.
+            return response()->json(['error' => 'Handler failed'], 500);
+        }
 
         return response()->json(['received' => true]);
     }
@@ -200,7 +205,7 @@ class StripeSubscriptionWebhookController extends Controller
         // Update payment method info on the shop if provided.
         if (isset($invoice->payment_intent)) {
             try {
-                $stripe = new \Stripe\StripeClient(config('cashier.secret') ?: config('services.stripe.secret'));
+                $stripe = new \Stripe\StripeClient((string) config('cashier.secret'));
                 $pi = $stripe->paymentIntents->retrieve($invoice->payment_intent);
 
                 if ($pi->payment_method) {

@@ -4,6 +4,7 @@ namespace App\Livewire\SuperAdmin\Shops;
 
 use App\Models\Shop;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -11,6 +12,13 @@ use Livewire\Component;
 class Manage extends Component
 {
     public ?Shop $shop = null;
+
+    public function boot()
+    {
+        if (! Auth::user()?->is_super_admin) {
+            abort(403, 'Unauthorized. Super Admin access required.');
+        }
+    }
 
     public $name = '';
 
@@ -71,7 +79,7 @@ class Manage extends Component
             $shop->save();
 
             // Create Owner
-            User::create([
+            User::forceCreate([
                 'shop_id' => $shop->id,
                 'name' => $this->ownerName,
                 'email' => $this->ownerEmail,

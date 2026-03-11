@@ -14,7 +14,7 @@ new class extends Component
 
 <div class="relative z-20 shrink-0">
     <div class="border-b border-line/60 bg-ink text-panel md:hidden">
-        <div class="flex items-center justify-between px-4 py-3">
+        <div class="flex items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3">
             <div class="flex items-center gap-3">
                 <div class="flex h-8 w-8 items-center justify-center rounded-lg border border-panel/15 bg-panel/10">
                     <span class="font-display text-lg font-black text-panel">B</span>
@@ -30,8 +30,8 @@ new class extends Component
             </button>
         </div>
 
-        <nav class="overflow-x-auto border-t border-panel/10 px-3 py-3">
-            <div class="flex min-w-max items-center gap-2">
+        <nav class="overflow-x-auto border-t border-panel/10 px-3 py-2.5">
+            <div class="flex min-w-max items-center gap-1.5 pr-3">
                 <a href="{{ route('dashboard') }}" wire:navigate class="tag {{ request()->routeIs('dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Dashboard</a>
                 <a href="{{ route('pos.dashboard') }}" wire:navigate class="tag {{ request()->routeIs('pos.dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">POS</a>
                 <a href="{{ route('kds.view') }}" wire:navigate class="tag {{ request()->routeIs('kds.view') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Kitchen</a>
@@ -83,9 +83,6 @@ new class extends Component
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.shift-report')" :active="request()->routeIs('admin.shift-report')" icon="dashboard">
                     Shift Report
-                </x-admin-nav-link>
-                <x-admin-nav-link :href="route('admin.inventory')" :active="request()->routeIs('admin.inventory')" icon="dashboard">
-                    Inventory
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.audit-logs')" :active="request()->routeIs('admin.audit-logs')" icon="dashboard">
                     Audit Logs

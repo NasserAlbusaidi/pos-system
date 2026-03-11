@@ -16,7 +16,7 @@ class OrderExpiryTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
 
         // 1. Create an order that expired 1 minute ago
-        $expiredOrder = Order::create([
+        $expiredOrder = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 10.00,
@@ -24,7 +24,7 @@ class OrderExpiryTest extends TestCase
         ]);
 
         // 2. Create a fresh order
-        $activeOrder = Order::create([
+        $activeOrder = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 10.00,

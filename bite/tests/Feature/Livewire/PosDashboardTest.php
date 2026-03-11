@@ -19,14 +19,14 @@ class PosDashboardTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 10.00,
         ]);
 
         $otherShop = Shop::create(['name' => 'Other', 'slug' => 'other']);
-        $otherOrder = Order::create([
+        $otherOrder = Order::forceCreate([
             'shop_id' => $otherShop->id,
             'status' => 'unpaid',
             'total_amount' => 5.00,
@@ -43,7 +43,7 @@ class PosDashboardTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'unpaid',
             'total_amount' => 10.00,
@@ -67,7 +67,7 @@ class PosDashboardTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'ready',
             'total_amount' => 10.00,

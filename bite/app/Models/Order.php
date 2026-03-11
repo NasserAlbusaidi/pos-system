@@ -10,10 +10,14 @@ class Order extends Model
 {
     use HasFactory;
 
+    /**
+     * shop_id must be set explicitly (via forceCreate) to prevent tenant isolation bypass.
+     * All other fields are safe for internal mass-assignment since orders are
+     * never created from raw user input.
+     */
     protected $fillable = [
         'parent_order_id',
         'split_group_id',
-        'shop_id',
         'customer_name',
         'loyalty_phone',
         'status',
@@ -25,6 +29,11 @@ class Order extends Model
         'fulfilled_at',
         'paid_at',
         'expires_at',
+    ];
+
+    protected $guarded = [
+        'id',
+        'shop_id',
     ];
 
     protected static function booted(): void

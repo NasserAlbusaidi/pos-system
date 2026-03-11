@@ -47,16 +47,6 @@ class Shop extends Model
         return $this->hasMany(ModifierGroup::class);
     }
 
-    public function ingredients()
-    {
-        return $this->hasMany(Ingredient::class);
-    }
-
-    public function suppliers()
-    {
-        return $this->hasMany(Supplier::class);
-    }
-
     public function users()
     {
         return $this->hasMany(User::class);

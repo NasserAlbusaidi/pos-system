@@ -101,9 +101,9 @@
                                         <div class="text-right">
                                             @if($product->is_on_sale)
                                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through">{{ formatPrice($product->price, $shop) }}</p>
-                                                <p class="font-display text-2xl font-extrabold leading-none text-crema">{{ formatPrice($product->final_price, $shop) }}</p>
+                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema">{{ formatPrice($product->final_price, $shop) }}</p>
                                             @else
-                                                <p class="font-display text-2xl font-extrabold leading-none text-ink">{{ formatPrice($product->price, $shop) }}</p>
+                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-ink">{{ formatPrice($product->price, $shop) }}</p>
                                             @endif
                                         </div>
                                     </div>
@@ -135,9 +135,9 @@
                 <button wire:click="toggleReview" class="surface-card flex w-full items-center justify-between gap-3 border-ink bg-ink px-5 py-4 text-panel transition-transform duration-200 hover:-translate-y-0.5">
                     <div class="flex items-center gap-3">
                         <span class="inline-flex items-center rounded-full border border-panel/20 bg-panel/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/90">{{ __('guest.ready') }}</span>
-                        <span class="font-display text-2xl font-bold leading-none">{{ __('guest.review_order') }}</span>
+                        <span class="font-display text-base font-bold leading-none sm:text-2xl">{{ __('guest.review_order') }}</span>
                     </div>
-                    <span class="font-display text-3xl font-extrabold leading-none">{{ formatPrice($this->total, $shop) }}</span>
+                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl">{{ formatPrice($this->total, $shop) }}</span>
                 </button>
             </div>
         </div>
@@ -145,18 +145,18 @@
 
     @if($showReviewModal)
         <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-            <div class="surface-card h-full w-full max-w-2xl overflow-hidden sm:h-auto sm:max-h-[90vh]">
+            <div class="surface-card flex h-full w-full max-w-2xl flex-col overflow-hidden sm:h-auto sm:max-h-[90vh] sm:rounded-xl">
                 <div class="border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
                     <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ __('guest.your_order') }}</h3>
                     <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.review_before_sending') }}</p>
                 </div>
 
-                <div class="flex-1 space-y-6 overflow-y-auto p-6 sm:p-8">
+                <div class="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-8">
                     <section class="space-y-3">
                         <p class="section-headline">{{ __('guest.items') }}</p>
                         <div class="divide-y divide-line rounded-xl border border-line bg-panel">
                             @foreach($cart as $key => $item)
-                                <div class="flex items-start justify-between gap-3 px-4 py-3">
+                                <div class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4">
                                     <div class="flex items-start gap-3">
                                         <div class="flex items-center gap-1">
                                             <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
@@ -181,7 +181,7 @@
                         </div>
                     </section>
 
-                    <section class="grid grid-cols-3 gap-3">
+                    <section class="grid grid-cols-3 gap-2 sm:gap-3">
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.subtotal') }}</p>
                             <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->subtotal, $shop) }}</p>
@@ -207,7 +207,7 @@
                     </section>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-6 sm:p-8">
+                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-4 sm:p-8">
                     <button wire:click="toggleReview" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
                     <button x-on:click="$dispatch('confirm-action', {
                                 title: '{{ __('guest.place_order') }}',
@@ -255,7 +255,7 @@
 
     @if($showModifierModal && $customizingProduct)
         <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-            <div class="surface-card w-full max-w-xl overflow-hidden border-t sm:border">
+            <div class="surface-card flex w-full max-w-xl flex-col overflow-hidden border-t sm:border sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
                     <div>
                         <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->name }}</h3>
@@ -305,7 +305,7 @@
                     @endforeach
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-6 sm:p-8">
+                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-4 sm:p-8">
                     <button wire:click="$set('showModifierModal', false)" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
                     <button wire:click="addToCart({{ $customizingProduct->id }})"
                             wire:loading.attr="disabled"

@@ -329,7 +329,7 @@ class GuestMenu extends Component
             return;
         }
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $this->shop->id,
             'status' => 'unpaid',
             'loyalty_phone' => $loyaltyPhone,

@@ -1,8 +1,8 @@
 <div class="space-y-6 fade-rise">
     <x-slot:header>Product Catalog</x-slot:header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-1">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div class="md:col-span-1">
             <div class="surface-card p-5 sm:p-6">
                 <div class="space-y-6">
                     <h2 class="font-display text-xl font-extrabold leading-none text-ink">
@@ -77,16 +77,16 @@
             </div>
         </div>
 
-        <div class="lg:col-span-2 space-y-6">
+        <div class="md:col-span-2 space-y-6">
             <div class="surface-card">
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h3 class="font-display text-xl font-extrabold leading-none">Current Inventory</h3>
+                    <h3 class="font-display text-xl font-extrabold leading-none">Current Products</h3>
                 </div>
 
                 <div class="divide-y divide-line/65">
                     @foreach(\App\Models\Product::where('shop_id', Auth::user()->shop_id)->get() as $product)
                         <div class="flex items-center justify-between px-5 py-4 transition-colors hover:bg-muted/35 group">
-                            <div class="flex items-center space-x-6">
+                            <div class="flex items-center space-x-3 sm:space-x-6">
                                 @if($product->image_url)
                                     <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-line">
                                 @else
@@ -97,10 +97,9 @@
                                     <div class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $product->category->name }}</div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-12">
+                            <div class="flex items-center gap-3 sm:gap-6 md:gap-12">
                                 <div class="font-mono text-sm font-bold">{{ formatPrice($product->price, $shop) }}</div>
-                                <button wire:click="editProduct({{ $product->id }})" class="opacity-0 group-hover:opacity-100 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema hover:text-crema transition-opacity">Edit</button>
-                                <button wire:click="openRecipe({{ $product->id }})" class="opacity-0 group-hover:opacity-100 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-opacity">Recipe</button>
+                                <button wire:click="editProduct({{ $product->id }})" class="sm:opacity-0 sm:group-hover:opacity-100 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema hover:text-crema transition-opacity">Edit</button>
                             </div>
                         </div>
                     @endforeach
@@ -108,39 +107,4 @@
             </div>
         </div>
     </div>
-
-    @if($recipeProductId)
-        <div class="fixed inset-0 z-[120] flex items-center justify-center bg-ink/75 backdrop-blur-sm p-6">
-            <div class="surface-card w-full max-w-xl">
-                <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-                    <div>
-                        <h3 class="font-display text-xl font-extrabold leading-none text-ink">Recipe Builder</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Set ingredient quantities per item</p>
-                    </div>
-                    <button wire:click="closeRecipe" class="text-ink hover:text-crema transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-
-                <div class="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
-                    @forelse($ingredients as $ingredient)
-                        <div class="flex items-center justify-between rounded-lg border border-line bg-panel px-4 py-3">
-                            <div>
-                                <div class="font-mono text-xs uppercase tracking-widest">{{ $ingredient->name }}</div>
-                                <div class="font-mono text-[9px] uppercase opacity-40">Unit: {{ $ingredient->unit }}</div>
-                            </div>
-                            <input type="number" step="0.01" min="0" wire:model.lazy="recipeIngredients.{{ $ingredient->id }}" class="field w-24 text-center font-mono text-xs" placeholder="0">
-                        </div>
-                    @empty
-                        <div class="text-center font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">Add ingredients first.</div>
-                    @endforelse
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-5">
-                    <button wire:click="closeRecipe" class="btn-secondary w-full">Cancel</button>
-                    <button wire:click="saveRecipe" class="btn-primary w-full">Save Recipe</button>
-                </div>
-            </div>
-        </div>
-    @endif
 </div>

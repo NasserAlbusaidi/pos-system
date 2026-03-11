@@ -32,7 +32,7 @@ class ShopProvisioningService
             $shop->status = 'trial';
             $shop->save();
 
-            return User::create([
+            return User::forceCreate([
                 'shop_id' => $shop->id,
                 'name' => $name,
                 'email' => $email,

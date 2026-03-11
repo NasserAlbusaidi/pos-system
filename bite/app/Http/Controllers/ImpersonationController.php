@@ -17,9 +17,12 @@ class ImpersonationController extends Controller
         }
 
         $user = User::findOrFail($userId);
-        $impersonatorId = Auth::id();
 
-        Session::put('impersonator_id', $impersonatorId);
+        if ($user->is_super_admin) {
+            abort(403, 'Cannot impersonate other super admins.');
+        }
+
+        $impersonatorId = Auth::id();
 
         AuditLog::create([
             'shop_id' => $user->shop_id,
@@ -36,6 +39,8 @@ class ImpersonationController extends Controller
         ]);
 
         Auth::login($user);
+        $request->session()->regenerate();
+        Session::put('impersonator_id', $impersonatorId);
 
         return redirect()->route('dashboard');
     }

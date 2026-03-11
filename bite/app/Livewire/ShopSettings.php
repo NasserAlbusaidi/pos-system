@@ -81,15 +81,35 @@ class ShopSettings extends Component
     protected function normalizeHex(string $value, string $fallback): string
     {
         $hex = ltrim($value, '#');
-        if (strlen($hex) === 3) {
+        if (strlen($hex) === 3 && preg_match('/^[A-Fa-f0-9]{3}$/', $hex)) {
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
         }
 
-        if (strlen($hex) !== 6) {
+        if (! preg_match('/^[A-Fa-f0-9]{6}$/', $hex)) {
             $hex = ltrim($fallback, '#');
         }
 
         return '#'.strtolower($hex);
+    }
+
+    /**
+     * Sanitize color properties on every client-side update to prevent CSS injection.
+     * Livewire public properties can be set by the client via wire protocol,
+     * so we ensure they always contain valid hex colors before render.
+     */
+    public function updatedPaper($value)
+    {
+        $this->paper = $this->normalizeHex((string) $value, '#FDFCF8');
+    }
+
+    public function updatedInk($value)
+    {
+        $this->ink = $this->normalizeHex((string) $value, '#1A1918');
+    }
+
+    public function updatedAccent($value)
+    {
+        $this->accent = $this->normalizeHex((string) $value, '#CC5500');
     }
 
     public function save()
@@ -105,7 +125,7 @@ class ShopSettings extends Component
             'currency_decimals' => 'required|integer|in:0,2,3',
             'receipt_header' => 'nullable|string|max:500',
             'language' => 'required|in:en,ar',
-            'whatsapp_number' => 'nullable|string|max:20',
+            'whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]*$/'],
             'whatsapp_notifications_enabled' => 'boolean',
         ]);
 
@@ -145,7 +165,7 @@ class ShopSettings extends Component
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email',
-            'staffRole' => 'required|in:manager,cashier,kitchen',
+            'staffRole' => 'required|in:manager,cashier,kitchen,server',
             'staffPin' => 'nullable|digits:4',
         ]);
 
@@ -164,7 +184,7 @@ class ShopSettings extends Component
             return;
         }
 
-        User::create([
+        User::forceCreate([
             'shop_id' => $shop->id,
             'name' => $this->staffName,
             'email' => $this->staffEmail,
@@ -197,7 +217,7 @@ class ShopSettings extends Component
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email,'.$user->id,
-            'staffRole' => 'required|in:manager,cashier,kitchen',
+            'staffRole' => 'required|in:manager,cashier,kitchen,server',
             'staffPin' => 'nullable|digits:4',
         ]);
 

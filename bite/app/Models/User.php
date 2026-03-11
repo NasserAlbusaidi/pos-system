@@ -21,6 +21,15 @@ class User extends Authenticatable
         'email',
         'password',
         'pin_code',
+    ];
+
+    /**
+     * Attributes guarded from mass assignment.
+     * role and shop_id must be set explicitly to prevent privilege escalation.
+     */
+    protected $guarded = [
+        'id',
+        'is_super_admin',
         'role',
         'shop_id',
     ];

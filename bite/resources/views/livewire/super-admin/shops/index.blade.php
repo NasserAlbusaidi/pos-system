@@ -37,11 +37,12 @@
                         <td class="p-4 font-mono text-xs text-ink/40">{{ $shop->created_at->format('Y-m-d') }}</td>
                         <td class="p-4 text-right space-x-4">
                             @if($shop->status === 'active')
-                                <a href="{{ route('super-admin.impersonate', $shop->users()->first()->id ?? 0) }}" 
-                                   class="text-[10px] font-mono underline hover:text-crema uppercase"
-                                   onclick="return confirm('Access Shop Admin for {{ $shop->name }}?')">
-                                    [ Login As Owner ]
-                                </a>
+                                <form action="{{ route('super-admin.impersonate', $shop->users()->first()->id ?? 0) }}" method="POST" class="inline" onsubmit="return confirm({{ Js::from('Access Shop Admin for ' . $shop->name . '?') }})">
+                                    @csrf
+                                    <button type="submit" class="text-[10px] font-mono underline hover:text-crema uppercase cursor-pointer">
+                                        [ Login As Owner ]
+                                    </button>
+                                </form>
                             @endif
                             <a href="{{ route('super-admin.shops.edit', $shop) }}" class="text-[10px] font-mono underline hover:text-crema uppercase">
                                 Manage

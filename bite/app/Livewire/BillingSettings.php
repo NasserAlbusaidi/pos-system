@@ -24,6 +24,14 @@ class BillingSettings extends Component
      */
     public function subscribe(string $plan)
     {
+        // Validate plan key against known plans to prevent config key probing.
+        $allowedPlans = array_keys(config('billing.plans', []));
+        if (! in_array($plan, $allowedPlans, true)) {
+            $this->dispatch('toast', message: 'Invalid plan selected.', variant: 'error');
+
+            return;
+        }
+
         $shop = Auth::user()->shop;
         $planConfig = config("billing.plans.{$plan}");
 

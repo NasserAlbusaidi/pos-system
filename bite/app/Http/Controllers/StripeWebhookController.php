@@ -99,7 +99,7 @@ class StripeWebhookController extends Controller
                     return;
                 }
 
-                Payment::create([
+                Payment::forceCreate([
                     'shop_id' => $order->shop_id,
                     'order_id' => $order->id,
                     'amount' => $amount,

@@ -4,7 +4,6 @@ namespace Tests\Feature\Livewire;
 
 use App\Livewire\PosDashboard;
 use App\Models\Category;
-use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -19,14 +18,14 @@ class OrderCleanupIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_clear_old_orders_completes_stale_ready_orders_with_inventory_once(): void
+    public function test_clear_old_orders_completes_stale_ready_orders_once(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $manager = User::factory()->create(['shop_id' => $shop->id, 'role' => 'manager']);
 
-        [$product, $ingredient] = $this->makeProductWithIngredient($shop->id, 10, 2);
+        $product = $this->makeProduct($shop->id);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'ready',
             'total_amount' => 8,
@@ -50,11 +49,9 @@ class OrderCleanupIntegrityTest extends TestCase
             ->call('clearOldOrders');
 
         $order->refresh();
-        $ingredient->refresh();
 
         $this->assertSame('completed', $order->status);
         $this->assertNotNull($order->fulfilled_at);
-        $this->assertEquals(8.0, (float) $ingredient->stock_quantity);
     }
 
     public function test_system_reset_completes_ready_orders_and_sets_fulfilled_at(): void
@@ -62,9 +59,9 @@ class OrderCleanupIntegrityTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $manager = User::factory()->create(['shop_id' => $shop->id, 'role' => 'manager']);
 
-        [$product, $ingredient] = $this->makeProductWithIngredient($shop->id, 10, 1.5);
+        $product = $this->makeProduct($shop->id);
 
-        $order = Order::create([
+        $order = Order::forceCreate([
             'shop_id' => $shop->id,
             'status' => 'ready',
             'total_amount' => 10,
@@ -85,37 +82,25 @@ class OrderCleanupIntegrityTest extends TestCase
             ->call('systemReset');
 
         $order->refresh();
-        $ingredient->refresh();
 
         $this->assertSame('completed', $order->status);
         $this->assertNotNull($order->fulfilled_at);
-        $this->assertEquals(7.0, (float) $ingredient->stock_quantity);
     }
 
-    protected function makeProductWithIngredient(int $shopId, float $stockQty, float $pivotQty): array
+    protected function makeProduct(int $shopId): Product
     {
         $category = Category::create([
             'shop_id' => $shopId,
             'name' => 'Coffee',
         ]);
 
-        $product = Product::create([
+        $product = Product::forceCreate([
             'shop_id' => $shopId,
             'category_id' => $category->id,
             'name' => 'Latte',
             'price' => 5,
         ]);
 
-        $ingredient = Ingredient::create([
-            'shop_id' => $shopId,
-            'name' => 'Milk',
-            'unit' => 'ml',
-            'stock_quantity' => $stockQty,
-            'reorder_threshold' => 1,
-        ]);
-
-        $product->ingredients()->attach($ingredient->id, ['quantity' => $pivotQty]);
-
-        return [$product, $ingredient];
+        return $product;
     }
 }
