@@ -22,11 +22,11 @@ class FulfillmentIdempotencyTest extends TestCase
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $server = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
 
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 5.00,
         ]);
 
@@ -41,7 +41,7 @@ class FulfillmentIdempotencyTest extends TestCase
         OrderItem::create([
             'order_id' => $order->id,
             'product_id' => $product->id,
-            'product_name_snapshot' => 'Latte',
+            'product_name_snapshot_en' => 'Latte',
             'price_snapshot' => 5.00,
             'quantity' => 2,
         ]);

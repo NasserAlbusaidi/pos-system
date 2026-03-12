@@ -22,14 +22,14 @@ class ProductManagerTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(ProductManager::class)
-            ->set('name', 'Latte')
+            ->set('name_en', 'Latte')
             ->set('price', 4.50)
             ->set('category_id', $category->id)
             ->call('save')
-            ->assertSet('name', null); // Resets after save
+            ->assertSet('name_en', null); // Resets after save
 
         $this->assertDatabaseHas('products', [
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.50,
             'shop_id' => $shop->id,
         ]);

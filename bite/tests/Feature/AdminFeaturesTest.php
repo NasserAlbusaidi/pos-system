@@ -19,8 +19,8 @@ class AdminFeaturesTest extends TestCase
     {
         $shop = Shop::factory()->create();
         $user = User::factory()->create(['shop_id' => $shop->id]);
-        $category1 = Category::factory()->create(['shop_id' => $shop->id, 'name' => 'Cat 1', 'sort_order' => 1]);
-        $category2 = Category::factory()->create(['shop_id' => $shop->id, 'name' => 'Cat 2', 'sort_order' => 2]);
+        $category1 = Category::factory()->create(['shop_id' => $shop->id, 'name_en' => 'Cat 1', 'sort_order' => 1]);
+        $category2 = Category::factory()->create(['shop_id' => $shop->id, 'name_en' => 'Cat 2', 'sort_order' => 2]);
         $product = Product::factory()->create(['shop_id' => $shop->id, 'category_id' => $category1->id]);
 
         $items = [

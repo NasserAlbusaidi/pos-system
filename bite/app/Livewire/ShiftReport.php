@@ -68,11 +68,11 @@ class ShiftReport extends Component
                 ->whereDate('paid_at', $date);
         })
             ->select(
-                'product_name_snapshot',
+                'product_name_snapshot_en',
                 DB::raw('sum(quantity) as qty'),
                 DB::raw('sum(price_snapshot * quantity) as revenue')
             )
-            ->groupBy('product_name_snapshot')
+            ->groupBy('product_name_snapshot_en')
             ->orderByDesc('qty')
             ->limit(5)
             ->get();

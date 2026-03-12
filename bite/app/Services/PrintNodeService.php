@@ -53,10 +53,10 @@ class PrintNodeService
         $order->loadMissing('items.modifiers', 'shop');
 
         foreach ($order->items as $item) {
-            $lines[] = $item->quantity.'x '.$item->product_name_snapshot;
+            $lines[] = $item->quantity.'x '.$item->product_name_snapshot_en;
             if ($item->modifiers->isNotEmpty()) {
                 foreach ($item->modifiers as $modifier) {
-                    $lines[] = '  + '.$modifier->modifier_option_name_snapshot;
+                    $lines[] = '  + '.$modifier->modifier_option_name_snapshot_en;
                 }
             }
         }

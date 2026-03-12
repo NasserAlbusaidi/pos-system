@@ -10,7 +10,7 @@ class CategoryFactory extends Factory
     {
         return [
             'shop_id' => \App\Models\Shop::factory(),
-            'name' => fake()->word(),
+            'name_en' => fake()->word(),
             'sort_order' => fake()->numberBetween(1, 10),
             'is_active' => true,
         ];

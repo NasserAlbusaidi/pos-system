@@ -197,7 +197,7 @@ class GuestMenu extends Component
                 $count = count($selected);
 
                 if ($group->min_selection > 0 && $count < $group->min_selection) {
-                    $this->modifierError = __('guest.select_at_least', ['count' => $group->min_selection, 'group' => $group->name]);
+                    $this->modifierError = __('guest.select_at_least', ['count' => $group->min_selection, 'group' => $group->translated('name')]);
                     $this->showModifierModal = true;
 
                     return;
@@ -216,7 +216,7 @@ class GuestMenu extends Component
         if (! empty($modifierIds)) {
             $modifierOptions = ModifierOption::whereIn('id', $modifierIds)->get();
             $displayPrice += $modifierOptions->sum('price_adjustment');
-            $modifierNames = $modifierOptions->pluck('name')->all();
+            $modifierNames = $modifierOptions->map(fn ($o) => $o->translated('name'))->all();
         }
 
         if (isset($this->cart[$itemKey])) {
@@ -224,7 +224,7 @@ class GuestMenu extends Component
         } else {
             $this->cart[$itemKey] = [
                 'id' => $product->id,
-                'name' => $product->name,
+                'name' => $product->translated('name'),
                 'price' => $displayPrice,
                 'quantity' => 1,
                 'selectedModifiers' => $modifierIds,
@@ -302,7 +302,8 @@ class GuestMenu extends Component
                 foreach ($modifierOptions as $opt) {
                     $itemPrice += $opt->price_adjustment;
                     $modifiersData[] = [
-                        'name' => $opt->name,
+                        'name_en' => $opt->name_en,
+                        'name_ar' => $opt->name_ar,
                         'price' => $opt->price_adjustment,
                     ];
                 }
@@ -318,7 +319,8 @@ class GuestMenu extends Component
 
             $orderItems[] = [
                 'product_id' => $product->id,
-                'product_name_snapshot' => $product->name,
+                'product_name_snapshot_en' => $product->name_en,
+                'product_name_snapshot_ar' => $product->name_ar,
                 'price_snapshot' => $itemPrice,
                 'quantity' => $quantity,
                 'modifiers' => $modifiersData,
@@ -344,7 +346,8 @@ class GuestMenu extends Component
             $orderItem = OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
-                'product_name_snapshot' => $item['product_name_snapshot'],
+                'product_name_snapshot_en' => $item['product_name_snapshot_en'],
+                'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
                 'price_snapshot' => $item['price_snapshot'],
                 'quantity' => $item['quantity'],
             ]);
@@ -352,7 +355,8 @@ class GuestMenu extends Component
             foreach ($item['modifiers'] as $mod) {
                 OrderItemModifier::create([
                     'order_item_id' => $orderItem->id,
-                    'modifier_option_name_snapshot' => $mod['name'],
+                    'modifier_option_name_snapshot_en' => $mod['name_en'],
+                    'modifier_option_name_snapshot_ar' => $mod['name_ar'],
                     'price_adjustment_snapshot' => $mod['price'],
                 ]);
             }
@@ -433,7 +437,7 @@ class GuestMenu extends Component
             if (! empty($validModifierIds)) {
                 $modifierOptions = \App\Models\ModifierOption::whereIn('id', $validModifierIds)->get();
                 $displayPrice += $modifierOptions->sum('price_adjustment');
-                $modifierNames = $modifierOptions->pluck('name')->all();
+                $modifierNames = $modifierOptions->map(fn ($o) => $o->translated('name'))->all();
             }
 
             $modifierKey = ! empty($validModifierIds)
@@ -449,7 +453,7 @@ class GuestMenu extends Component
 
             $newCart[$itemKey] = [
                 'id' => $product->id,
-                'name' => $product->name,
+                'name' => $product->translated('name'),
                 'price' => $displayPrice,
                 'quantity' => $quantity,
                 'selectedModifiers' => $validModifierIds,

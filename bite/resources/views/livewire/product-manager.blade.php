@@ -11,8 +11,23 @@
 
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="space-y-2">
-                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Product Name</label>
-                            <input type="text" wire:model="name" class="field" placeholder="Latte">
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Name (English)</label>
+                            <input type="text" wire:model="name_en" class="field" placeholder="Latte">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Name (Arabic)</label>
+                            <input type="text" wire:model="name_ar" class="field" placeholder="لاتيه" dir="rtl">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Description (English)</label>
+                            <input type="text" wire:model="description_en" class="field" placeholder="Espresso with smooth steamed milk">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Description (Arabic)</label>
+                            <input type="text" wire:model="description_ar" class="field" placeholder="إسبريسو مع حليب مبخر" dir="rtl">
                         </div>
 
                         <div class="space-y-2">
@@ -45,7 +60,7 @@
                             <select wire:model="category_id" class="field">
                                 <option value="">-- None --</option>
                                 @foreach(\App\Models\Category::where('shop_id', Auth::user()->shop_id)->get() as $cat)
-                                    <option value="{{ $cat->id }}">{{ strtoupper($cat->name) }}</option>
+                                    <option value="{{ $cat->id }}">{{ strtoupper($cat->name_en) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -57,7 +72,7 @@
                                 @foreach(\App\Models\ModifierGroup::where('shop_id', Auth::user()->shop_id)->get() as $group)
                                     <label class="flex items-center gap-3 rounded-lg border border-line bg-panel px-3 py-3 cursor-pointer transition-colors hover:border-ink-soft has-[:checked]:border-crema has-[:checked]:bg-crema/5">
                                         <input type="checkbox" wire:model="selectedModifierGroups" value="{{ $group->id }}" class="text-crema focus:ring-0 border-ink">
-                                        <span class="font-mono text-[10px] uppercase font-bold">{{ $group->name }}</span>
+                                        <span class="font-mono text-[10px] uppercase font-bold">{{ $group->name_en }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -93,8 +108,8 @@
                                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-ink-soft">{{ $loop->iteration }}</div>
                                 @endif
                                 <div>
-                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name }}</div>
-                                    <div class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $product->category->name }}</div>
+                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name_en }}</div>
+                                    <div class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $product->category->name_en }}</div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 sm:gap-6 md:gap-12">

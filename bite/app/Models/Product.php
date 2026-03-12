@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
         'category_id',
-        'name',
-        'description',
+        'name_en',
+        'name_ar',
+        'description_en',
+        'description_ar',
         'price',
         'tax_rate',
         'discount_value',

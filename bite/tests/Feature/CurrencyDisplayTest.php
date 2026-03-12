@@ -23,11 +23,11 @@ class CurrencyDisplayTest extends TestCase
             'currency_symbol' => 'OMR',
             'currency_decimals' => 3,
         ]);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Drinks']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Drinks']);
         Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Karak',
+            'name_en' => 'Karak',
             'price' => 0.50,
         ]);
 
@@ -45,11 +45,11 @@ class CurrencyDisplayTest extends TestCase
             'currency_symbol' => "\xD8\xB1.\xD8\xB9.",
             'currency_decimals' => 3,
         ]);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Drinks']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Drinks']);
         Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Karak',
+            'name_en' => 'Karak',
             'price' => 0.50,
         ]);
 

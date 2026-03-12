@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             'currency_symbol' => 'ر.ع.',
             'currency_decimals' => 3,
             'tax_rate' => 0,
+            'trial_ends_at' => now()->addYears(10),
             'branding' => [
                 'accent' => '#cc5500',
                 'paper' => '#fdfcf8',

@@ -10,9 +10,15 @@
 
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="space-y-2">
-                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Group Name</label>
-                            <input type="text" wire:model="name" class="w-full field transition-all" placeholder="e.g. Milk Choice">
-                            @error('name') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Group Name (English)</label>
+                            <input type="text" wire:model="name_en" class="w-full field transition-all" placeholder="e.g. Milk Choice">
+                            @error('name_en') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Group Name (Arabic)</label>
+                            <input type="text" wire:model="name_ar" class="w-full field transition-all" placeholder="مثال: نوع الحليب" dir="rtl">
+                            @error('name_ar') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="grid grid-cols-2 gap-6">
@@ -39,9 +45,15 @@
 
                         <form wire:submit.prevent="addOption" class="space-y-6">
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Option Name</label>
-                                <input type="text" wire:model="optionName" class="w-full field transition-all" placeholder="e.g. Oat Milk">
-                                @error('optionName') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Option Name (English)</label>
+                                <input type="text" wire:model="optionNameEn" class="w-full field transition-all" placeholder="e.g. Oat Milk">
+                                @error('optionNameEn') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Option Name (Arabic)</label>
+                                <input type="text" wire:model="optionNameAr" class="w-full field transition-all" placeholder="مثال: حليب الشوفان" dir="rtl">
+                                @error('optionNameAr') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="space-y-2">
@@ -75,7 +87,7 @@
                                 <div class="flex items-center space-x-6">
                                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-ink text-panel font-mono text-xs font-bold">{{ $loop->iteration }}</div>
                                     <div>
-                                        <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $group->name }}</div>
+                                        <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $group->name_en }}</div>
                                         <div class="mt-0.5 font-mono text-[10px] text-ink-soft">Rule: Select {{ $group->min_selection }}-{{ $group->max_selection }}</div>
                                     </div>
                                 </div>
@@ -91,7 +103,7 @@
                                 <div class="pl-16 grid grid-cols-2 md:grid-cols-3 gap-4 pb-4">
                                     @foreach($group->options as $option)
                                         <div class="rounded-lg border border-line bg-panel px-3 py-2.5 flex justify-between items-center">
-                                            <span class="text-[11px] font-semibold uppercase tracking-tight text-ink truncate">{{ $option->name }}</span>
+                                            <span class="text-[11px] font-semibold uppercase tracking-tight text-ink truncate">{{ $option->name_en }}</span>
                                             <span class="font-mono text-[10px] font-semibold text-crema">+{{ formatPrice($option->price_adjustment, $shop) }}</span>
                                         </div>
                                     @endforeach

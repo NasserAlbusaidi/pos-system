@@ -21,7 +21,13 @@ class ProductManager extends Component
 
     public $currentImageUrl = null;
 
-    public $name;
+    public $name_en;
+
+    public $name_ar;
+
+    public $description_en;
+
+    public $description_ar;
 
     public $price;
 
@@ -47,7 +53,10 @@ class ProductManager extends Component
         $shopId = Auth::user()->shop_id;
 
         return [
-            'name' => 'required|string|min:3',
+            'name_en' => 'required|string|min:3',
+            'name_ar' => 'nullable|string|min:3',
+            'description_en' => 'nullable|string',
+            'description_ar' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'category_id' => [
@@ -68,7 +77,10 @@ class ProductManager extends Component
 
         $this->editingProductId = $product->id;
         $this->currentImageUrl = $product->image_url;
-        $this->name = $product->name;
+        $this->name_en = $product->name_en;
+        $this->name_ar = $product->name_ar;
+        $this->description_en = $product->description_en;
+        $this->description_ar = $product->description_ar;
         $this->price = $product->price;
         $this->tax_rate = $product->tax_rate;
         $this->category_id = $product->category_id;
@@ -78,7 +90,7 @@ class ProductManager extends Component
 
     public function cancelEdit()
     {
-        $this->reset(['editingProductId', 'currentImageUrl', 'name', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
+        $this->reset(['editingProductId', 'currentImageUrl', 'name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
     }
 
     public function save()
@@ -110,7 +122,10 @@ class ProductManager extends Component
 
             $product->update([
                 'category_id' => $this->category_id,
-                'name' => $this->name,
+                'name_en' => $this->name_en,
+                'name_ar' => $this->name_ar,
+                'description_en' => $this->description_en,
+                'description_ar' => $this->description_ar,
                 'price' => $this->price,
                 'tax_rate' => $this->tax_rate,
                 'image_url' => $imageUrl,
@@ -118,7 +133,7 @@ class ProductManager extends Component
 
             $product->modifierGroups()->sync($this->selectedModifierGroups ?? []);
 
-            $this->reset(['editingProductId', 'currentImageUrl', 'name', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
+            $this->reset(['editingProductId', 'currentImageUrl', 'name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
             session()->flash('message', 'Product updated successfully.');
 
             return;
@@ -132,7 +147,10 @@ class ProductManager extends Component
         $product = Product::forceCreate([
             'shop_id' => Auth::user()->shop_id,
             'category_id' => $this->category_id,
-            'name' => $this->name,
+            'name_en' => $this->name_en,
+            'name_ar' => $this->name_ar,
+            'description_en' => $this->description_en,
+            'description_ar' => $this->description_ar,
             'price' => $this->price,
             'tax_rate' => $this->tax_rate,
             'image_url' => $imageUrl,
@@ -140,7 +158,7 @@ class ProductManager extends Component
 
         $product->modifierGroups()->sync($this->selectedModifierGroups ?? []);
 
-        $this->reset(['name', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
+        $this->reset(['name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
         session()->flash('message', 'Product added successfully.');
     }
 

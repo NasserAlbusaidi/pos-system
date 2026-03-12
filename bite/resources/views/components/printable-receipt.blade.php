@@ -49,13 +49,13 @@
         @foreach($order->items as $item)
             <div class="receipt-item">
                 <div class="receipt-row">
-                    <span class="receipt-item-name">{{ $item->quantity }}x {{ $item->product_name_snapshot }}</span>
+                    <span class="receipt-item-name">{{ $item->quantity }}x {{ $item->product_name_snapshot_en }}</span>
                     <span class="receipt-item-price">{{ formatPrice($item->price_snapshot * $item->quantity, $shop) }}</span>
                 </div>
                 @if($item->modifiers->isNotEmpty())
                     @foreach($item->modifiers as $modifier)
                         <div class="receipt-modifier">
-                            <span>+ {{ $modifier->modifier_option_name_snapshot }}</span>
+                            <span>+ {{ $modifier->modifier_option_name_snapshot_en }}</span>
                             @if($modifier->price_adjustment_snapshot > 0)
                                 <span>{{ formatPrice($modifier->price_adjustment_snapshot, $shop) }}</span>
                             @endif

@@ -20,7 +20,7 @@ class ModifierManagerTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(ModifierManager::class)
-            ->set('name', 'Sugar Level')
+            ->set('name_en', 'Sugar Level')
             ->set('min_selection', 0)
             ->set('max_selection', 1)
             ->call('save')
@@ -28,7 +28,7 @@ class ModifierManagerTest extends TestCase
 
         $this->assertDatabaseHas('modifier_groups', [
             'shop_id' => $shop->id,
-            'name' => 'Sugar Level',
+            'name_en' => 'Sugar Level',
         ]);
     }
 
@@ -36,19 +36,19 @@ class ModifierManagerTest extends TestCase
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
-        $group = \App\Models\ModifierGroup::create(['shop_id' => $shop->id, 'name' => 'Milk']);
+        $group = \App\Models\ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Milk']);
 
         Livewire::actingAs($user)
             ->test(ModifierManager::class)
             ->set('selectedGroupId', $group->id)
-            ->set('optionName', 'Almond Milk')
+            ->set('optionNameEn', 'Almond Milk')
             ->set('optionPrice', 1.50)
             ->call('addOption')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('modifier_options', [
             'modifier_group_id' => $group->id,
-            'name' => 'Almond Milk',
+            'name_en' => 'Almond Milk',
             'price_adjustment' => 1.50,
         ]);
     }

@@ -61,7 +61,7 @@
                         @foreach($order->items as $item)
                             <li class="flex items-start gap-3 rounded-lg border border-panel/15 bg-panel/10 px-3 py-2.5">
                                 <span class="inline-flex min-w-10 items-center justify-center rounded-md bg-crema px-2 py-1 font-mono text-sm font-bold uppercase text-panel">{{ $item->quantity }}x</span>
-                                <span class="text-lg font-bold uppercase tracking-tight text-panel">{{ $item->product_name_snapshot }}</span>
+                                <span class="text-lg font-bold uppercase tracking-tight text-panel">{{ $item->product_name_snapshot_en }}</span>
                             </li>
                         @endforeach
                     </ul>

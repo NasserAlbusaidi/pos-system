@@ -17,16 +17,16 @@ class CategoryTest extends TestCase
 
         $category = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Coffee',
+            'name_en' => 'Coffee',
             'sort_order' => 1,
             'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('categories', [
             'shop_id' => $shop->id,
-            'name' => 'Coffee',
+            'name_en' => 'Coffee',
         ]);
 
-        $this->assertEquals('Coffee', $category->name);
+        $this->assertEquals('Coffee', $category->name_en);
     }
 }

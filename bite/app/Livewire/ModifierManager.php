@@ -14,7 +14,9 @@ class ModifierManager extends Component
     public Shop $shop;
 
     // Group properties
-    public $name;
+    public $name_en;
+
+    public $name_ar;
 
     public $min_selection = 0;
 
@@ -23,7 +25,9 @@ class ModifierManager extends Component
     // Option properties
     public $selectedGroupId;
 
-    public $optionName;
+    public $optionNameEn;
+
+    public $optionNameAr;
 
     public $optionPrice = 0;
 
@@ -36,7 +40,8 @@ class ModifierManager extends Component
     {
         $this->validate([
             'selectedGroupId' => 'required',
-            'optionName' => 'required|string',
+            'optionNameEn' => 'required|string',
+            'optionNameAr' => 'nullable|string',
             'optionPrice' => 'required|numeric',
         ]);
 
@@ -47,17 +52,19 @@ class ModifierManager extends Component
 
         ModifierOption::create([
             'modifier_group_id' => $group->id,
-            'name' => $this->optionName,
+            'name_en' => $this->optionNameEn,
+            'name_ar' => $this->optionNameAr,
             'price_adjustment' => $this->optionPrice,
         ]);
 
-        $this->reset(['optionName', 'optionPrice']);
+        $this->reset(['optionNameEn', 'optionNameAr', 'optionPrice']);
     }
 
     protected function rules()
     {
         return [
-            'name' => 'required|string|min:2',
+            'name_en' => 'required|string|min:2',
+            'name_ar' => 'nullable|string|min:2',
             'min_selection' => 'required|integer|min:0',
             'max_selection' => 'required|integer|min:1',
         ];
@@ -69,12 +76,13 @@ class ModifierManager extends Component
 
         ModifierGroup::create([
             'shop_id' => Auth::user()->shop_id,
-            'name' => $this->name,
+            'name_en' => $this->name_en,
+            'name_ar' => $this->name_ar,
             'min_selection' => $this->min_selection,
             'max_selection' => $this->max_selection,
         ]);
 
-        $this->reset(['name', 'min_selection', 'max_selection']);
+        $this->reset(['name_en', 'name_ar', 'min_selection', 'max_selection']);
     }
 
     #[Layout('layouts.admin')]

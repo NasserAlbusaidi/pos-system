@@ -75,7 +75,7 @@
             @forelse($categories as $category)
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $category->name }}</h3>
+                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $category->translated('name') }}</h3>
                         <div class="h-px flex-1 bg-line"></div>
                     </div>
 
@@ -90,13 +90,13 @@
 
                                 <div>
                                     @if($product->image_url)
-                                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="mb-4 h-40 w-full rounded-xl object-cover">
+                                        <img src="{{ $product->image_url }}" alt="{{ $product->translated('name') }}" class="mb-4 h-40 w-full rounded-xl object-cover">
                                     @endif
 
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <h4 class="text-xl font-bold uppercase tracking-tight text-ink">{{ $product->name }}</h4>
-                                            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $product->description }}</p>
+                                            <h4 class="text-xl font-bold uppercase tracking-tight text-ink">{{ $product->translated('name') }}</h4>
+                                            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $product->translated('description') }}</p>
                                         </div>
                                         <div class="text-right">
                                             @if($product->is_on_sale)
@@ -258,7 +258,7 @@
             <div class="surface-card flex w-full max-w-xl flex-col overflow-hidden border-t sm:border sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
                     <div>
-                        <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->name }}</h3>
+                        <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->translated('name') }}</h3>
                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.price') }}: {{ formatPrice($this->customizingProductPrice, $shop) }}</p>
                     </div>
                     <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
@@ -278,7 +278,7 @@
                     @foreach($customizingProduct->modifierGroups as $group)
                         <section class="space-y-3">
                             <div class="flex items-end justify-between border-b border-line pb-2">
-                                <h4 class="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ $group->name }}</h4>
+                                <h4 class="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ $group->translated('name') }}</h4>
                                 <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ $group->min_selection > 0 ? __('guest.required') : __('guest.optional') }}</span>
                             </div>
 
@@ -293,7 +293,7 @@
                                                 name="group_{{ $group->id }}"
                                                 class="h-4 w-4 cursor-pointer border-line text-crema focus:ring-0"
                                             >
-                                            <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->name }}</span>
+                                            <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->translated('name') }}</span>
                                         </span>
                                         @if($option->price_adjustment > 0)
                                             <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+{{ formatPrice($option->price_adjustment, $shop) }}</span>

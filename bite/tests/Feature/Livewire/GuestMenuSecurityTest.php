@@ -17,11 +17,11 @@ class GuestMenuSecurityTest extends TestCase
     public function test_user_cannot_manipulate_price_in_cart(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 10.00,
         ]);
 

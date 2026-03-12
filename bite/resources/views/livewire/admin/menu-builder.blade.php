@@ -10,7 +10,8 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <input type="text" wire:model="newCategoryName" placeholder="Category Name" class="field text-sm">
+                <input type="text" wire:model="newCategoryNameEn" placeholder="Category (English)" class="field text-sm">
+                <input type="text" wire:model="newCategoryNameAr" placeholder="التصنيف (عربي)" class="field text-sm" dir="rtl">
                 <button wire:click="createCategory" class="btn-primary whitespace-nowrap">+ Add Category</button>
             </div>
         </div>
@@ -23,9 +24,9 @@
                 <!-- Category Header -->
                 <div class="border-b border-line bg-muted/35 px-5 py-4 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-display text-lg font-extrabold leading-none text-ink">{{ $category->name }}</h3>
+                        <h3 class="font-display text-lg font-extrabold leading-none text-ink">{{ $category->name_en }}</h3>
                         <button
-                            @click="let name = prompt('Rename category:', @js($category->name)); if (name !== null) { name = name.trim(); if (name.length) { @this.renameCategory({{ $category->id }}, name) } }"
+                            @click="let nameEn = prompt('Category name (English):', @js($category->name_en)); if (nameEn !== null) { nameEn = nameEn.trim(); if (nameEn.length) { let nameAr = prompt('Category name (Arabic):', @js($category->name_ar ?? '')); @this.renameCategory({{ $category->id }}, nameEn, nameAr) } }"
                             class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-colors"
                         >
                             Rename
@@ -79,7 +80,7 @@
                             <div class="flex items-center space-x-4">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-muted font-mono text-[9px] font-semibold text-ink-soft">{{ $product->id }}</div>
                                 <div>
-                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name }}</div>
+                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name_en }}</div>
                                     <div class="font-mono text-[10px] font-semibold text-ink-soft">{{ formatPrice($product->price, $shop) }}</div>
                                 </div>
                             </div>

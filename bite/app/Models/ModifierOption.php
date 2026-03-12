@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ModifierOption extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
         'modifier_group_id',
-        'name',
+        'name_en',
+        'name_ar',
         'price_adjustment',
     ];
 

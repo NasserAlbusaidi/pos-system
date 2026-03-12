@@ -115,8 +115,8 @@ class ShopDashboard extends Component
                 ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
                 ->whereBetween('paid_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()]);
         })
-            ->select('product_name_snapshot', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
-            ->groupBy('product_name_snapshot')
+            ->select('product_name_snapshot_en', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
+            ->groupBy('product_name_snapshot_en')
             ->orderByDesc('qty')
             ->limit(5)
             ->get();

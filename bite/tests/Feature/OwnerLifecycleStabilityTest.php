@@ -41,19 +41,19 @@ class OwnerLifecycleStabilityTest extends TestCase
         $me = User::factory()->create(['shop_id' => $myShop->id]);
 
         $otherShop = Shop::create(['name' => 'Other', 'slug' => 'other']);
-        $otherGroup = ModifierGroup::create(['shop_id' => $otherShop->id, 'name' => 'Hack Me']);
+        $otherGroup = ModifierGroup::create(['shop_id' => $otherShop->id, 'name_en' => 'Hack Me']);
 
         Livewire::actingAs($me)
             ->test(ModifierManager::class)
             ->set('selectedGroupId', $otherGroup->id)
-            ->set('optionName', 'Malicious Option')
+            ->set('optionNameEn', 'Malicious Option')
             ->set('optionPrice', 0)
             ->call('addOption');
 
         // Should not exist under the other shop's group if we block it
         $this->assertDatabaseMissing('modifier_options', [
             'modifier_group_id' => $otherGroup->id,
-            'name' => 'Malicious Option',
+            'name_en' => 'Malicious Option',
         ]);
     }
 }

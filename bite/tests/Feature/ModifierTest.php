@@ -20,14 +20,14 @@ class ModifierTest extends TestCase
 
         $group = ModifierGroup::create([
             'shop_id' => $shop->id,
-            'name' => 'Milk Options',
+            'name_en' => 'Milk Options',
             'min_selection' => 1,
             'max_selection' => 1,
         ]);
 
         $this->assertDatabaseHas('modifier_groups', [
             'shop_id' => $shop->id,
-            'name' => 'Milk Options',
+            'name_en' => 'Milk Options',
             'min_selection' => 1,
         ]);
 
@@ -37,17 +37,17 @@ class ModifierTest extends TestCase
     public function test_modifier_option_can_be_created(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name' => 'Milk']);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Milk']);
 
         $option = ModifierOption::create([
             'modifier_group_id' => $group->id,
-            'name' => 'Oat Milk',
+            'name_en' => 'Oat Milk',
             'price_adjustment' => 1.00,
         ]);
 
         $this->assertDatabaseHas('modifier_options', [
             'modifier_group_id' => $group->id,
-            'name' => 'Oat Milk',
+            'name_en' => 'Oat Milk',
             'price_adjustment' => 1.00,
         ]);
     }
@@ -55,15 +55,15 @@ class ModifierTest extends TestCase
     public function test_product_can_have_modifiers(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.50,
         ]);
 
-        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name' => 'Milk']);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Milk']);
 
         // Attach
         $product->modifierGroups()->attach($group->id);

@@ -17,7 +17,9 @@ class MenuBuilder extends Component
 
     public $search = '';
 
-    public $newCategoryName = '';
+    public $newCategoryNameEn = '';
+
+    public $newCategoryNameAr = '';
 
     public function mount(): void
     {
@@ -26,29 +28,38 @@ class MenuBuilder extends Component
 
     public function createCategory()
     {
-        $this->validate(['newCategoryName' => 'required|string|min:2']);
+        $this->validate([
+            'newCategoryNameEn' => 'required|string|min:2',
+            'newCategoryNameAr' => 'nullable|string|min:2',
+        ]);
 
         Category::create([
             'shop_id' => Auth::user()->shop_id,
-            'name' => $this->newCategoryName,
+            'name_en' => $this->newCategoryNameEn,
+            'name_ar' => $this->newCategoryNameAr ?: null,
             'sort_order' => Category::where('shop_id', Auth::user()->shop_id)->count() + 1,
         ]);
 
-        $this->newCategoryName = '';
+        $this->newCategoryNameEn = '';
+        $this->newCategoryNameAr = '';
     }
 
-    public function renameCategory($categoryId, $name)
+    public function renameCategory($categoryId, $nameEn, $nameAr = null)
     {
         $shopId = Auth::user()->shop_id;
-        $name = trim((string) $name);
-        if ($name === '') {
+        $nameEn = trim((string) $nameEn);
+        if ($nameEn === '') {
             return;
         }
 
         $category = Category::where('shop_id', $shopId)->findOrFail($categoryId);
-        $category->update(['name' => Str::limit($name, 60, '')]);
+        $data = ['name_en' => Str::limit($nameEn, 60, '')];
+        if ($nameAr !== null) {
+            $data['name_ar'] = Str::limit(trim((string) $nameAr), 60, '') ?: null;
+        }
+        $category->update($data);
 
-        AuditLog::record('category.renamed', $category, ['name' => $name]);
+        AuditLog::record('category.renamed', $category, ['name_en' => $nameEn]);
     }
 
     public function deleteCategory($categoryId)
@@ -157,7 +168,10 @@ class MenuBuilder extends Component
     {
         $categories = Category::where('shop_id', Auth::user()->shop_id)
             ->with(['products' => function ($query) {
-                $query->where('name', 'like', '%'.$this->search.'%')
+                $query->where(function ($q) {
+                    $q->where('name_en', 'like', '%'.$this->search.'%')
+                        ->orWhere('name_ar', 'like', '%'.$this->search.'%');
+                })
                     ->orderBy('sort_order');
             }])
             ->orderBy('sort_order')

@@ -20,13 +20,13 @@ class MenuBuilderTenantIsolationTest extends TestCase
     {
         [$shopA, $shopB] = $this->makeShops();
 
-        $categoryA = Category::create(['shop_id' => $shopA->id, 'name' => 'Coffee']);
-        $categoryB = Category::create(['shop_id' => $shopB->id, 'name' => 'Other']);
+        $categoryA = Category::create(['shop_id' => $shopA->id, 'name_en' => 'Coffee']);
+        $categoryB = Category::create(['shop_id' => $shopB->id, 'name_en' => 'Other']);
 
         $productA = Product::forceCreate([
             'shop_id' => $shopA->id,
             'category_id' => $categoryA->id,
-            'name' => 'Espresso',
+            'name_en' => 'Espresso',
             'price' => 3.50,
         ]);
 
@@ -43,19 +43,19 @@ class MenuBuilderTenantIsolationTest extends TestCase
     {
         [$shopA, $shopB] = $this->makeShops();
 
-        $categoryA = Category::create(['shop_id' => $shopA->id, 'name' => 'Coffee']);
+        $categoryA = Category::create(['shop_id' => $shopA->id, 'name_en' => 'Coffee']);
 
         Product::forceCreate([
             'shop_id' => $shopA->id,
             'category_id' => $categoryA->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.00,
         ]);
 
         $otherProduct = Product::forceCreate([
             'shop_id' => $shopB->id,
-            'category_id' => Category::create(['shop_id' => $shopB->id, 'name' => 'Tea'])->id,
-            'name' => 'Other Shop Product',
+            'category_id' => Category::create(['shop_id' => $shopB->id, 'name_en' => 'Tea'])->id,
+            'name_en' => 'Other Shop Product',
             'price' => 2.00,
         ]);
 

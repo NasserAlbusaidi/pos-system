@@ -21,57 +21,61 @@ class DemoMenuSeeder extends Seeder
         // ── Categories ──────────────────────────────────────────
         $hotDrinks = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Hot Drinks',
+            'name_en' => 'Hot Drinks',
+            'name_ar' => 'مشروبات ساخنة',
             'sort_order' => 1,
         ]);
 
         $coldDrinks = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Cold Drinks',
+            'name_en' => 'Cold Drinks',
+            'name_ar' => 'مشروبات باردة',
             'sort_order' => 2,
         ]);
 
         $food = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Food',
+            'name_en' => 'Food',
+            'name_ar' => 'طعام',
             'sort_order' => 3,
         ]);
 
         $desserts = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Desserts',
+            'name_en' => 'Desserts',
+            'name_ar' => 'حلويات',
             'sort_order' => 4,
         ]);
 
         // ── Products ────────────────────────────────────────────
         $hotDrinkProducts = [
-            ['name' => 'Karak Tea', 'description' => 'Traditional spiced milk tea', 'price' => 0.500],
-            ['name' => 'Turkish Coffee', 'description' => 'Strong finely ground coffee', 'price' => 0.800],
-            ['name' => 'Cappuccino', 'description' => 'Espresso with steamed milk foam', 'price' => 1.200],
-            ['name' => 'Latte', 'description' => 'Espresso with smooth steamed milk', 'price' => 1.500],
-            ['name' => 'Hot Chocolate', 'description' => 'Rich creamy hot chocolate', 'price' => 1.200],
+            ['name_en' => 'Karak Tea', 'name_ar' => 'شاي كرك', 'description_en' => 'Traditional spiced milk tea', 'description_ar' => 'شاي حليب بالتوابل التقليدية', 'price' => 0.500],
+            ['name_en' => 'Turkish Coffee', 'name_ar' => 'قهوة تركية', 'description_en' => 'Strong finely ground coffee', 'description_ar' => 'قهوة مطحونة ناعمة وقوية', 'price' => 0.800],
+            ['name_en' => 'Cappuccino', 'name_ar' => 'كابتشينو', 'description_en' => 'Espresso with steamed milk foam', 'description_ar' => 'إسبريسو مع رغوة الحليب', 'price' => 1.200],
+            ['name_en' => 'Latte', 'name_ar' => 'لاتيه', 'description_en' => 'Espresso with smooth steamed milk', 'description_ar' => 'إسبريسو مع حليب مبخر ناعم', 'price' => 1.500],
+            ['name_en' => 'Hot Chocolate', 'name_ar' => 'شوكولاتة ساخنة', 'description_en' => 'Rich creamy hot chocolate', 'description_ar' => 'شوكولاتة ساخنة غنية وكريمية', 'price' => 1.200],
         ];
 
         $coldDrinkProducts = [
-            ['name' => 'Iced Latte', 'description' => 'Chilled espresso with cold milk', 'price' => 1.800],
-            ['name' => 'Fresh Juice', 'description' => 'Freshly squeezed seasonal fruit', 'price' => 1.500],
-            ['name' => 'Smoothie', 'description' => 'Blended fruit and yogurt', 'price' => 2.000],
-            ['name' => 'Iced Tea', 'description' => 'Refreshing cold brewed tea', 'price' => 1.000],
+            ['name_en' => 'Iced Latte', 'name_ar' => 'لاتيه مثلج', 'description_en' => 'Chilled espresso with cold milk', 'description_ar' => 'إسبريسو مبرد مع حليب بارد', 'price' => 1.800],
+            ['name_en' => 'Fresh Juice', 'name_ar' => 'عصير طازج', 'description_en' => 'Freshly squeezed seasonal fruit', 'description_ar' => 'فواكه موسمية طازجة معصورة', 'price' => 1.500],
+            ['name_en' => 'Smoothie', 'name_ar' => 'سموذي', 'description_en' => 'Blended fruit and yogurt', 'description_ar' => 'فواكه مخلوطة مع الزبادي', 'price' => 2.000],
+            ['name_en' => 'Iced Tea', 'name_ar' => 'شاي مثلج', 'description_en' => 'Refreshing cold brewed tea', 'description_ar' => 'شاي بارد منعش', 'price' => 1.000],
         ];
 
         $foodProducts = [
-            ['name' => 'Club Sandwich', 'description' => 'Triple-decker with chicken and veggies', 'price' => 2.500],
-            ['name' => 'Chicken Shawarma', 'description' => 'Grilled marinated chicken in flatbread', 'price' => 1.500],
-            ['name' => 'Beef Burger', 'description' => 'Juicy beef patty with fresh toppings', 'price' => 3.000],
-            ['name' => 'Caesar Salad', 'description' => 'Crisp romaine with caesar dressing', 'price' => 2.200],
-            ['name' => 'French Fries', 'description' => 'Golden crispy fries', 'price' => 1.000],
+            ['name_en' => 'Club Sandwich', 'name_ar' => 'كلوب ساندويتش', 'description_en' => 'Triple-decker with chicken and veggies', 'description_ar' => 'ساندويتش ثلاثي مع الدجاج والخضروات', 'price' => 2.500],
+            ['name_en' => 'Chicken Shawarma', 'name_ar' => 'شاورما دجاج', 'description_en' => 'Grilled marinated chicken in flatbread', 'description_ar' => 'دجاج مشوي متبل في خبز مسطح', 'price' => 1.500],
+            ['name_en' => 'Beef Burger', 'name_ar' => 'برجر لحم', 'description_en' => 'Juicy beef patty with fresh toppings', 'description_ar' => 'قطعة لحم بقري طازجة مع إضافات', 'price' => 3.000],
+            ['name_en' => 'Caesar Salad', 'name_ar' => 'سلطة سيزر', 'description_en' => 'Crisp romaine with caesar dressing', 'description_ar' => 'خس روماني مع صلصة سيزر', 'price' => 2.200],
+            ['name_en' => 'French Fries', 'name_ar' => 'بطاطس مقلية', 'description_en' => 'Golden crispy fries', 'description_ar' => 'بطاطس مقلية ذهبية ومقرمشة', 'price' => 1.000],
         ];
 
         $dessertProducts = [
-            ['name' => 'Kunafa', 'description' => 'Sweet cheese pastry with syrup', 'price' => 1.800],
-            ['name' => 'Cheesecake', 'description' => 'Classic New York style cheesecake', 'price' => 2.000],
-            ['name' => 'Luqaimat', 'description' => 'Sweet fried dumplings with date syrup', 'price' => 1.200],
-            ['name' => 'Ice Cream', 'description' => 'Two scoops of premium ice cream', 'price' => 1.500],
+            ['name_en' => 'Kunafa', 'name_ar' => 'كنافة', 'description_en' => 'Sweet cheese pastry with syrup', 'description_ar' => 'معجنات جبن حلوة مع شراب', 'price' => 1.800],
+            ['name_en' => 'Cheesecake', 'name_ar' => 'تشيز كيك', 'description_en' => 'Classic New York style cheesecake', 'description_ar' => 'تشيز كيك كلاسيكي على طريقة نيويورك', 'price' => 2.000],
+            ['name_en' => 'Luqaimat', 'name_ar' => 'لقيمات', 'description_en' => 'Sweet fried dumplings with date syrup', 'description_ar' => 'عجين مقلي حلو مع دبس التمر', 'price' => 1.200],
+            ['name_en' => 'Ice Cream', 'name_ar' => 'آيس كريم', 'description_en' => 'Two scoops of premium ice cream', 'description_ar' => 'كرتين من الآيس كريم الفاخر', 'price' => 1.500],
         ];
 
         $createdProducts = collect();
@@ -117,83 +121,94 @@ class DemoMenuSeeder extends Seeder
         // Size (for drinks)
         $sizeGroup = ModifierGroup::create([
             'shop_id' => $shop->id,
-            'name' => 'Size',
+            'name_en' => 'Size',
+            'name_ar' => 'الحجم',
             'min_selection' => 1,
             'max_selection' => 1,
         ]);
 
         ModifierOption::create([
             'modifier_group_id' => $sizeGroup->id,
-            'name' => 'Small',
+            'name_en' => 'Small',
+            'name_ar' => 'صغير',
             'price_adjustment' => -0.300,
         ]);
         ModifierOption::create([
             'modifier_group_id' => $sizeGroup->id,
-            'name' => 'Regular',
+            'name_en' => 'Regular',
+            'name_ar' => 'عادي',
             'price_adjustment' => 0,
         ]);
         ModifierOption::create([
             'modifier_group_id' => $sizeGroup->id,
-            'name' => 'Large',
+            'name_en' => 'Large',
+            'name_ar' => 'كبير',
             'price_adjustment' => 0.300,
         ]);
 
         // Milk Type (for coffee)
         $milkGroup = ModifierGroup::create([
             'shop_id' => $shop->id,
-            'name' => 'Milk Type',
+            'name_en' => 'Milk Type',
+            'name_ar' => 'نوع الحليب',
             'min_selection' => 0,
             'max_selection' => 1,
         ]);
 
         ModifierOption::create([
             'modifier_group_id' => $milkGroup->id,
-            'name' => 'Regular Milk',
+            'name_en' => 'Regular Milk',
+            'name_ar' => 'حليب عادي',
             'price_adjustment' => 0,
         ]);
         ModifierOption::create([
             'modifier_group_id' => $milkGroup->id,
-            'name' => 'Oat Milk',
+            'name_en' => 'Oat Milk',
+            'name_ar' => 'حليب الشوفان',
             'price_adjustment' => 0.200,
         ]);
         ModifierOption::create([
             'modifier_group_id' => $milkGroup->id,
-            'name' => 'Almond Milk',
+            'name_en' => 'Almond Milk',
+            'name_ar' => 'حليب اللوز',
             'price_adjustment' => 0.200,
         ]);
 
         // Extras (for food)
         $extrasGroup = ModifierGroup::create([
             'shop_id' => $shop->id,
-            'name' => 'Extras',
+            'name_en' => 'Extras',
+            'name_ar' => 'إضافات',
             'min_selection' => 0,
             'max_selection' => 2,
         ]);
 
         ModifierOption::create([
             'modifier_group_id' => $extrasGroup->id,
-            'name' => 'Extra Cheese',
+            'name_en' => 'Extra Cheese',
+            'name_ar' => 'جبن إضافي',
             'price_adjustment' => 0.300,
         ]);
         ModifierOption::create([
             'modifier_group_id' => $extrasGroup->id,
-            'name' => 'Extra Sauce',
+            'name_en' => 'Extra Sauce',
+            'name_ar' => 'صلصة إضافية',
             'price_adjustment' => 0,
         ]);
 
         // ── Attach modifiers to products ────────────────────────
         // All drinks get Size modifier
-        $drinkNames = collect($hotDrinkProducts)->pluck('name')
-            ->merge(collect($coldDrinkProducts)->pluck('name'));
+        $drinkNames = collect($hotDrinkProducts)->pluck('name_en')
+            ->merge(collect($coldDrinkProducts)->pluck('name_en'));
 
-        $drinkProducts = $createdProducts->filter(fn ($p) => $drinkNames->contains($p->name));
+        $drinkProducts = $createdProducts->filter(fn ($p) => $drinkNames->contains($p->name_en));
         foreach ($drinkProducts as $product) {
             $product->modifierGroups()->attach($sizeGroup->id);
         }
 
         // Coffee-based drinks get Milk Type modifier
         $coffeeNames = ['Cappuccino', 'Latte', 'Iced Latte', 'Hot Chocolate'];
-        $coffeeProducts = $createdProducts->filter(fn ($p) => in_array($p->name, $coffeeNames));
+        $coffeeProducts = $createdProducts->filter(fn ($p) => in_array($p->name_en, $coffeeNames));
         foreach ($coffeeProducts as $product) {
             $product->modifierGroups()->attach($milkGroup->id);
         }

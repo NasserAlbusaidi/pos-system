@@ -455,7 +455,8 @@ class PosDashboard extends Component
                 $newItem = OrderItem::create([
                     'order_id' => $newOrder->id,
                     'product_id' => $item->product_id,
-                    'product_name_snapshot' => $item->product_name_snapshot,
+                    'product_name_snapshot_en' => $item->product_name_snapshot_en,
+                    'product_name_snapshot_ar' => $item->product_name_snapshot_ar,
                     'price_snapshot' => $item->price_snapshot,
                     'quantity' => $qty,
                 ]);
@@ -463,7 +464,8 @@ class PosDashboard extends Component
                 foreach ($item->modifiers as $modifier) {
                     OrderItemModifier::create([
                         'order_item_id' => $newItem->id,
-                        'modifier_option_name_snapshot' => $modifier->modifier_option_name_snapshot,
+                        'modifier_option_name_snapshot_en' => $modifier->modifier_option_name_snapshot_en,
+                        'modifier_option_name_snapshot_ar' => $modifier->modifier_option_name_snapshot_ar,
                         'price_adjustment_snapshot' => $modifier->price_adjustment_snapshot,
                     ]);
                 }

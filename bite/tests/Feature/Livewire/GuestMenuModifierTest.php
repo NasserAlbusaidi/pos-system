@@ -19,18 +19,18 @@ class GuestMenuModifierTest extends TestCase
     public function test_guest_can_submit_order_with_modifiers(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 10.00,
         ]);
 
-        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name' => 'Milk']);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Milk']);
         $option = ModifierOption::create([
             'modifier_group_id' => $group->id,
-            'name' => 'Oat Milk',
+            'name_en' => 'Oat Milk',
             'price_adjustment' => 2.00,
         ]);
 
@@ -56,7 +56,7 @@ class GuestMenuModifierTest extends TestCase
 
         // Modifier snapshot should exist
         $this->assertDatabaseHas('order_item_modifiers', [
-            'modifier_option_name_snapshot' => 'Oat Milk',
+            'modifier_option_name_snapshot_en' => 'Oat Milk',
             'price_adjustment_snapshot' => 2.00,
         ]);
     }

@@ -17,12 +17,12 @@ class RecursiveCategoryTest extends TestCase
 
         $parent = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Drinks',
+            'name_en' => 'Drinks',
         ]);
 
         $child = Category::create([
             'shop_id' => $shop->id,
-            'name' => 'Hot Coffee',
+            'name_en' => 'Hot Coffee',
             'parent_id' => $parent->id,
         ]);
 

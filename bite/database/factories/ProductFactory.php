@@ -11,8 +11,8 @@ class ProductFactory extends Factory
         return [
             'shop_id' => \App\Models\Shop::factory(), // Usually overridden
             'category_id' => \App\Models\Category::factory(), // Usually overridden
-            'name' => fake()->word(),
-            'description' => fake()->sentence(),
+            'name_en' => fake()->word(),
+            'description_en' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 1, 10),
             'is_available' => true,
         ];

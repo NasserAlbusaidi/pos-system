@@ -125,7 +125,23 @@
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Rubik';
+            src: url('/fonts/Rubik-VariableFont_wght.ttf') format('truetype');
+            font-weight: 300 900;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Rubik';
+            src: url('/fonts/Rubik-Italic-VariableFont_wght.ttf') format('truetype');
+            font-weight: 300 900;
+            font-style: italic;
+            font-display: swap;
+        }
+    </style>
 
     <style>
         /* ===== Design Tokens ===== */
@@ -153,7 +169,7 @@
         }
 
         body {
-            font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+            font-family: 'Rubik', system-ui, -apple-system, sans-serif;
             color: rgb(var(--ink));
             background:
                 radial-gradient(circle at 10% 0%, rgb(var(--crema) / 0.08), transparent 32%),
@@ -189,7 +205,7 @@
 
         /* ===== Typography ===== */
         h1, h2, h3, h4, h5 {
-            font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+            font-family: 'Rubik', system-ui, sans-serif;
             letter-spacing: 0.01em;
             line-height: 1.05;
         }
@@ -438,13 +454,13 @@
             align-items: center;
             justify-content: center;
             color: rgb(var(--panel));
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-weight: 800;
             font-size: 1.125rem;
         }
 
         .nav-brand-text {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-weight: 800;
             font-size: 1.25rem;
             letter-spacing: -0.01em;
@@ -530,7 +546,7 @@
         .mobile-nav a {
             display: block;
             padding: 1rem 0;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 1.5rem;
             font-weight: 700;
             text-decoration: none;
@@ -697,7 +713,7 @@
         }
 
         .mockup-item-price {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 0.9375rem;
             font-weight: 800;
             color: rgb(var(--ink));
@@ -724,7 +740,7 @@
         }
 
         .mockup-total-value {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 1.25rem;
             font-weight: 800;
             color: rgb(var(--crema));
@@ -882,7 +898,7 @@
         }
 
         .feature-name {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 1.125rem;
             font-weight: 700;
             color: rgb(var(--ink));
@@ -923,14 +939,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-weight: 800;
             font-size: 1.25rem;
             margin-bottom: 1.5rem;
         }
 
         .step-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 1.25rem;
             font-weight: 700;
             color: rgb(var(--ink));
@@ -998,7 +1014,7 @@
         }
 
         .pricing-price {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-weight: 800;
             margin-top: 0.75rem;
             display: flex;
@@ -1102,7 +1118,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-weight: 800;
             font-size: 0.875rem;
             color: rgb(var(--crema));
@@ -1152,7 +1168,7 @@
             background: none;
             cursor: pointer;
             text-align: left;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 1rem;
             font-weight: 700;
             color: rgb(var(--ink));

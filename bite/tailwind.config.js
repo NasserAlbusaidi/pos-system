@@ -12,10 +12,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['"Manrope"', ...defaultTheme.fontFamily.sans],
-                display: ['"Bricolage Grotesque"', ...defaultTheme.fontFamily.sans],
+                sans: ['"Rubik"', ...defaultTheme.fontFamily.sans],
+                display: ['"Rubik"', ...defaultTheme.fontFamily.sans],
                 mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
-                arabic: ['"IBM Plex Sans Arabic"', '"Manrope"', ...defaultTheme.fontFamily.sans],
+                arabic: ['"IBM Plex Sans Arabic"', '"Rubik"', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 paper: 'rgb(var(--paper) / <alpha-value>)',

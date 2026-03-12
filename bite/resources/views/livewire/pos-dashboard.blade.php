@@ -68,7 +68,7 @@
                                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Items</p>
                                     <div class="mt-1 space-y-0.5">
                                         @foreach($order->items->take(3) as $item)
-                                            <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->product_name_snapshot }}</p>
+                                            <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->product_name_snapshot_en }}</p>
                                         @endforeach
                                         @if($order->items->count() > 3)
                                             <p class="font-mono text-[10px] text-ink-soft">+{{ $order->items->count() - 3 }} more</p>
@@ -222,7 +222,7 @@
                         <div class="rounded-xl border border-line bg-panel px-4 py-3">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->product_name_snapshot }}</p>
+                                    <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->product_name_snapshot_en }}</p>
                                     <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Qty: {{ $item->quantity }} | {{ formatPrice($item->price_snapshot, $shop) }}</p>
                                 </div>
                                 <div class="flex items-center gap-2">

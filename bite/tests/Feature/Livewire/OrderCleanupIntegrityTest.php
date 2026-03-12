@@ -36,7 +36,7 @@ class OrderCleanupIntegrityTest extends TestCase
         OrderItem::create([
             'order_id' => $order->id,
             'product_id' => $product->id,
-            'product_name_snapshot' => $product->name,
+            'product_name_snapshot_en' => $product->name_en,
             'price_snapshot' => 8,
             'quantity' => 1,
         ]);
@@ -72,7 +72,7 @@ class OrderCleanupIntegrityTest extends TestCase
         OrderItem::create([
             'order_id' => $order->id,
             'product_id' => $product->id,
-            'product_name_snapshot' => $product->name,
+            'product_name_snapshot_en' => $product->name_en,
             'price_snapshot' => 5,
             'quantity' => 2,
         ]);
@@ -91,13 +91,13 @@ class OrderCleanupIntegrityTest extends TestCase
     {
         $category = Category::create([
             'shop_id' => $shopId,
-            'name' => 'Coffee',
+            'name_en' => 'Coffee',
         ]);
 
         $product = Product::forceCreate([
             'shop_id' => $shopId,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 5,
         ]);
 

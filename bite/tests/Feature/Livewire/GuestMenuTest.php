@@ -17,11 +17,11 @@ class GuestMenuTest extends TestCase
     public function test_guest_can_see_menu(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.50,
         ]);
 
@@ -38,11 +38,11 @@ class GuestMenuTest extends TestCase
     public function test_guest_can_add_item_to_cart(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.50,
         ]);
 
@@ -74,11 +74,11 @@ class GuestMenuTest extends TestCase
     public function test_guest_can_submit_order(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
         $product = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 4.50,
         ]);
 

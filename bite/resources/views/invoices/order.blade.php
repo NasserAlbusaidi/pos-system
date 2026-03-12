@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #{{ $order->id }}</title>
     <style>
-        body { font-family: 'DM Sans', Arial, sans-serif; color: #1A1918; background: #FDFCF8; }
+        body { font-family: 'Rubik', system-ui, sans-serif; color: #1A1918; background: #FDFCF8; }
         .card { max-width: 720px; margin: 40px auto; background: #fff; border: 2px solid #1A1918; padding: 24px; }
         .header { display: flex; justify-content: space-between; align-items: center; }
         .mono { font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; }
@@ -45,11 +45,11 @@
                 @foreach($order->items as $item)
                     <tr>
                         <td>
-                            <div>{{ $item->product_name_snapshot }}</div>
+                            <div>{{ $item->product_name_snapshot_en }}</div>
                             @if($item->modifiers->isNotEmpty())
                                 <div class="mono" style="opacity:0.5;">
                                     @foreach($item->modifiers as $modifier)
-                                        + {{ $modifier->modifier_option_name_snapshot }}
+                                        + {{ $modifier->modifier_option_name_snapshot_en }}
                                     @endforeach
                                 </div>
                             @endif

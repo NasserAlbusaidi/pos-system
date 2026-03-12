@@ -15,13 +15,13 @@ class ProductDiscountTest extends TestCase
     public function test_product_calculates_discounted_price(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
 
         // 1. Percentage Discount
         $productPercent = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Latte',
+            'name_en' => 'Latte',
             'price' => 10.00,
             'discount_value' => 20,
             'discount_type' => 'percentage',
@@ -34,7 +34,7 @@ class ProductDiscountTest extends TestCase
         $productFixed = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Cake',
+            'name_en' => 'Cake',
             'price' => 10.00,
             'discount_value' => 2.00,
             'discount_type' => 'fixed',
@@ -47,7 +47,7 @@ class ProductDiscountTest extends TestCase
         $productInactive = Product::forceCreate([
             'shop_id' => $shop->id,
             'category_id' => $category->id,
-            'name' => 'Water',
+            'name_en' => 'Water',
             'price' => 5.00,
             'discount_value' => 1.00,
             'discount_type' => 'fixed',

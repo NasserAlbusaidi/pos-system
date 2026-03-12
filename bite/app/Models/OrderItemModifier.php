@@ -11,7 +11,8 @@ class OrderItemModifier extends Model
 
     protected $fillable = [
         'order_item_id',
-        'modifier_option_name_snapshot',
+        'modifier_option_name_snapshot_en',
+        'modifier_option_name_snapshot_ar',
         'price_adjustment_snapshot',
     ];
 

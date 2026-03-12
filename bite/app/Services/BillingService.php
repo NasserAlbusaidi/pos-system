@@ -108,10 +108,14 @@ class BillingService
      */
     public function getCurrentPlan(Shop $shop): ?string
     {
+        // Shops on a generic trial get Pro features (trial = try the full product).
+        if ($shop->onGenericTrial()) {
+            return 'pro';
+        }
+
         $subscription = $shop->subscription('default');
 
         if (! $subscription) {
-            // No subscription — they are on the free plan (or generic trial).
             return 'free';
         }
 

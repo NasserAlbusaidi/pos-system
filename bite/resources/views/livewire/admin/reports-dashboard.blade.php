@@ -48,7 +48,7 @@
                 <tbody class="divide-y divide-line/65">
                     @forelse($topProducts as $product)
                         <tr class="hover:bg-muted/35 transition-colors">
-                            <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot }}</td>
+                            <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
                             <td class="px-5 py-4 font-mono text-xs font-bold">{{ $product->qty }}</td>
                             <td class="px-5 py-4 font-mono text-xs font-bold">{{ formatPrice($product->revenue, $shop) }}</td>
                         </tr>

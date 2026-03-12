@@ -17,13 +17,13 @@ class ProductManagerTest extends TestCase
     public function test_admin_can_create_product_via_livewire(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
 
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
 
         Livewire::actingAs($user)
             ->test(ProductManager::class)
-            ->set('name', 'Espresso')
+            ->set('name_en', 'Espresso')
             ->set('price', 2.50)
             ->set('category_id', $category->id)
             ->call('save')
@@ -31,7 +31,7 @@ class ProductManagerTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'shop_id' => $shop->id,
-            'name' => 'Espresso',
+            'name_en' => 'Espresso',
             'price' => 2.50,
         ]);
     }
@@ -39,21 +39,21 @@ class ProductManagerTest extends TestCase
     public function test_admin_can_attach_modifiers_to_product(): void
     {
         $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
-        $category = Category::create(['shop_id' => $shop->id, 'name' => 'Coffee']);
-        $group = \App\Models\ModifierGroup::create(['shop_id' => $shop->id, 'name' => 'Milk']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+        $group = \App\Models\ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Milk']);
 
         $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
 
         Livewire::actingAs($user)
             ->test(\App\Livewire\ProductManager::class)
-            ->set('name', 'Latte')
+            ->set('name_en', 'Latte')
             ->set('price', 4.50)
             ->set('category_id', $category->id)
             ->set('selectedModifierGroups', [$group->id])
             ->call('save')
             ->assertHasNoErrors();
 
-        $product = \App\Models\Product::where('name', 'Latte')->first();
+        $product = \App\Models\Product::where('name_en', 'Latte')->first();
         $this->assertTrue($product->modifierGroups->contains($group->id));
     }
 }
