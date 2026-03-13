@@ -16,7 +16,7 @@
                     {{-- Shop Name --}}
                     <div class="space-y-1.5">
                         <label for="shop-name" class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.settings_shop_name') }}</label>
-                        <input id="shop-name" type="text" wire:model="name" class="field" placeholder="My Coffee Shop">
+                        <input id="shop-name" type="text" wire:model="name" class="field" placeholder="{{ __('admin.placeholder_shop_name') }}">
                         @error('name') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -210,12 +210,12 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-1.5">
                                 <label for="staff-name" class="text-xs text-ink-soft">{{ __('admin.settings_staff_name') }}</label>
-                                <input id="staff-name" type="text" wire:model="staffName" class="field" placeholder="Full name">
+                                <input id="staff-name" type="text" wire:model="staffName" class="field" placeholder="{{ __('admin.placeholder_full_name') }}">
                                 @error('staffName') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div class="space-y-1.5">
                                 <label for="staff-email" class="text-xs text-ink-soft">{{ __('admin.settings_staff_email') }}</label>
-                                <input id="staff-email" type="email" wire:model="staffEmail" class="field" placeholder="staff@example.com">
+                                <input id="staff-email" type="email" wire:model="staffEmail" class="field" placeholder="{{ __('admin.placeholder_email') }}">
                                 @error('staffEmail') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
@@ -261,7 +261,7 @@
                                 <th class="px-5 py-3">{{ __('admin.settings_staff_name') }}</th>
                                 <th class="px-5 py-3">{{ __('admin.settings_staff_email') }}</th>
                                 <th class="px-5 py-3">{{ __('admin.settings_staff_role') }}</th>
-                                <th class="px-5 py-3">PIN</th>
+                                <th class="px-5 py-3">{{ __('admin.settings_pin_header') }}</th>
                                 <th class="px-5 py-3 text-right">{{ __('admin.settings_actions') }}</th>
                             </tr>
                         </thead>

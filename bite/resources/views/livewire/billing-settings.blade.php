@@ -351,7 +351,7 @@
                             <span class="text-ink-soft">{{ __('admin.billing_monthly_cost') }}</span>
                             <span class="font-mono font-bold text-ink">
                                 @if(($plans[$currentPlan]['price'] ?? 0) > 0)
-                                    {{ $plans[$currentPlan]['price'] }} OMR
+                                    {{ $plans[$currentPlan]['price'] }} {{ __('admin.billing_omr_month') }}
                                 @else
                                     {{ __('admin.billing_free') }}
                                 @endif

@@ -100,7 +100,7 @@
                     data: {
                         labels: revenueLabels,
                         datasets: [{
-                            label: 'Revenue',
+                            label: @json(__('admin.chart_revenue')),
                             data: revenueData,
                             borderColor: '#CC5500',
                             backgroundColor: 'rgba(204,85,0,0.15)',
@@ -125,7 +125,7 @@
                     data: {
                         labels: hourLabels,
                         datasets: [{
-                            label: 'Orders',
+                            label: @json(__('admin.chart_orders')),
                             data: hourData,
                             backgroundColor: 'rgba(26,25,24,0.8)',
                         }],

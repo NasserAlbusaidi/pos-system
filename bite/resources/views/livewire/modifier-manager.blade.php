@@ -11,7 +11,7 @@
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="space-y-2">
                             <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_group_name_en') }}</label>
-                            <input type="text" wire:model="name_en" class="w-full field transition-all" placeholder="e.g. Milk Choice">
+                            <input type="text" wire:model="name_en" class="w-full field transition-all" placeholder="{{ __('admin.placeholder_group_name') }}">
                             @error('name_en') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                         </div>
 
@@ -46,7 +46,7 @@
                         <form wire:submit.prevent="addOption" class="space-y-6">
                             <div class="space-y-2">
                                 <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_option_name_en') }}</label>
-                                <input type="text" wire:model="optionNameEn" class="w-full field transition-all" placeholder="e.g. Oat Milk">
+                                <input type="text" wire:model="optionNameEn" class="w-full field transition-all" placeholder="{{ __('admin.placeholder_option_name') }}">
                                 @error('optionNameEn') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 

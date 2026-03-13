@@ -5,7 +5,7 @@
         <section class="space-y-5 lg:col-span-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p class="section-headline">Active Tickets</p>
+                    <p class="section-headline">{{ __('admin.active_tickets') }}</p>
                     <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">{{ __('admin.front_counter_queue') }}</h2>
                 </div>
                 <div class="flex items-center gap-2">
@@ -41,7 +41,7 @@
                                 </button>
                             <div class="text-right">
                                 <span class="inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $statusTone }}">
-                                    {{ $order->status }}
+                                    {{ __('admin.status_' . $order->status) }}
                                 </span>
                                 <p class="mt-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ $order->created_at->format('H:i') }}</p>
                                 @php
@@ -98,7 +98,7 @@
                                                 wire:loading.class="opacity-50 cursor-wait"
                                                 wire:target="markAsPaid({{ $order->id }}, 'cash')"
                                                 class="btn-primary justify-center">
-                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'cash')">Cash</span>
+                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'cash')">{{ __('admin.cash') }}</span>
                                             <span wire:loading wire:target="markAsPaid({{ $order->id }}, 'cash')" class="loading-spinner"></span>
                                         </button>
                                         <button wire:click="markAsPaid({{ $order->id }}, 'card')"
@@ -106,15 +106,15 @@
                                                 wire:loading.class="opacity-50 cursor-wait"
                                                 wire:target="markAsPaid({{ $order->id }}, 'card')"
                                                 class="btn-primary justify-center">
-                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'card')">Card</span>
+                                            <span wire:loading.remove wire:target="markAsPaid({{ $order->id }}, 'card')">{{ __('admin.card') }}</span>
                                             <span wire:loading wire:target="markAsPaid({{ $order->id }}, 'card')" class="loading-spinner"></span>
                                         </button>
                                     </div>
                                     <button wire:click="openSplit({{ $order->id }})" class="btn-secondary w-full justify-center">
-                                        Split Items
+                                        {{ __('admin.split_items') }}
                                     </button>
                                     <button wire:click="openPayment({{ $order->id }})" class="w-full text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-colors">
-                                        Split Payment&hellip;
+                                        {{ __('admin.split_payment') }}&hellip;
                                     </button>
                                 @elseif($order->status === 'ready')
                                     <button wire:click="markAsDelivered({{ $order->id }})"
@@ -122,7 +122,7 @@
                                             wire:loading.class="opacity-50 cursor-wait"
                                             wire:target="markAsDelivered({{ $order->id }})"
                                             class="btn-primary w-full justify-center !bg-signal !border-signal">
-                                        <span wire:loading.remove wire:target="markAsDelivered({{ $order->id }})">Mark Delivered</span>
+                                        <span wire:loading.remove wire:target="markAsDelivered({{ $order->id }})">{{ __('admin.mark_delivered') }}</span>
                                         <span wire:loading wire:target="markAsDelivered({{ $order->id }})" class="loading-spinner"></span>
                                     </button>
                                 @endif
@@ -132,7 +132,7 @@
                 @empty
                     <div class="col-span-full">
                         <div class="surface-card border-dashed p-16 text-center">
-                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-soft">No Active Orders</p>
+                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_active_orders') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -142,55 +142,55 @@
         <aside class="space-y-5 lg:col-span-1 transition-opacity duration-300" wire:loading.class="opacity-60">
             <section class="surface-card overflow-hidden border-panel/20 bg-ink text-panel">
                 <div class="border-b border-panel/10 px-5 py-4">
-                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-panel/60">Today</p>
+                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-panel/60">{{ __('admin.today') }}</p>
                     <h3 class="mt-2 font-display text-3xl font-extrabold leading-none"><x-price :amount="$salesToday" :shop="$shop" /></h3>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 p-5">
                     <div class="rounded-lg border border-panel/15 bg-panel/10 px-3 py-3">
-                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">Orders</p>
+                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">{{ __('admin.orders') }}</p>
                         <p class="mt-1 font-display text-2xl font-bold">{{ $ordersToday }}</p>
                     </div>
                     <div class="rounded-lg border border-signal/40 bg-signal/15 px-3 py-3">
-                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/65">Status</p>
-                        <p class="mt-1 font-mono text-xs font-bold uppercase tracking-[0.16em] text-panel">Online</p>
+                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/65">{{ __('admin.pos_status') }}</p>
+                        <p class="mt-1 font-mono text-xs font-bold uppercase tracking-[0.16em] text-panel">{{ __('admin.pos_online') }}</p>
                     </div>
                     <div class="rounded-lg border border-panel/15 bg-panel/10 px-3 py-3">
-                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">Unpaid</p>
+                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">{{ __('admin.pos_unpaid') }}</p>
                         <p class="mt-1 font-display text-2xl font-bold">{{ $unpaidCount }}</p>
                     </div>
                     <div class="rounded-lg border border-panel/15 bg-panel/10 px-3 py-3">
-                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">Ready</p>
+                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/55">{{ __('admin.pos_ready') }}</p>
                         <p class="mt-1 font-display text-2xl font-bold">{{ $readyCount }}</p>
                     </div>
                 </div>
             </section>
 
             <section class="surface-card space-y-3 p-5">
-                <p class="section-headline">System Actions</p>
+                <p class="section-headline">{{ __('admin.system_actions') }}</p>
                 <button
                     x-on:click="$dispatch('confirm-action', {
-                        title: 'Clear Old Orders',
-                        message: 'Clear expired unpaid orders and ready orders older than 30 minutes?',
+                        title: '{{ __('admin.clear_old_orders') }}',
+                        message: '{{ __('admin.clear_old_orders_desc') }}',
                         action: 'clearOldOrders',
                         componentId: $wire.id,
                         destructive: false,
                     })"
                     class="btn-secondary w-full justify-center"
                 >
-                    Clear Old Orders
+                    {{ __('admin.clear_old_orders') }}
                 </button>
                 <button
                     x-on:click="$dispatch('confirm-action', {
-                        title: 'System Reset',
-                        message: 'Cancel all unpaid orders and complete all ready orders? This action cannot be undone.',
+                        title: '{{ __('admin.system_reset') }}',
+                        message: '{{ __('admin.system_reset_desc') }}',
                         action: 'systemReset',
                         componentId: $wire.id,
                         destructive: true,
                     })"
                     class="btn-danger w-full justify-center"
                 >
-                    System Reset
+                    {{ __('admin.system_reset') }}
                 </button>
             </section>
         </aside>
@@ -201,8 +201,8 @@
             <div class="surface-card flex w-full max-w-2xl flex-col overflow-hidden sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
                     <div>
-                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Split Order #{{ $splitOrder->id }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Move selected quantities into a new ticket</p>
+                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.split_order', ['id' => $splitOrder->id]) }}</h3>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.split_order_desc') }}</p>
                     </div>
                     <button wire:click="closeSplit" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -223,10 +223,10 @@
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->translated('product_name_snapshot') }}</p>
-                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Qty: {{ $item->quantity }} | <x-price :amount="$item->price_snapshot" :shop="$shop" /></p>
+                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.qty') }}: {{ $item->quantity }} | <x-price :amount="$item->price_snapshot" :shop="$shop" /></p>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Split Qty</label>
+                                    <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.split_qty') }}</label>
                                     <input type="number" min="0" max="{{ $item->quantity }}" wire:model.live="splitQuantities.{{ $item->id }}" class="field w-24 text-center font-mono text-xs font-bold uppercase">
                                 </div>
                             </div>
@@ -235,8 +235,8 @@
                 </div>
 
                 <div class="flex gap-3 border-t border-line bg-muted/20 p-5">
-                    <button wire:click="closeSplit" class="btn-secondary flex-1 justify-center">Cancel</button>
-                    <button wire:click="applySplit" class="btn-primary flex-1 justify-center">Create Split</button>
+                    <button wire:click="closeSplit" class="btn-secondary flex-1 justify-center">{{ __('admin.cancel') }}</button>
+                    <button wire:click="applySplit" class="btn-primary flex-1 justify-center">{{ __('admin.create_split') }}</button>
                 </div>
             </div>
         </div>
@@ -247,8 +247,8 @@
             <div class="surface-card flex w-full max-w-2xl flex-col overflow-hidden sm:rounded-xl">
                 <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
                     <div>
-                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Payments for Order #{{ $paymentOrder->id }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Balance due: <x-price :amount="$paymentOrder->balance_due" :shop="$shop" /></p>
+                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.payments_for_order', ['id' => $paymentOrder->id]) }}</h3>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.balance_due') }} <x-price :amount="$paymentOrder->balance_due" :shop="$shop" /></p>
                     </div>
                     <button wire:click="closePayment" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -266,23 +266,23 @@
                 <div class="space-y-5 p-5">
                     <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                         <div class="rounded-lg border border-line bg-panel p-3">
-                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Guests</label>
+                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.guests') }}</label>
                             <div class="mt-2 flex items-center gap-2">
                                 <input type="number" min="1" wire:model="splitGuestCount" class="field w-20 text-center font-mono text-xs font-bold uppercase">
-                                <button wire:click="splitByGuests" class="btn-secondary !px-3 !py-2">Split</button>
+                                <button wire:click="splitByGuests" class="btn-secondary !px-3 !py-2">{{ __('admin.split') }}</button>
                             </div>
                         </div>
                         <div class="rounded-lg border border-line bg-panel p-3">
-                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Amount</label>
+                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.amount') }}</label>
                             <div class="mt-2 flex items-center gap-2">
                                 <input type="number" min="0" step="0.01" wire:model="splitAmount" class="field w-24 text-center font-mono text-xs font-bold uppercase">
-                                <button wire:click="splitByAmount" class="btn-secondary !px-3 !py-2">Split</button>
+                                <button wire:click="splitByAmount" class="btn-secondary !px-3 !py-2">{{ __('admin.split') }}</button>
                             </div>
                         </div>
                         <div class="rounded-lg border border-line bg-panel p-3 sm:col-span-2 md:col-span-1">
-                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Rows</label>
+                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.rows') }}</label>
                             <div class="mt-2">
-                                <button wire:click="addPaymentRow" class="btn-secondary w-full justify-center !px-3 !py-2">Add Row</button>
+                                <button wire:click="addPaymentRow" class="btn-secondary w-full justify-center !px-3 !py-2">{{ __('admin.add_row') }}</button>
                             </div>
                         </div>
                     </div>
@@ -292,12 +292,12 @@
                             <div class="grid items-center gap-2 rounded-lg border border-line bg-panel p-3 sm:grid-cols-[auto_auto_1fr]">
                                 <input type="number" min="0" step="0.01" wire:model.live="paymentRows.{{ $index }}.amount" class="field w-full text-center font-mono text-xs font-bold uppercase sm:w-28">
                                 <select wire:model.live="paymentRows.{{ $index }}.method" class="field w-full font-mono text-xs font-semibold uppercase sm:w-36">
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="voucher">Voucher</option>
+                                    <option value="cash">{{ __('admin.cash') }}</option>
+                                    <option value="card">{{ __('admin.card') }}</option>
+                                    <option value="voucher">{{ __('admin.voucher') }}</option>
                                 </select>
                                 <button wire:click="removePaymentRow({{ $index }})" class="btn-secondary w-full justify-center !border-alert/40 !bg-alert/10 !text-alert sm:w-auto">
-                                    Remove
+                                    {{ __('admin.remove') }}
                                 </button>
                             </div>
                         @endforeach
@@ -305,8 +305,8 @@
                 </div>
 
                 <div class="flex gap-3 border-t border-line bg-muted/20 p-5">
-                    <button wire:click="closePayment" class="btn-secondary flex-1 justify-center">Cancel</button>
-                    <button wire:click="applyPayments" class="btn-primary flex-1 justify-center">Apply Payments</button>
+                    <button wire:click="closePayment" class="btn-secondary flex-1 justify-center">{{ __('admin.cancel') }}</button>
+                    <button wire:click="applyPayments" class="btn-primary flex-1 justify-center">{{ __('admin.apply_payments') }}</button>
                 </div>
             </div>
         </div>
@@ -316,12 +316,12 @@
         <div class="fixed inset-0 z-[130] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
             <div class="surface-card w-full max-w-md overflow-hidden sm:rounded-xl">
                 <div class="border-b border-line bg-muted/30 px-5 py-4">
-                    <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Manager Override</h3>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Enter manager PIN to proceed</p>
+                    <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.manager_override') }}</h3>
+                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.manager_override_desc') }}</p>
                 </div>
 
                 <div class="space-y-3 p-5">
-                    <input type="password" maxlength="4" wire:model="managerPin" class="field w-full text-center font-mono text-sm font-bold uppercase tracking-[0.45em]" placeholder="PIN">
+                    <input type="password" maxlength="4" wire:model="managerPin" class="field w-full text-center font-mono text-sm font-bold uppercase tracking-[0.45em]" placeholder="{{ __('admin.pin') }}">
                     @if($managerError)
                         <div class="rounded-lg border border-alert/35 bg-alert/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-alert">
                             {{ $managerError }}
@@ -330,8 +330,8 @@
                 </div>
 
                 <div class="flex gap-3 border-t border-line bg-muted/20 p-5">
-                    <button wire:click="cancelManagerOverride" class="btn-secondary flex-1 justify-center">Cancel</button>
-                    <button wire:click="confirmManagerOverride" class="btn-primary flex-1 justify-center">Confirm</button>
+                    <button wire:click="cancelManagerOverride" class="btn-secondary flex-1 justify-center">{{ __('admin.cancel') }}</button>
+                    <button wire:click="confirmManagerOverride" class="btn-primary flex-1 justify-center">{{ __('admin.confirm') }}</button>
                 </div>
             </div>
         </div>

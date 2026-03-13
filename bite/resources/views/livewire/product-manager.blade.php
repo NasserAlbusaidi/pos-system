@@ -12,7 +12,7 @@
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="space-y-2">
                             <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.product_name_en') }}</label>
-                            <input type="text" wire:model="name_en" class="field" placeholder="Latte">
+                            <input type="text" wire:model="name_en" class="field" placeholder="{{ __('admin.placeholder_product_name') }}">
                         </div>
 
                         <div class="space-y-2">
@@ -22,7 +22,7 @@
 
                         <div class="space-y-2">
                             <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.product_desc_en') }}</label>
-                            <input type="text" wire:model="description_en" class="field" placeholder="Espresso with smooth steamed milk">
+                            <input type="text" wire:model="description_en" class="field" placeholder="{{ __('admin.placeholder_product_desc') }}">
                         </div>
 
                         <div class="space-y-2">

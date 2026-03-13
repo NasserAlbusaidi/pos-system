@@ -275,12 +275,12 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="space-y-1.5">
                                 <label class="text-xs text-ink-soft">{{ __('admin.onboarding_name') }}</label>
-                                <input type="text" wire:model="staffName" class="field" placeholder="Full name">
+                                <input type="text" wire:model="staffName" class="field" placeholder="{{ __('admin.placeholder_full_name') }}">
                                 @error('staffName') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-xs text-ink-soft">{{ __('admin.onboarding_email') }}</label>
-                                <input type="email" wire:model="staffEmail" class="field" placeholder="staff@example.com">
+                                <input type="email" wire:model="staffEmail" class="field" placeholder="{{ __('admin.placeholder_email') }}">
                                 @error('staffEmail') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
