@@ -85,6 +85,38 @@ return [
     'order_count' => ':count طلبات',
     'no_payments_yet' => 'لا توجد مدفوعات بعد',
 
+    // Audit Logs
+    'audit_filter_placeholder' => 'تصفية حسب الإجراء (مثال: order.paid)',
+    'audit_all_staff' => 'جميع الموظفين',
+    'audit_recent_activity' => 'النشاط الأخير',
+    'audit_last_entries' => 'آخر 200 سجل',
+    'audit_time' => 'الوقت',
+    'audit_user' => 'المستخدم',
+    'audit_action' => 'الإجراء',
+    'audit_target' => 'الهدف',
+    'audit_meta' => 'البيانات',
+    'audit_system' => 'النظام',
+    'audit_no_events' => 'لا توجد أحداث مراجعة بعد.',
+
+    // Shift Report
+    'shift_end_of_day' => 'نهاية اليوم',
+    'shift_daily_report' => 'تقرير الوردية اليومي',
+    'shift_print' => 'طباعة',
+    'shift_total_revenue' => 'إجمالي الإيرادات',
+    'shift_orders' => 'الطلبات',
+    'shift_avg_order' => 'متوسط قيمة الطلب',
+    'shift_tax_collected' => 'الضريبة المحصلة',
+    'shift_payment_breakdown' => 'تفصيل المدفوعات',
+    'shift_method' => 'الطريقة',
+    'shift_count' => 'العدد',
+    'shift_total' => 'المجموع',
+    'shift_no_payments' => 'لا توجد مدفوعات مسجلة',
+    'shift_top_products' => 'أفضل 5 منتجات',
+    'shift_no_products_sold' => 'لا توجد منتجات مباعة',
+    'shift_peak' => 'الذروة: :hour (:count طلبات)',
+    'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
+    'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
+
     // Language
     'language' => 'اللغة',
     'switch_arabic' => 'عربي',

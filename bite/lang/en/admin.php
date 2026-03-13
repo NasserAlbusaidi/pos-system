@@ -85,6 +85,38 @@ return [
     'order_count' => ':count orders',
     'no_payments_yet' => 'No payments yet',
 
+    // Audit Logs
+    'audit_filter_placeholder' => 'Filter by action (e.g. order.paid)',
+    'audit_all_staff' => 'All Staff',
+    'audit_recent_activity' => 'Recent Activity',
+    'audit_last_entries' => 'Last 200 entries',
+    'audit_time' => 'Time',
+    'audit_user' => 'User',
+    'audit_action' => 'Action',
+    'audit_target' => 'Target',
+    'audit_meta' => 'Meta',
+    'audit_system' => 'System',
+    'audit_no_events' => 'No audit events yet.',
+
+    // Shift Report
+    'shift_end_of_day' => 'End of Day',
+    'shift_daily_report' => 'Daily Shift Report',
+    'shift_print' => 'Print',
+    'shift_total_revenue' => 'Total Revenue',
+    'shift_orders' => 'Orders',
+    'shift_avg_order' => 'Avg Order Value',
+    'shift_tax_collected' => 'Tax Collected',
+    'shift_payment_breakdown' => 'Payment Breakdown',
+    'shift_method' => 'Method',
+    'shift_count' => 'Count',
+    'shift_total' => 'Total',
+    'shift_no_payments' => 'No payments recorded',
+    'shift_top_products' => 'Top 5 Products',
+    'shift_no_products_sold' => 'No products sold',
+    'shift_peak' => 'Peak: :hour (:count orders)',
+    'shift_no_orders_date' => 'No orders for this date',
+    'shift_generated' => 'Generated :datetime | Powered by Bite',
+
     // Language
     'language' => 'Language',
     'switch_arabic' => 'عربي',
