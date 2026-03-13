@@ -55,7 +55,7 @@
                             @endif
                         </td>
                         <td>{{ $item->quantity }}</td>
-                        <td><x-price :amount="$item->price_snapshot" :shop="$order->shop" /></td>
+                        <td>{{ formatPrice($item->price_snapshot, $order->shop) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -63,11 +63,11 @@
 
         <div class="totals">
             <div class="mono">Subtotal</div>
-            <div><x-price :amount="$order->subtotal_amount ?? $order->total_amount" :shop="$order->shop" /></div>
+            <div>{{ formatPrice($order->subtotal_amount ?? $order->total_amount, $order->shop) }}</div>
             <div class="mono">Tax</div>
-            <div><x-price :amount="$order->tax_amount ?? 0" :shop="$order->shop" /></div>
+            <div>{{ formatPrice($order->tax_amount ?? 0, $order->shop) }}</div>
             <div class="mono total">Total</div>
-            <div class="total"><x-price :amount="$order->total_amount" :shop="$order->shop" /></div>
+            <div class="total">{{ formatPrice($order->total_amount, $order->shop) }}</div>
         </div>
     </div>
 </body>
