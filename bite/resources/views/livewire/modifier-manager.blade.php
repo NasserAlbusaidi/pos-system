@@ -1,38 +1,38 @@
 <div class="space-y-6 fade-rise">
-    <x-slot:header>Modifier Management</x-slot:header>
+    <x-slot:header>{{ __('admin.modifier_management') }}</x-slot:header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- New Group Form -->
         <div class="lg:col-span-1 space-y-6">
             <div class="surface-card p-5 sm:p-6">
                 <div class="space-y-6">
-                    <h2 class="font-display text-xl font-extrabold leading-none text-ink">Create New Group</h2>
+                    <h2 class="font-display text-xl font-extrabold leading-none text-ink">{{ __('admin.modifier_create_group') }}</h2>
 
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="space-y-2">
-                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Group Name (English)</label>
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_group_name_en') }}</label>
                             <input type="text" wire:model="name_en" class="w-full field transition-all" placeholder="e.g. Milk Choice">
                             @error('name_en') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="space-y-2">
-                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Group Name (Arabic)</label>
+                            <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_group_name_ar') }}</label>
                             <input type="text" wire:model="name_ar" class="w-full field transition-all" placeholder="مثال: نوع الحليب" dir="rtl">
                             @error('name_ar') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="grid grid-cols-2 gap-6">
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Min Required</label>
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_min_required') }}</label>
                                 <input type="number" wire:model="min_selection" class="w-full field transition-all" placeholder="0">
                             </div>
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Max Allowed</label>
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_max_allowed') }}</label>
                                 <input type="number" wire:model="max_selection" class="w-full field transition-all" placeholder="1">
                             </div>
                         </div>
 
-                        <button type="submit" class="btn-primary w-full">Save Group</button>
+                        <button type="submit" class="btn-primary w-full">{{ __('admin.modifier_save_group') }}</button>
                     </form>
                 </div>
             </div>
@@ -41,28 +41,28 @@
             @if($selectedGroupId)
                 <div class="surface-card p-5 sm:p-6 fade-rise">
                     <div class="space-y-6">
-                        <h2 class="font-display text-xl font-extrabold leading-none text-crema">Add Option</h2>
+                        <h2 class="font-display text-xl font-extrabold leading-none text-crema">{{ __('admin.modifier_add_option') }}</h2>
 
                         <form wire:submit.prevent="addOption" class="space-y-6">
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Option Name (English)</label>
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_option_name_en') }}</label>
                                 <input type="text" wire:model="optionNameEn" class="w-full field transition-all" placeholder="e.g. Oat Milk">
                                 @error('optionNameEn') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Option Name (Arabic)</label>
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_option_name_ar') }}</label>
                                 <input type="text" wire:model="optionNameAr" class="w-full field transition-all" placeholder="مثال: حليب الشوفان" dir="rtl">
                                 @error('optionNameAr') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="space-y-2">
-                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Extra Cost</label>
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_extra_cost') }}</label>
                                 <input type="number" step="0.01" wire:model="optionPrice" class="w-full field transition-all" placeholder="1.00">
                                 @error('optionPrice') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 
-                            <button type="submit" class="btn-primary w-full">Add Option</button>
+                            <button type="submit" class="btn-primary w-full">{{ __('admin.modifier_add_option_btn') }}</button>
                         </form>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="surface-card">
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h3 class="font-display text-xl font-extrabold leading-none">Modifier Groups</h3>
+                    <h3 class="font-display text-xl font-extrabold leading-none">{{ __('admin.modifier_groups') }}</h3>
                 </div>
 
                 <div class="divide-y divide-line/65">
@@ -88,13 +88,13 @@
                                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-ink text-panel font-mono text-xs font-bold">{{ $loop->iteration }}</div>
                                     <div>
                                         <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $group->name_en }}</div>
-                                        <div class="mt-0.5 font-mono text-[10px] text-ink-soft">Rule: Select {{ $group->min_selection }}-{{ $group->max_selection }}</div>
+                                        <div class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ __('admin.modifier_rule', ['min' => $group->min_selection, 'max' => $group->max_selection]) }}</div>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-12">
-                                    <div class="tag">{{ $group->options->count() }} Options</div>
+                                    <div class="tag">{{ __('admin.modifier_options_count', ['count' => $group->options->count()]) }}</div>
                                     @if($selectedGroupId == $group->id)
-                                        <span class="inline-flex items-center rounded-full border border-crema/40 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-crema">SELECTED</span>
+                                        <span class="inline-flex items-center rounded-full border border-crema/40 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-crema">{{ __('admin.modifier_selected') }}</span>
                                     @endif
                                 </div>
                             </div>

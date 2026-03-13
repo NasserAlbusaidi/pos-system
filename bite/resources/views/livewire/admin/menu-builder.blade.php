@@ -1,18 +1,18 @@
 <div class="space-y-6 fade-rise" x-data>
-    <x-slot:header>Menu Builder</x-slot:header>
+    <x-slot:header>{{ __('admin.menu_builder') }}</x-slot:header>
 
     <!-- Toolbar -->
     <div class="surface-card p-5 sm:p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex-1 max-w-md">
-                <label class="section-headline mb-2 block">Search</label>
-                <input type="text" wire:model.live="search" class="field text-sm" placeholder="Search products...">
+                <label class="section-headline mb-2 block">{{ __('admin.menu_search') }}</label>
+                <input type="text" wire:model.live="search" class="field text-sm" placeholder="{{ __('admin.menu_search_placeholder') }}">
             </div>
 
             <div class="flex items-center gap-3">
-                <input type="text" wire:model="newCategoryNameEn" placeholder="Category (English)" class="field text-sm">
-                <input type="text" wire:model="newCategoryNameAr" placeholder="التصنيف (عربي)" class="field text-sm" dir="rtl">
-                <button wire:click="createCategory" class="btn-primary whitespace-nowrap">+ Add Category</button>
+                <input type="text" wire:model="newCategoryNameEn" placeholder="{{ __('admin.menu_category_en_placeholder') }}" class="field text-sm">
+                <input type="text" wire:model="newCategoryNameAr" placeholder="{{ __('admin.menu_category_ar_placeholder') }}" class="field text-sm" dir="rtl">
+                <button wire:click="createCategory" class="btn-primary whitespace-nowrap">{{ __('admin.menu_add_category') }}</button>
             </div>
         </div>
     </div>
@@ -29,12 +29,12 @@
                             @click="let nameEn = prompt('Category name (English):', @js($category->name_en)); if (nameEn !== null) { nameEn = nameEn.trim(); if (nameEn.length) { let nameAr = prompt('Category name (Arabic):', @js($category->name_ar ?? '')); @this.renameCategory({{ $category->id }}, nameEn, nameAr) } }"
                             class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-colors"
                         >
-                            Rename
+                            {{ __('admin.menu_rename') }}
                         </button>
                         <button
                             x-on:click="$dispatch('confirm-action', {
-                                title: 'Delete Category',
-                                message: 'This category must be empty first. Are you sure you want to delete it?',
+                                title: '{{ __('admin.menu_delete_category') }}',
+                                message: '{{ __('admin.menu_delete_category_confirm') }}',
                                 action: 'deleteCategory',
                                 actionArgs: [{{ $category->id }}],
                                 componentId: $wire.id,
@@ -42,10 +42,10 @@
                             })"
                             class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-alert/80 hover:text-alert transition-colors"
                         >
-                            Delete
+                            {{ __('admin.menu_delete') }}
                         </button>
                     </div>
-                    <span class="tag">{{ $category->products->count() }} items</span>
+                    <span class="tag">{{ __('admin.menu_items_count', ['count' => $category->products->count()]) }}</span>
                 </div>
 
                 <!-- Drop Zone -->
@@ -86,21 +86,21 @@
                             </div>
 
                             <div class="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a href="{{ route('admin.products', ['edit' => $product->id]) }}" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-crema transition-colors">Edit</a>
+                                <a href="{{ route('admin.products', ['edit' => $product->id]) }}" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-crema transition-colors">{{ __('admin.menu_edit') }}</a>
                                 <button wire:click="toggleVisibility({{ $product->id }})" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $product->is_visible ? 'text-signal' : 'text-alert' }}">
-                                    {{ $product->is_visible ? 'Visible' : 'Hidden' }}
+                                    {{ $product->is_visible ? __('admin.menu_visible') : __('admin.menu_hidden') }}
                                 </button>
                                 <button
                                     x-on:click="$dispatch('confirm-action', {
-                                        title: 'Delete Product',
-                                        message: 'Are you sure you want to delete this product?',
+                                        title: '{{ __('admin.menu_delete_product') }}',
+                                        message: '{{ __('admin.menu_delete_product_confirm') }}',
                                         action: 'deleteProduct',
                                         actionArgs: [{{ $product->id }}],
                                         componentId: $wire.id,
                                         destructive: true,
                                     })"
                                     class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-alert hover:text-alert"
-                                >Delete</button>
+                                >{{ __('admin.menu_delete') }}</button>
                                 <svg class="w-4 h-4 text-ink-soft/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" /></svg>
                             </div>
                         </div>
@@ -108,7 +108,7 @@
 
                     @if($category->products->isEmpty())
                         <div class="rounded-xl border border-dashed border-line p-12 text-center">
-                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No Items</span>
+                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.menu_no_items') }}</span>
                         </div>
                     @endif
                 </div>
