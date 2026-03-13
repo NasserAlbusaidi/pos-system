@@ -1,12 +1,5 @@
 <!DOCTYPE html>
-@php
-    $shopLang = 'en';
-    if (isset($shop)) {
-        $shopLang = session('guest_locale', $shop->branding['language'] ?? 'en');
-    }
-    $direction = $shopLang === 'ar' ? 'rtl' : 'ltr';
-@endphp
-<html lang="{{ $shopLang }}" dir="{{ $direction }}">
+<html lang="{{ $currentLocale ?? app()->getLocale() }}" dir="{{ $direction ?? 'ltr' }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">

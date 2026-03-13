@@ -1,10 +1,5 @@
 <!DOCTYPE html>
-@php
-    $shop = Illuminate\Support\Facades\Auth::user()?->shop;
-    $adminLang = $shop ? ($shop->branding['language'] ?? 'en') : 'en';
-    $adminDir = $adminLang === 'ar' ? 'rtl' : 'ltr';
-@endphp
-<html lang="{{ $adminLang }}" dir="{{ $adminDir }}" class="h-full">
+<html lang="{{ $currentLocale ?? 'en' }}" dir="{{ $direction ?? 'ltr' }}" class="h-full">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +10,7 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <title>{{ $title ?? 'Bite' }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @php $shop = $shop ?? Illuminate\Support\Facades\Auth::user()?->shop; @endphp
         @if($shop)
             @php
                 $branding = $shop->branding ?? [];
