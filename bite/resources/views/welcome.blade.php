@@ -1482,8 +1482,8 @@
         </div>
 
         {{-- Decorative blobs --}}
-        <div class="blob blob--crema" style="width: 300px; height: 300px; top: -80px; left: -100px; position: absolute;"></div>
-        <div class="blob blob--signal" style="width: 250px; height: 250px; bottom: -60px; right: -80px; position: absolute;"></div>
+        <div class="blob blob--crema" style="width: 300px; height: 300px; top: -80px; inset-inline-start: -100px; position: absolute;"></div>
+        <div class="blob blob--signal" style="width: 250px; height: 250px; bottom: -60px; inset-inline-end: -80px; position: absolute;"></div>
     </section>
 
     {{-- ==================== PROBLEM STATEMENT ==================== --}}
@@ -1583,7 +1583,7 @@
             </div>
         </div>
 
-        <div class="blob blob--signal" style="width: 350px; height: 350px; top: 20%; left: -150px; position: absolute;"></div>
+        <div class="blob blob--signal" style="width: 350px; height: 350px; top: 20%; inset-inline-start: -150px; position: absolute;"></div>
     </section>
 
     {{-- ==================== HOW IT WORKS ==================== --}}
@@ -1720,7 +1720,7 @@
             </div>
         </div>
 
-        <div class="blob blob--crema" style="width: 300px; height: 300px; bottom: -100px; right: -100px; position: absolute;"></div>
+        <div class="blob blob--crema" style="width: 300px; height: 300px; bottom: -100px; inset-inline-end: -100px; position: absolute;"></div>
     </section>
 
     {{-- ==================== SOCIAL PROOF ==================== --}}

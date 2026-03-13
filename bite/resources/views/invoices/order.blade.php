@@ -10,7 +10,7 @@
         .header { display: flex; justify-content: space-between; align-items: center; }
         .mono { font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th, td { border-bottom: 1px solid #D1D1CB; padding: 8px 0; text-align: left; }
+        th, td { border-bottom: 1px solid #D1D1CB; padding: 8px 0; text-align: start; }
         .totals { margin-top: 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px; }
         .total { font-weight: bold; }
     </style>
