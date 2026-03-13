@@ -1,17 +1,17 @@
 <div class="h-full space-y-6 fade-rise" wire:poll.5s>
-    <x-slot:header>POS Register</x-slot:header>
+    <x-slot:header>{{ __('admin.pos_register') }}</x-slot:header>
 
     <div class="grid h-full gap-6 lg:grid-cols-4">
         <section class="space-y-5 lg:col-span-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="section-headline">Active Tickets</p>
-                    <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">Front Counter Queue</h2>
+                    <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">{{ __('admin.front_counter_queue') }}</h2>
                 </div>
                 <div class="flex items-center gap-2">
                     <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
-                    <span class="tag">Refresh 5s</span>
-                    <span class="tag">{{ count($orders) }} open</span>
+                    <span class="tag">{{ __('admin.refresh_interval', ['seconds' => '5s']) }}</span>
+                    <span class="tag">{{ __('admin.open_count', ['count' => count($orders)]) }}</span>
                 </div>
             </div>
 
@@ -28,14 +28,14 @@
                         <span class="sr-only">ID_{{ $order->id }}</span>
                         <header class="flex items-start justify-between border-b border-line px-5 py-4">
                             <div>
-                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Order #{{ $order->id }}</p>
+                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.order_number', ['id' => $order->id]) }}</p>
                                 <p class="mt-1 font-display text-2xl font-extrabold leading-none text-ink">{{ formatPrice($order->total_amount, $shop) }}</p>
                             </div>
                             <div class="flex items-start gap-2">
                                 <button
                                     onclick="window.open('/receipt/{{ $order->id }}', '_blank', 'width=380,height=700')"
                                     class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink transition-colors print-hidden"
-                                    title="Print Receipt"
+                                    title="{{ __('admin.print_receipt') }}"
                                 >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                                 </button>
@@ -59,19 +59,19 @@
 
                         <div class="flex-1 space-y-4 p-5">
                             <div>
-                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Channel</p>
-                                <p class="mt-1 text-sm font-medium text-ink">Guest Counter Order</p>
+                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.channel') }}</p>
+                                <p class="mt-1 text-sm font-medium text-ink">{{ __('admin.guest_counter_order') }}</p>
                             </div>
 
                             @if($order->items->isNotEmpty())
                                 <div>
-                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Items</p>
+                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.items') }}</p>
                                     <div class="mt-1 space-y-0.5">
                                         @foreach($order->items->take(3) as $item)
-                                            <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->product_name_snapshot_en }}</p>
+                                            <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->translated('product_name_snapshot') }}</p>
                                         @endforeach
                                         @if($order->items->count() > 3)
-                                            <p class="font-mono text-[10px] text-ink-soft">+{{ $order->items->count() - 3 }} more</p>
+                                            <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.more_items', ['count' => $order->items->count() - 3]) }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -80,11 +80,11 @@
                             @if($order->payments->isNotEmpty())
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
-                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Paid</p>
+                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.paid') }}</p>
                                         <p class="mt-1 font-mono text-xs font-bold uppercase">{{ formatPrice($order->paid_total, $shop) }}</p>
                                     </div>
                                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
-                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Due</p>
+                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.due') }}</p>
                                         <p class="mt-1 font-mono text-xs font-bold uppercase">{{ formatPrice($order->balance_due, $shop) }}</p>
                                     </div>
                                 </div>
@@ -222,7 +222,7 @@
                         <div class="rounded-xl border border-line bg-panel px-4 py-3">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->product_name_snapshot_en }}</p>
+                                    <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->translated('product_name_snapshot') }}</p>
                                     <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Qty: {{ $item->quantity }} | {{ formatPrice($item->price_snapshot, $shop) }}</p>
                                 </div>
                                 <div class="flex items-center gap-2">
