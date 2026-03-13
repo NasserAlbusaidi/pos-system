@@ -91,4 +91,17 @@ class SetLocaleMiddlewareTest extends TestCase
         $response->assertOk();
         $this->assertEquals('en', app()->getLocale());
     }
+
+    public function test_invalid_session_locale_is_rejected(): void
+    {
+        $shop = Shop::factory()->create(['branding' => ['language' => 'en']]);
+        $user = User::factory()->create(['shop_id' => $shop->id]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['admin_locale' => '../etc/passwd'])
+            ->get(route('dashboard'));
+
+        $response->assertOk();
+        $this->assertEquals('en', app()->getLocale());
+    }
 }
