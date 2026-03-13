@@ -57,22 +57,22 @@
                     </div>
                     <div class="rounded-xl border border-line bg-panel px-4 py-3 text-left sm:text-right">
                         <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.total') }}</p>
-                        <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($order->total_amount, $shop) }}</p>
+                        <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
                         <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.subtotal') }}</p>
-                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->subtotal_amount ?? $order->total_amount, $shop) }}</p>
+                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->subtotal_amount ?? $order->total_amount" :shop="$shop" /></p>
                     </div>
                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
                         <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.tax') }}</p>
-                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->tax_amount ?? 0, $shop) }}</p>
+                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->tax_amount ?? 0" :shop="$shop" /></p>
                     </div>
                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
                         <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.total') }}</p>
-                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->total_amount, $shop) }}</p>
+                        <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></p>
                     </div>
                 </div>
 

@@ -104,7 +104,7 @@
                                     @foreach($group->options as $option)
                                         <div class="rounded-lg border border-line bg-panel px-3 py-2.5 flex justify-between items-center">
                                             <span class="text-[11px] font-semibold uppercase tracking-tight text-ink truncate">{{ $option->name_en }}</span>
-                                            <span class="font-mono text-[10px] font-semibold text-crema">+{{ formatPrice($option->price_adjustment, $shop) }}</span>
+                                            <span class="font-mono text-[10px] font-semibold text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
                                         </div>
                                     @endforeach
                                 </div>

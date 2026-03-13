@@ -81,7 +81,7 @@
                                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-muted font-mono text-[9px] font-semibold text-ink-soft">{{ $product->id }}</div>
                                 <div>
                                     <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name_en }}</div>
-                                    <div class="font-mono text-[10px] font-semibold text-ink-soft">{{ formatPrice($product->price, $shop) }}</div>
+                                    <div class="font-mono text-[10px] font-semibold text-ink-soft"><x-price :amount="$product->price" :shop="$shop" /></div>
                                 </div>
                             </div>
 

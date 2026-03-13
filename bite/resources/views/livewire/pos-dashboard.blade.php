@@ -29,7 +29,7 @@
                         <header class="flex items-start justify-between border-b border-line px-5 py-4">
                             <div>
                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.order_number', ['id' => $order->id]) }}</p>
-                                <p class="mt-1 font-display text-2xl font-extrabold leading-none text-ink">{{ formatPrice($order->total_amount, $shop) }}</p>
+                                <p class="mt-1 font-display text-2xl font-extrabold leading-none text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></p>
                             </div>
                             <div class="flex items-start gap-2">
                                 <button
@@ -81,11 +81,11 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
                                         <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.paid') }}</p>
-                                        <p class="mt-1 font-mono text-xs font-bold uppercase">{{ formatPrice($order->paid_total, $shop) }}</p>
+                                        <p class="mt-1 font-mono text-xs font-bold uppercase"><x-price :amount="$order->paid_total" :shop="$shop" /></p>
                                     </div>
                                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
                                         <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.due') }}</p>
-                                        <p class="mt-1 font-mono text-xs font-bold uppercase">{{ formatPrice($order->balance_due, $shop) }}</p>
+                                        <p class="mt-1 font-mono text-xs font-bold uppercase"><x-price :amount="$order->balance_due" :shop="$shop" /></p>
                                     </div>
                                 </div>
                             @endif
@@ -143,7 +143,7 @@
             <section class="surface-card overflow-hidden border-panel/20 bg-ink text-panel">
                 <div class="border-b border-panel/10 px-5 py-4">
                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-panel/60">Today</p>
-                    <h3 class="mt-2 font-display text-3xl font-extrabold leading-none">{{ formatPrice($salesToday, $shop) }}</h3>
+                    <h3 class="mt-2 font-display text-3xl font-extrabold leading-none"><x-price :amount="$salesToday" :shop="$shop" /></h3>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 p-5">
@@ -223,7 +223,7 @@
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item->translated('product_name_snapshot') }}</p>
-                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Qty: {{ $item->quantity }} | {{ formatPrice($item->price_snapshot, $shop) }}</p>
+                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">Qty: {{ $item->quantity }} | <x-price :amount="$item->price_snapshot" :shop="$shop" /></p>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Split Qty</label>
@@ -248,7 +248,7 @@
                 <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
                     <div>
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">Payments for Order #{{ $paymentOrder->id }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Balance due: {{ formatPrice($paymentOrder->balance_due, $shop) }}</p>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Balance due: <x-price :amount="$paymentOrder->balance_due" :shop="$shop" /></p>
                     </div>
                     <button wire:click="closePayment" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>

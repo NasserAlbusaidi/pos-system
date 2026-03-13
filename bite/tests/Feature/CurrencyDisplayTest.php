@@ -32,7 +32,8 @@ class CurrencyDisplayTest extends TestCase
         ]);
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
-            ->assertSee('OMR 0.500')
+            ->assertSee('0.500')
+            ->assertSeeHtml('class="omr-symbol"')
             ->assertDontSee('$ 0');
     }
 
@@ -54,7 +55,8 @@ class CurrencyDisplayTest extends TestCase
         ]);
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
-            ->assertSee("\xD8\xB1.\xD8\xB9. 0.500");
+            ->assertSee('0.500')
+            ->assertSeeHtml('class="omr-symbol"');
     }
 
     public function test_new_shop_defaults_to_omr(): void

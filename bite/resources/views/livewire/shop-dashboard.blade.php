@@ -33,7 +33,7 @@
                                         <div class="flex items-start justify-between gap-2">
                                             <div>
                                                 <p class="text-sm font-semibold text-ink">Order #{{ $notification->data['order_id'] ?? '—' }}</p>
-                                                <p class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $notification->data['item_count'] ?? 0 }} items &middot; {{ isset($notification->data['total']) ? formatPrice($notification->data['total'], $shop) : '—' }}</p>
+                                                <p class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $notification->data['item_count'] ?? 0 }} items &middot; @if(isset($notification->data['total']))<x-price :amount="$notification->data['total']" :shop="$shop" />@else — @endif</p>
                                             </div>
                                             @if(!empty($notification->data['whatsapp_link']) && str_starts_with($notification->data['whatsapp_link'], 'https://wa.me/'))
                                                 <a href="{{ $notification->data['whatsapp_link'] }}" target="_blank" rel="noopener" class="shrink-0 rounded-lg border border-signal/30 bg-signal/10 p-1.5 text-signal hover:bg-signal/20">
@@ -65,7 +65,7 @@
         <div class="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
             <article class="rounded-xl border border-line bg-panel p-5">
                 <p class="section-headline">{{ __('admin.todays_revenue') }}</p>
-                <p class="metric-value mt-4">{{ formatPrice($dailyRevenue, $shop) }}</p>
+                <p class="metric-value mt-4"><x-price :amount="$dailyRevenue" :shop="$shop" /></p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
@@ -96,7 +96,7 @@
 
         <article class="surface-card p-5">
             <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
-            <p class="metric-value mt-4">{{ formatPrice($avgOrderValue, $shop) }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$avgOrderValue" :shop="$shop" /></p>
         </article>
 
         <article class="surface-card p-5">
@@ -130,7 +130,7 @@
                         <tr class="transition-colors hover:bg-muted/35">
                             <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
                             <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase">{{ $product->qty }}</td>
-                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase">{{ formatPrice($product->revenue, $shop) }}</td>
+                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                         </tr>
                     @empty
                         <tr>
@@ -155,7 +155,7 @@
                                     <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($method) }}</div>
                                     <div class="mt-1 text-sm font-medium text-ink">{{ $summary['orders'] }} orders</div>
                                 </div>
-                                <div class="font-mono text-sm font-bold uppercase">{{ formatPrice($summary['total'], $shop) }}</div>
+                                <div class="font-mono text-sm font-bold uppercase"><x-price :amount="$summary['total']" :shop="$shop" /></div>
                             </div>
                         @endforeach
                     @else
@@ -232,7 +232,7 @@
                     <tr class="transition-colors hover:bg-muted/35">
                         <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">#{{ $order->id }}</td>
                         <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-medium text-ink">Guest</td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->total_amount, $shop) }}</td>
+                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></td>
                         <td class="px-3 py-3 sm:px-5 sm:py-4">
                             @php
                                 $statusClass = match ($order->status) {

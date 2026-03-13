@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <article class="rounded-xl border border-line bg-panel p-5">
             <p class="section-headline">{{ __('admin.revenue_days', ['days' => $rangeDays]) }}</p>
-            <p class="metric-value mt-4">{{ formatPrice($totalRevenue, $shop) }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$totalRevenue" :shop="$shop" /></p>
         </article>
         <article class="rounded-xl border border-line bg-panel p-5">
             <p class="section-headline">{{ __('admin.orders_days', ['days' => $rangeDays]) }}</p>
@@ -17,7 +17,7 @@
         </article>
         <article class="rounded-xl border border-line bg-panel p-5">
             <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
-            <p class="metric-value mt-4">{{ formatPrice($avgOrder, $shop) }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$avgOrder" :shop="$shop" /></p>
         </article>
     </div>
 
@@ -50,7 +50,7 @@
                         <tr class="hover:bg-muted/35 transition-colors">
                             <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->translated('product_name_snapshot') }}</td>
                             <td class="px-5 py-4 font-mono text-xs font-bold">{{ $product->qty }}</td>
-                            <td class="px-5 py-4 font-mono text-xs font-bold">{{ formatPrice($product->revenue, $shop) }}</td>
+                            <td class="px-5 py-4 font-mono text-xs font-bold"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                         </tr>
                     @empty
                         <tr>
@@ -72,7 +72,7 @@
                             <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($row->payment_method) }}</div>
                             <div class="mt-1 text-sm font-medium text-ink">{{ __('admin.order_count', ['count' => $row->orders]) }}</div>
                         </div>
-                        <div class="font-mono text-sm font-bold">{{ formatPrice($row->total, $shop) }}</div>
+                        <div class="font-mono text-sm font-bold"><x-price :amount="$row->total" :shop="$shop" /></div>
                     </div>
                 @empty
                     <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.no_payments_yet') }}</div>

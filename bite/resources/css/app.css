@@ -283,6 +283,23 @@
     }
 }
 
+/* Currency symbol */
+.omr-symbol {
+    display: inline-block;
+    height: 0.65em;
+    width: auto;
+    vertical-align: baseline;
+    margin-inline-end: 0.2em;
+    position: relative;
+    top: -0.05em;
+}
+
+.price-display {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+
 /* ==========================================================================
    RTL (Right-to-Left) Support for Arabic
    ========================================================================== */

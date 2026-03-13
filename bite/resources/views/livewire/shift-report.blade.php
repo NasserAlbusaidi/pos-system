@@ -35,7 +35,7 @@
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="surface-card p-5">
             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_total_revenue') }}</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($totalRevenue, $shop) }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$totalRevenue" :shop="$shop" /></p>
         </div>
         <div class="surface-card p-5">
             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_orders') }}</p>
@@ -43,11 +43,11 @@
         </div>
         <div class="surface-card p-5">
             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_avg_order') }}</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($avgOrder, $shop) }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$avgOrder" :shop="$shop" /></p>
         </div>
         <div class="surface-card p-5">
             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_tax_collected') }}</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($totalTax, $shop) }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$totalTax" :shop="$shop" /></p>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
                             <tr>
                                 <td class="px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink">{{ ucfirst($row->method) }}</td>
                                 <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ $row->count }}</td>
-                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ formatPrice($row->total, $shop) }}</td>
+                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink"><x-price :amount="$row->total" :shop="$shop" /></td>
                             </tr>
                         @empty
                             <tr>
@@ -102,7 +102,7 @@
                             <tr>
                                 <td class="px-5 py-3 font-mono text-xs font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
                                 <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ $product->qty }}</td>
-                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ formatPrice($product->revenue, $shop) }}</td>
+                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                             </tr>
                         @empty
                             <tr>

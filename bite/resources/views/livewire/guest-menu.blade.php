@@ -100,10 +100,10 @@
                                         </div>
                                         <div class="text-right">
                                             @if($product->is_on_sale)
-                                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through">{{ formatPrice($product->price, $shop) }}</p>
-                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema">{{ formatPrice($product->final_price, $shop) }}</p>
+                                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through"><x-price :amount="$product->price" :shop="$shop" /></p>
+                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema"><x-price :amount="$product->final_price" :shop="$shop" /></p>
                                             @else
-                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-ink">{{ formatPrice($product->price, $shop) }}</p>
+                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-ink"><x-price :amount="$product->price" :shop="$shop" /></p>
                                             @endif
                                         </div>
                                     </div>
@@ -137,7 +137,7 @@
                         <span class="inline-flex items-center rounded-full border border-panel/20 bg-panel/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/90">{{ __('guest.ready') }}</span>
                         <span class="font-display text-base font-bold leading-none sm:text-2xl">{{ __('guest.review_order') }}</span>
                     </div>
-                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl">{{ formatPrice($this->total, $shop) }}</span>
+                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl"><x-price :amount="$this->total" :shop="$shop" /></span>
                 </button>
             </div>
         </div>
@@ -171,7 +171,7 @@
                                         </div>
                                     </div>
                                     <div class="flex items-start gap-2">
-                                        <p class="font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($item['price'] * $item['quantity'], $shop) }}</p>
+                                        <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
                                         <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
                                             <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                         </button>
@@ -184,15 +184,15 @@
                     <section class="grid grid-cols-3 gap-2 sm:gap-3">
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.subtotal') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->subtotal, $shop) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->subtotal" :shop="$shop" /></p>
                         </div>
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.tax') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->tax, $shop) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->tax" :shop="$shop" /></p>
                         </div>
                         <div class="rounded-lg border border-line bg-panel px-3 py-2">
                             <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.total') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($this->total, $shop) }}</p>
+                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->total" :shop="$shop" /></p>
                         </div>
                     </section>
 
@@ -259,7 +259,7 @@
                 <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
                     <div>
                         <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->translated('name') }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.price') }}: {{ formatPrice($this->customizingProductPrice, $shop) }}</p>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.price') }}: <x-price :amount="$this->customizingProductPrice" :shop="$shop" /></p>
                     </div>
                     <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -296,7 +296,7 @@
                                             <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->translated('name') }}</span>
                                         </span>
                                         @if($option->price_adjustment > 0)
-                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+{{ formatPrice($option->price_adjustment, $shop) }}</span>
+                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
                                         @endif
                                     </label>
                                 @endforeach
@@ -312,7 +312,7 @@
                             wire:loading.class="opacity-50 cursor-wait"
                             wire:target="addToCart({{ $customizingProduct->id }})"
                             class="btn-primary w-full justify-center">
-                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})">{{ __('guest.add_for', ['price' => formatPrice($this->customizingProductPrice, $shop)]) }}</span>
+                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})">{{ __('guest.add_for', ['price' => '']) }}<x-price :amount="$this->customizingProductPrice" :shop="$shop" /></span>
                         <span wire:loading wire:target="addToCart({{ $customizingProduct->id }})" class="loading-spinner"></span>
                     </button>
                 </div>

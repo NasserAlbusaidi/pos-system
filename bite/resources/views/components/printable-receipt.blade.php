@@ -50,14 +50,14 @@
             <div class="receipt-item">
                 <div class="receipt-row">
                     <span class="receipt-item-name">{{ $item->quantity }}x {{ $item->product_name_snapshot_en }}</span>
-                    <span class="receipt-item-price">{{ formatPrice($item->price_snapshot * $item->quantity, $shop) }}</span>
+                    <span class="receipt-item-price"><x-price :amount="$item->price_snapshot * $item->quantity" :shop="$shop" /></span>
                 </div>
                 @if($item->modifiers->isNotEmpty())
                     @foreach($item->modifiers as $modifier)
                         <div class="receipt-modifier">
                             <span>+ {{ $modifier->modifier_option_name_snapshot_en }}</span>
                             @if($modifier->price_adjustment_snapshot > 0)
-                                <span>{{ formatPrice($modifier->price_adjustment_snapshot, $shop) }}</span>
+                                <span><x-price :amount="$modifier->price_adjustment_snapshot" :shop="$shop" /></span>
                             @endif
                         </div>
                     @endforeach
@@ -73,18 +73,18 @@
         @if($order->subtotal_amount && $order->subtotal_amount != $order->total_amount)
             <div class="receipt-row">
                 <span>Subtotal</span>
-                <span>{{ formatPrice($order->subtotal_amount, $shop) }}</span>
+                <span><x-price :amount="$order->subtotal_amount" :shop="$shop" /></span>
             </div>
         @endif
         @if($order->tax_amount > 0)
             <div class="receipt-row">
                 <span>Tax</span>
-                <span>{{ formatPrice($order->tax_amount, $shop) }}</span>
+                <span><x-price :amount="$order->tax_amount" :shop="$shop" /></span>
             </div>
         @endif
         <div class="receipt-row receipt-total-row">
             <span>TOTAL</span>
-            <span>{{ formatPrice($order->total_amount, $shop) }}</span>
+            <span><x-price :amount="$order->total_amount" :shop="$shop" /></span>
         </div>
     </div>
 
@@ -97,7 +97,7 @@
             @foreach($order->payments as $payment)
                 <div class="receipt-row">
                     <span>{{ ucfirst($payment->method) }}</span>
-                    <span>{{ formatPrice($payment->amount, $shop) }}</span>
+                    <span><x-price :amount="$payment->amount" :shop="$shop" /></span>
                 </div>
             @endforeach
         </div>

@@ -113,7 +113,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 sm:gap-6 md:gap-12">
-                                <div class="font-mono text-sm font-bold">{{ formatPrice($product->price, $shop) }}</div>
+                                <div class="font-mono text-sm font-bold"><x-price :amount="$product->price" :shop="$shop" /></div>
                                 <button wire:click="editProduct({{ $product->id }})" class="sm:opacity-0 sm:group-hover:opacity-100 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema hover:text-crema transition-opacity">{{ __('admin.menu_edit') }}</button>
                             </div>
                         </div>
