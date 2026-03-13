@@ -1,12 +1,12 @@
 <div class="space-y-6 fade-rise" wire:poll.10s>
-    <x-slot:header>Operations Dashboard</x-slot:header>
+    <x-slot:header>{{ __('admin.operations_dashboard') }}</x-slot:header>
 
     <section class="surface-card p-5 sm:p-7">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <p class="section-headline">Daily Snapshot</p>
-                <h2 class="mt-2 text-3xl font-extrabold leading-none text-ink sm:text-4xl">Store Pulse</h2>
-                <p class="mt-2 max-w-2xl text-sm text-ink-soft">Revenue, throughput, and kitchen state update every 10 seconds so the floor and back of house stay aligned.</p>
+                <h2 class="mt-2 text-3xl font-extrabold leading-none text-ink sm:text-4xl">{{ __('admin.store_pulse') }}</h2>
+                <p class="mt-2 max-w-2xl text-sm text-ink-soft">{{ __('admin.store_pulse_desc') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
@@ -22,9 +22,9 @@
                     @if($showNotifications)
                         <div class="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] rounded-xl border border-line bg-panel shadow-xl sm:w-96">
                             <div class="flex items-center justify-between border-b border-line px-4 py-3">
-                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Notifications</p>
+                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.notifications') }}</p>
                                 @if($notifications->isNotEmpty())
-                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-alert">Clear All</button>
+                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-alert">{{ __('admin.clear_all') }}</button>
                                 @endif
                             </div>
                             <div class="max-h-72 divide-y divide-line overflow-y-auto">
@@ -45,7 +45,7 @@
                                     </div>
                                 @empty
                                     <div class="px-4 py-8 text-center">
-                                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No notifications yet</p>
+                                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.no_notifications') }}</p>
                                     </div>
                                 @endforelse
                             </div>
@@ -54,35 +54,35 @@
                 </div>
 
                 <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
-                <span class="tag">Auto Refresh</span>
+                <span class="tag">{{ __('admin.auto_refresh') }}</span>
                 <span class="inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
                     <span class="status-dot status-live"></span>
-                    Live
+                    {{ __('admin.live') }}
                 </span>
             </div>
         </div>
 
         <div class="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Today's Revenue</p>
+                <p class="section-headline">{{ __('admin.todays_revenue') }}</p>
                 <p class="metric-value mt-4">{{ formatPrice($dailyRevenue, $shop) }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Orders Today</p>
+                <p class="section-headline">{{ __('admin.orders_today') }}</p>
                 <p class="metric-value mt-4 text-signal">{{ $ordersTodayCount }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Active Orders</p>
+                <p class="section-headline">{{ __('admin.active_orders') }}</p>
                 <p class="metric-value mt-4 text-crema">{{ $activeOrdersCount }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">System Status</p>
+                <p class="section-headline">{{ __('admin.system_status') }}</p>
                 <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
                     <span class="status-dot status-live"></span>
-                    Online
+                    {{ __('admin.online') }}
                 </div>
             </article>
         </div>
@@ -90,12 +90,12 @@
 
     <section class="grid gap-4 lg:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
         <article class="surface-card p-5">
-            <p class="section-headline">Items Sold Today</p>
+            <p class="section-headline">{{ __('admin.items_sold_today') }}</p>
             <p class="metric-value mt-4">{{ $itemsSoldToday }}</p>
         </article>
 
         <article class="surface-card p-5">
-            <p class="section-headline">Average Order Value</p>
+            <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
             <p class="metric-value mt-4">{{ formatPrice($avgOrderValue, $shop) }}</p>
         </article>
 
