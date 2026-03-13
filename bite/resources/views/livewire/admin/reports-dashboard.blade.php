@@ -1,33 +1,33 @@
 <div class="space-y-6 fade-rise" wire:poll.30s>
-    <x-slot:header>Reports</x-slot:header>
+    <x-slot:header>{{ __('admin.reports') }}</x-slot:header>
 
     <div class="flex flex-wrap items-center gap-4">
-        <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Export completed orders</div>
-        <a href="{{ route('admin.reports.export') }}" class="btn-secondary">Export CSV (30 days)</a>
+        <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.export_orders') }}</div>
+        <a href="{{ route('admin.reports.export') }}" class="btn-secondary">{{ __('admin.export_csv', ['days' => 30]) }}</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <article class="rounded-xl border border-line bg-panel p-5">
-            <p class="section-headline">Revenue ({{ $rangeDays }} days)</p>
-            <p class="metric-value mt-4">{{ formatPrice($totalRevenue, $shop) }}</p>
+            <p class="section-headline">{{ __('admin.revenue_days', ['days' => $rangeDays]) }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$totalRevenue" :shop="$shop" /></p>
         </article>
         <article class="rounded-xl border border-line bg-panel p-5">
-            <p class="section-headline">Orders ({{ $rangeDays }} days)</p>
+            <p class="section-headline">{{ __('admin.orders_days', ['days' => $rangeDays]) }}</p>
             <p class="metric-value mt-4">{{ $totalOrders }}</p>
         </article>
         <article class="rounded-xl border border-line bg-panel p-5">
-            <p class="section-headline">Avg Order Value</p>
-            <p class="metric-value mt-4">{{ formatPrice($avgOrder, $shop) }}</p>
+            <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$avgOrder" :shop="$shop" /></p>
         </article>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div class="surface-card p-5 sm:p-6">
-            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">Revenue by Day</h2>
+            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">{{ __('admin.revenue_by_day') }}</h2>
             <canvas id="revenueChart" height="120"></canvas>
         </div>
         <div class="surface-card p-5 sm:p-6">
-            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">Orders by Hour</h2>
+            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">{{ __('admin.orders_by_hour') }}</h2>
             <canvas id="hourChart" height="120"></canvas>
         </div>
     </div>
@@ -35,26 +35,26 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <section class="xl:col-span-2 surface-card overflow-hidden">
             <div class="border-b border-line bg-muted/35 px-5 py-4">
-                <h2 class="font-display text-xl font-extrabold leading-none">Top Products ({{ $rangeDays }} days)</h2>
+                <h2 class="font-display text-xl font-extrabold leading-none">{{ __('admin.top_products', ['days' => $rangeDays]) }}</h2>
             </div>
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                        <th class="px-5 py-4">Product</th>
-                        <th class="px-5 py-4">Qty</th>
-                        <th class="px-5 py-4">Revenue</th>
+                        <th class="px-5 py-4">{{ __('admin.product') }}</th>
+                        <th class="px-5 py-4">{{ __('admin.qty') }}</th>
+                        <th class="px-5 py-4">{{ __('admin.revenue') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line/65">
                     @forelse($topProducts as $product)
                         <tr class="hover:bg-muted/35 transition-colors">
-                            <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
+                            <td class="px-5 py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->translated('product_name_snapshot') }}</td>
                             <td class="px-5 py-4 font-mono text-xs font-bold">{{ $product->qty }}</td>
-                            <td class="px-5 py-4 font-mono text-xs font-bold">{{ formatPrice($product->revenue, $shop) }}</td>
+                            <td class="px-5 py-4 font-mono text-xs font-bold"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-5 py-10 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No sales yet...</td>
+                            <td colspan="3" class="px-5 py-10 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.no_sales_yet') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -63,19 +63,19 @@
 
         <section class="surface-card overflow-hidden">
             <div class="border-b border-line bg-muted/35 px-5 py-4">
-                <h2 class="font-display text-xl font-extrabold leading-none">Payments</h2>
+                <h2 class="font-display text-xl font-extrabold leading-none">{{ __('admin.payments') }}</h2>
             </div>
             <div class="p-5 space-y-4">
                 @forelse($paymentSummary as $row)
                     <div class="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3">
                         <div>
                             <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($row->payment_method) }}</div>
-                            <div class="mt-1 text-sm font-medium text-ink">{{ $row->orders }} orders</div>
+                            <div class="mt-1 text-sm font-medium text-ink">{{ __('admin.order_count', ['count' => $row->orders]) }}</div>
                         </div>
-                        <div class="font-mono text-sm font-bold">{{ formatPrice($row->total, $shop) }}</div>
+                        <div class="font-mono text-sm font-bold"><x-price :amount="$row->total" :shop="$shop" /></div>
                     </div>
                 @empty
-                    <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">No payments yet</div>
+                    <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.no_payments_yet') }}</div>
                 @endforelse
             </div>
         </section>
@@ -100,7 +100,7 @@
                     data: {
                         labels: revenueLabels,
                         datasets: [{
-                            label: 'Revenue',
+                            label: @json(__('admin.chart_revenue')),
                             data: revenueData,
                             borderColor: '#CC5500',
                             backgroundColor: 'rgba(204,85,0,0.15)',
@@ -125,7 +125,7 @@
                     data: {
                         labels: hourLabels,
                         datasets: [{
-                            label: 'Orders',
+                            label: @json(__('admin.chart_orders')),
                             data: hourData,
                             backgroundColor: 'rgba(26,25,24,0.8)',
                         }],

@@ -1,12 +1,12 @@
 <div class="space-y-6 fade-rise" wire:poll.10s>
-    <x-slot:header>Operations Dashboard</x-slot:header>
+    <x-slot:header>{{ __('admin.operations_dashboard') }}</x-slot:header>
 
     <section class="surface-card p-5 sm:p-7">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="section-headline">Daily Snapshot</p>
-                <h2 class="mt-2 text-3xl font-extrabold leading-none text-ink sm:text-4xl">Store Pulse</h2>
-                <p class="mt-2 max-w-2xl text-sm text-ink-soft">Revenue, throughput, and kitchen state update every 10 seconds so the floor and back of house stay aligned.</p>
+                <p class="section-headline">{{ __('admin.daily_snapshot') }}</p>
+                <h2 class="mt-2 text-3xl font-extrabold leading-none text-ink sm:text-4xl">{{ __('admin.store_pulse') }}</h2>
+                <p class="mt-2 max-w-2xl text-sm text-ink-soft">{{ __('admin.store_pulse_desc') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
@@ -22,9 +22,9 @@
                     @if($showNotifications)
                         <div class="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] rounded-xl border border-line bg-panel shadow-xl sm:w-96">
                             <div class="flex items-center justify-between border-b border-line px-4 py-3">
-                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Notifications</p>
+                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.notifications') }}</p>
                                 @if($notifications->isNotEmpty())
-                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-alert">Clear All</button>
+                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-alert">{{ __('admin.clear_all') }}</button>
                                 @endif
                             </div>
                             <div class="max-h-72 divide-y divide-line overflow-y-auto">
@@ -33,7 +33,7 @@
                                         <div class="flex items-start justify-between gap-2">
                                             <div>
                                                 <p class="text-sm font-semibold text-ink">Order #{{ $notification->data['order_id'] ?? '—' }}</p>
-                                                <p class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $notification->data['item_count'] ?? 0 }} items &middot; {{ isset($notification->data['total']) ? formatPrice($notification->data['total'], $shop) : '—' }}</p>
+                                                <p class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $notification->data['item_count'] ?? 0 }} {{ __('admin.items') }} &middot; @if(isset($notification->data['total']))<x-price :amount="$notification->data['total']" :shop="$shop" />@else — @endif</p>
                                             </div>
                                             @if(!empty($notification->data['whatsapp_link']) && str_starts_with($notification->data['whatsapp_link'], 'https://wa.me/'))
                                                 <a href="{{ $notification->data['whatsapp_link'] }}" target="_blank" rel="noopener" class="shrink-0 rounded-lg border border-signal/30 bg-signal/10 p-1.5 text-signal hover:bg-signal/20">
@@ -45,7 +45,7 @@
                                     </div>
                                 @empty
                                     <div class="px-4 py-8 text-center">
-                                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No notifications yet</p>
+                                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.no_notifications') }}</p>
                                     </div>
                                 @endforelse
                             </div>
@@ -54,35 +54,35 @@
                 </div>
 
                 <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
-                <span class="tag">Auto Refresh</span>
+                <span class="tag">{{ __('admin.auto_refresh') }}</span>
                 <span class="inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
                     <span class="status-dot status-live"></span>
-                    Live
+                    {{ __('admin.live') }}
                 </span>
             </div>
         </div>
 
         <div class="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Today's Revenue</p>
-                <p class="metric-value mt-4">{{ formatPrice($dailyRevenue, $shop) }}</p>
+                <p class="section-headline">{{ __('admin.todays_revenue') }}</p>
+                <p class="metric-value mt-4"><x-price :amount="$dailyRevenue" :shop="$shop" /></p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Orders Today</p>
+                <p class="section-headline">{{ __('admin.orders_today') }}</p>
                 <p class="metric-value mt-4 text-signal">{{ $ordersTodayCount }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">Active Orders</p>
+                <p class="section-headline">{{ __('admin.active_orders') }}</p>
                 <p class="metric-value mt-4 text-crema">{{ $activeOrdersCount }}</p>
             </article>
 
             <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">System Status</p>
+                <p class="section-headline">{{ __('admin.system_status') }}</p>
                 <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
                     <span class="status-dot status-live"></span>
-                    Online
+                    {{ __('admin.online') }}
                 </div>
             </article>
         </div>
@@ -90,20 +90,20 @@
 
     <section class="grid gap-4 lg:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
         <article class="surface-card p-5">
-            <p class="section-headline">Items Sold Today</p>
+            <p class="section-headline">{{ __('admin.items_sold_today') }}</p>
             <p class="metric-value mt-4">{{ $itemsSoldToday }}</p>
         </article>
 
         <article class="surface-card p-5">
-            <p class="section-headline">Average Order Value</p>
-            <p class="metric-value mt-4">{{ formatPrice($avgOrderValue, $shop) }}</p>
+            <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
+            <p class="metric-value mt-4"><x-price :amount="$avgOrderValue" :shop="$shop" /></p>
         </article>
 
         <article class="surface-card p-5">
-            <p class="section-headline">Orders by Status</p>
+            <p class="section-headline">{{ __('admin.orders_by_status') }}</p>
             <div class="mt-4 flex flex-wrap gap-2">
                 @foreach(['unpaid', 'paid', 'preparing', 'ready', 'completed', 'cancelled'] as $status)
-                    <span class="tag">{{ $status }}: {{ $ordersByStatus[$status] ?? 0 }}</span>
+                    <span class="tag">{{ __('admin.status_' . $status) }}: {{ $ordersByStatus[$status] ?? 0 }}</span>
                 @endforeach
             </div>
         </article>
@@ -112,17 +112,17 @@
     <div class="grid gap-6 xl:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
         <section class="surface-card xl:col-span-2">
             <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-                <h2 class="font-display text-2xl font-extrabold leading-none">Top Products</h2>
-                <span class="tag">Last 7 Days</span>
+                <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.top_products', ['days' => 7]) }}</h2>
+                <span class="tag">{{ __('admin.last_7_days') }}</span>
             </div>
 
             <div class="overflow-x-auto">
             <table class="w-full border-collapse text-left">
                 <thead>
                     <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                        <th class="whitespace-nowrap px-5 py-3">Product</th>
-                        <th class="whitespace-nowrap px-5 py-3">Qty</th>
-                        <th class="whitespace-nowrap px-5 py-3">Revenue</th>
+                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.product') }}</th>
+                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.qty') }}</th>
+                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.revenue') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line/65">
@@ -130,11 +130,11 @@
                         <tr class="transition-colors hover:bg-muted/35">
                             <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
                             <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase">{{ $product->qty }}</td>
-                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase">{{ formatPrice($product->revenue, $shop) }}</td>
+                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">No sales yet.</td>
+                            <td colspan="3" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_sales_yet_short') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -145,7 +145,7 @@
         <div class="space-y-6">
             <section class="surface-card">
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">Payments</h2>
+                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.payments') }}</h2>
                 </div>
                 <div class="space-y-3 p-5">
                     @if(!empty($paymentSummary))
@@ -153,20 +153,20 @@
                             <div class="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3">
                                 <div>
                                     <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($method) }}</div>
-                                    <div class="mt-1 text-sm font-medium text-ink">{{ $summary['orders'] }} orders</div>
+                                    <div class="mt-1 text-sm font-medium text-ink">{{ __('admin.payment_orders_count', ['count' => $summary['orders']]) }}</div>
                                 </div>
-                                <div class="font-mono text-sm font-bold uppercase">{{ formatPrice($summary['total'], $shop) }}</div>
+                                <div class="font-mono text-sm font-bold uppercase"><x-price :amount="$summary['total']" :shop="$shop" /></div>
                             </div>
                         @endforeach
                     @else
-                        <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">No payments yet</div>
+                        <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.no_payments_yet_short') }}</div>
                     @endif
                 </div>
             </section>
 
             <section class="surface-card">
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">Weekly Revenue</h2>
+                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.weekly_revenue') }}</h2>
                 </div>
                 <div class="p-5" x-data="weeklyRevenueChart({{ Js::from($weeklyRevenue) }}, '{{ $shop->currency ?? 'OMR' }}')" x-init="initChart()">
                     <canvas x-ref="revenueChart" height="220"></canvas>
@@ -175,7 +175,7 @@
 
             <section class="surface-card" x-data="{ copied: false }">
                 <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">Guest Menu QR</h2>
+                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.guest_menu_qr') }}</h2>
                 </div>
                 <div class="flex flex-col items-center gap-4 p-5">
                     <div class="rounded-xl border border-line bg-white p-3">
@@ -200,8 +200,8 @@
                             setTimeout(() => copied = false, 2000);
                         "
                     >
-                        <span x-show="!copied">Copy Link</span>
-                        <span x-show="copied" x-cloak>Copied!</span>
+                        <span x-show="!copied">{{ __('admin.copy_link') }}</span>
+                        <span x-show="copied" x-cloak>{{ __('admin.copied') }}</span>
                     </button>
                 </div>
             </section>
@@ -210,9 +210,9 @@
 
     <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60">
         <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-            <h2 class="font-display text-2xl font-extrabold leading-none">Recent Activity</h2>
+            <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.recent_activity') }}</h2>
             <a href="{{ route('pos.dashboard') }}" class="btn-secondary !px-3 !py-2" wire:navigate>
-                Open POS
+                {{ __('admin.open_pos') }}
             </a>
         </div>
 
@@ -220,19 +220,19 @@
         <table class="w-full border-collapse text-left">
             <thead>
                 <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                    <th class="whitespace-nowrap px-5 py-3">Order ID</th>
-                    <th class="whitespace-nowrap px-5 py-3">Source</th>
-                    <th class="whitespace-nowrap px-5 py-3">Total</th>
-                    <th class="whitespace-nowrap px-5 py-3">Status</th>
-                    <th class="whitespace-nowrap px-5 py-3 text-right">Time</th>
+                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.order_id') }}</th>
+                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.source') }}</th>
+                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.total') }}</th>
+                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.status') }}</th>
+                    <th class="whitespace-nowrap px-5 py-3 text-right">{{ __('admin.time') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-line/65">
                 @forelse($recentOrders as $order)
                     <tr class="transition-colors hover:bg-muted/35">
                         <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">#{{ $order->id }}</td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-medium text-ink">Guest</td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase text-ink">{{ formatPrice($order->total_amount, $shop) }}</td>
+                        <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-medium text-ink">{{ __('admin.source_guest') }}</td>
+                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></td>
                         <td class="px-3 py-3 sm:px-5 sm:py-4">
                             @php
                                 $statusClass = match ($order->status) {
@@ -243,14 +243,14 @@
                                 };
                             @endphp
                             <span class="inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $statusClass }}">
-                                {{ $order->status }}
+                                {{ __('admin.status_' . $order->status) }}
                             </span>
                         </td>
                         <td class="px-3 py-3 sm:px-5 sm:py-4 text-right font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ $order->created_at->format('H:i:s') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">No recent orders found.</td>
+                        <td colspan="5" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_recent_orders') }}</td>
                     </tr>
                 @endforelse
             </tbody>

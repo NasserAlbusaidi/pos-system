@@ -1,16 +1,16 @@
 <div class="space-y-6 fade-rise">
-    <x-slot:header>Billing & Subscription</x-slot:header>
+    <x-slot:header>{{ __('admin.billing_subscription') }}</x-slot:header>
 
     {{-- Checkout callback notices --}}
     @if($checkoutStatus === 'success')
         <div class="rounded-xl border p-4 flex items-center gap-3" style="border-color: rgb(var(--signal) / 0.5); background-color: rgb(var(--signal) / 0.08);">
             <svg class="w-5 h-5 shrink-0" style="color: rgb(var(--signal));" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-            <p class="text-sm font-medium" style="color: rgb(var(--signal));">Subscription activated successfully. Welcome to Pro!</p>
+            <p class="text-sm font-medium" style="color: rgb(var(--signal));">{{ __('admin.billing_activated') }}</p>
         </div>
     @elseif($checkoutStatus === 'cancelled')
         <div class="rounded-xl border p-4 flex items-center gap-3" style="border-color: rgb(var(--line)); background-color: rgb(var(--panel-muted) / 0.3);">
             <svg class="w-5 h-5 shrink-0" style="color: rgb(var(--ink-soft));" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            <p class="text-sm" style="color: rgb(var(--ink-soft));">Checkout was cancelled. You can try again when you are ready.</p>
+            <p class="text-sm" style="color: rgb(var(--ink-soft));">{{ __('admin.billing_checkout_cancelled') }}</p>
         </div>
     @endif
 
@@ -29,8 +29,8 @@
             {{-- Current Plan --}}
             <section class="surface-card">
                 <div class="border-b border-line bg-muted/30 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none text-ink">Current Plan</h2>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Subscription status and details</p>
+                    <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.billing_current_plan') }}</h2>
+                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.billing_status_details') }}</p>
                 </div>
 
                 <div class="p-5 space-y-4">
@@ -60,8 +60,8 @@
                         <div class="rounded-xl border p-4 flex items-start gap-3" style="border-color: rgb(var(--crema) / 0.3); background-color: rgb(var(--crema) / 0.06);">
                             <svg class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--crema));" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <div>
-                                <p class="text-sm font-bold" style="color: rgb(var(--crema));">{{ $trialDaysRemaining }} {{ $trialDaysRemaining === 1 ? 'day' : 'days' }} remaining in your free trial</p>
-                                <p class="text-xs mt-1" style="color: rgb(var(--ink-soft));">Upgrade to Pro to keep all features after your trial ends.</p>
+                                <p class="text-sm font-bold" style="color: rgb(var(--crema));">{{ __('admin.billing_trial_remaining', ['days' => $trialDaysRemaining, 'label' => $trialDaysRemaining === 1 ? __('admin.billing_trial_day') : __('admin.billing_trial_days')]) }}</p>
+                                <p class="text-xs mt-1" style="color: rgb(var(--ink-soft));">{{ __('admin.billing_upgrade_hint') }}</p>
                             </div>
                         </div>
                     @endif
@@ -69,7 +69,7 @@
                     @if($renewalDate)
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-ink-soft">
-                                {{ $statusLabel === 'cancelled' ? 'Access until' : ($isOnTrial ? 'Trial ends' : 'Next renewal') }}
+                                {{ $statusLabel === 'cancelled' ? __('admin.billing_access_until') : ($isOnTrial ? __('admin.billing_trial_ends') : __('admin.billing_next_renewal')) }}
                             </span>
                             <span class="font-mono font-bold text-ink">{{ $renewalDate->format('M j, Y') }}</span>
                         </div>
@@ -77,7 +77,7 @@
 
                     @if($currentPlan === 'pro' && $statusLabel === 'active')
                         <p class="text-sm text-ink-soft">
-                            Your Pro subscription is active. You have access to all features including unlimited staff, unlimited products, reports, and priority support.
+                            {{ __('admin.billing_pro_active_desc') }}
                         </p>
                     @endif
                 </div>
@@ -86,8 +86,8 @@
             {{-- Plan Comparison --}}
             <section class="surface-card">
                 <div class="border-b border-line bg-muted/30 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none text-ink">Plans</h2>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Compare Free and Pro</p>
+                    <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.billing_plans') }}</h2>
+                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.billing_compare') }}</p>
                 </div>
 
                 <div class="p-5">
@@ -104,7 +104,7 @@
                                 @if($isCurrentPlan)
                                     <span class="absolute top-3 right-3 inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em]"
                                           style="background-color: rgb(var(--crema)); color: rgb(var(--panel));">
-                                        Current
+                                        {{ __('admin.billing_current') }}
                                     </span>
                                 @endif
 
@@ -113,9 +113,9 @@
                                     <div class="mt-1 flex items-baseline gap-1">
                                         @if($plan['price'] > 0)
                                             <span class="font-display text-3xl font-extrabold text-ink">{{ $plan['price'] }}</span>
-                                            <span class="font-mono text-xs text-ink-soft">OMR / mo</span>
+                                            <span class="font-mono text-xs text-ink-soft">{{ __('admin.billing_omr_month') }}</span>
                                         @else
-                                            <span class="font-display text-3xl font-extrabold text-ink">Free</span>
+                                            <span class="font-display text-3xl font-extrabold text-ink">{{ __('admin.billing_free') }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -133,37 +133,37 @@
 
                                 <div class="space-y-2">
                                     @if($plan['staff_limit'])
-                                        <p class="font-mono text-[10px] text-ink-soft">Staff: {{ $plan['staff_limit'] }} member{{ $plan['staff_limit'] > 1 ? 's' : '' }}</p>
+                                        <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.billing_staff_limit', ['count' => $plan['staff_limit']]) }}</p>
                                     @else
-                                        <p class="font-mono text-[10px] text-ink-soft">Staff: Unlimited</p>
+                                        <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.billing_staff_unlimited') }}</p>
                                     @endif
 
                                     @if($plan['product_limit'])
-                                        <p class="font-mono text-[10px] text-ink-soft">Products: up to {{ $plan['product_limit'] }}</p>
+                                        <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.billing_products_limit', ['count' => $plan['product_limit']]) }}</p>
                                     @else
-                                        <p class="font-mono text-[10px] text-ink-soft">Products: Unlimited</p>
+                                        <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.billing_products_unlimited') }}</p>
                                     @endif
                                 </div>
 
                                 <div class="pt-2">
                                     @if($isCurrentPlan)
                                         <button disabled class="btn-secondary w-full opacity-50 cursor-not-allowed">
-                                            Current Plan
+                                            {{ __('admin.billing_current_plan_btn') }}
                                         </button>
                                     @elseif($isPro)
                                         <button wire:click="subscribe('pro')" class="btn-primary w-full">
-                                            <span wire:loading.remove wire:target="subscribe('pro')">Upgrade to Pro</span>
+                                            <span wire:loading.remove wire:target="subscribe('pro')">{{ __('admin.billing_upgrade_pro') }}</span>
                                             <span wire:loading wire:target="subscribe('pro')" class="inline-flex items-center gap-2">
                                                 <span class="loading-spinner"></span>
-                                                Redirecting...
+                                                {{ __('admin.billing_redirecting') }}
                                             </span>
                                         </button>
                                     @else
                                         <button wire:click="subscribe('free')" class="btn-secondary w-full">
-                                            <span wire:loading.remove wire:target="subscribe('free')">Switch to Free</span>
+                                            <span wire:loading.remove wire:target="subscribe('free')">{{ __('admin.billing_switch_free') }}</span>
                                             <span wire:loading wire:target="subscribe('free')" class="inline-flex items-center gap-2">
                                                 <span class="loading-spinner"></span>
-                                                Processing...
+                                                {{ __('admin.billing_processing') }}
                                             </span>
                                         </button>
                                     @endif
@@ -178,18 +178,18 @@
             @if(count($invoices) > 0)
                 <section class="surface-card">
                     <div class="border-b border-line bg-muted/30 px-5 py-4">
-                        <h2 class="font-display text-2xl font-extrabold leading-none text-ink">Invoices</h2>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Billing history</p>
+                        <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.billing_invoices') }}</h2>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.billing_history') }}</p>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full border-collapse text-left">
                             <thead>
                                 <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                                    <th class="px-5 py-3">Date</th>
-                                    <th class="px-5 py-3">Amount</th>
-                                    <th class="px-5 py-3">Status</th>
-                                    <th class="px-5 py-3 text-right">Invoice</th>
+                                    <th class="px-5 py-3">{{ __('admin.billing_date') }}</th>
+                                    <th class="px-5 py-3">{{ __('admin.billing_amount') }}</th>
+                                    <th class="px-5 py-3">{{ __('admin.billing_status') }}</th>
+                                    <th class="px-5 py-3 text-right">{{ __('admin.billing_invoice') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-line">
@@ -201,11 +201,11 @@
                                             @if($invoice->paid)
                                                 <span class="inline-flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style="color: rgb(var(--signal));">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                                    Paid
+                                                    {{ __('admin.billing_paid') }}
                                                 </span>
                                             @else
                                                 <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style="color: rgb(var(--alert));">
-                                                    Unpaid
+                                                    {{ __('admin.billing_unpaid') }}
                                                 </span>
                                             @endif
                                         </td>
@@ -227,54 +227,52 @@
             @if($subscription)
                 <section class="surface-card">
                     <div class="border-b border-line bg-muted/30 px-5 py-4">
-                        <h2 class="font-display text-2xl font-extrabold leading-none text-ink">Manage Subscription</h2>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Cancel or resume your plan</p>
+                        <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.billing_manage') }}</h2>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.billing_cancel_resume') }}</p>
                     </div>
 
                     <div class="p-5">
                         @if($subscription->cancelled() && $subscription->onGracePeriod())
                             <div class="space-y-4">
                                 <p class="text-sm text-ink-soft">
-                                    Your subscription has been cancelled but you still have access until <strong class="text-ink font-mono">{{ $subscription->ends_at->format('M j, Y') }}</strong>.
-                                    You can resume your subscription to keep your Pro features.
+                                    {{ __('admin.billing_cancelled_grace', ['date' => $subscription->ends_at->format('M j, Y')]) }}
                                 </p>
                                 <button wire:click="resumeSubscription" class="btn-primary">
-                                    <span wire:loading.remove wire:target="resumeSubscription">Resume Subscription</span>
+                                    <span wire:loading.remove wire:target="resumeSubscription">{{ __('admin.billing_resume') }}</span>
                                     <span wire:loading wire:target="resumeSubscription" class="inline-flex items-center gap-2">
                                         <span class="loading-spinner"></span>
-                                        Resuming...
+                                        {{ __('admin.billing_resuming') }}
                                     </span>
                                 </button>
                             </div>
                         @elseif(! $subscription->cancelled())
                             <div class="space-y-4">
                                 <p class="text-sm text-ink-soft">
-                                    If you cancel, your subscription will remain active until the end of your current billing period. You will not be charged again.
+                                    {{ __('admin.billing_cancel_info') }}
                                 </p>
 
                                 @if($showCancelModal)
                                     <div class="rounded-xl border p-4 space-y-4" style="border-color: rgb(var(--alert) / 0.3); background-color: rgb(var(--alert) / 0.04);">
-                                        <p class="text-sm font-bold" style="color: rgb(var(--alert));">Are you sure you want to cancel?</p>
+                                        <p class="text-sm font-bold" style="color: rgb(var(--alert));">{{ __('admin.billing_cancel_confirm') }}</p>
                                         <p class="text-xs text-ink-soft">
-                                            You will lose access to Pro features (unlimited staff, products, reports) at the end of your billing period.
-                                            Your data will not be deleted.
+                                            {{ __('admin.billing_cancel_details') }}
                                         </p>
                                         <div class="flex items-center gap-3">
                                             <button wire:click="cancelSubscription" class="btn-danger">
-                                                <span wire:loading.remove wire:target="cancelSubscription">Yes, Cancel Subscription</span>
+                                                <span wire:loading.remove wire:target="cancelSubscription">{{ __('admin.billing_yes_cancel') }}</span>
                                                 <span wire:loading wire:target="cancelSubscription" class="inline-flex items-center gap-2">
                                                     <span class="loading-spinner"></span>
-                                                    Cancelling...
+                                                    {{ __('admin.billing_cancelling') }}
                                                 </span>
                                             </button>
                                             <button wire:click="$set('showCancelModal', false)" class="btn-secondary">
-                                                Keep My Plan
+                                                {{ __('admin.billing_keep_plan') }}
                                             </button>
                                         </div>
                                     </div>
                                 @else
                                     <button wire:click="$set('showCancelModal', true)" class="btn-secondary" style="color: rgb(var(--alert)); border-color: rgb(var(--alert) / 0.4);">
-                                        Cancel Subscription
+                                        {{ __('admin.billing_cancel_subscription') }}
                                     </button>
                                 @endif
                             </div>
@@ -291,8 +289,8 @@
                 {{-- Payment Method --}}
                 <section class="surface-card">
                     <div class="border-b border-line bg-muted/30 px-5 py-4">
-                        <h2 class="font-display text-lg font-extrabold leading-none text-ink">Payment Method</h2>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Card on file</p>
+                        <h2 class="font-display text-lg font-extrabold leading-none text-ink">{{ __('admin.billing_payment_method') }}</h2>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.billing_card_on_file') }}</p>
                     </div>
 
                     <div class="p-5 space-y-4">
@@ -310,7 +308,7 @@
                                 </div>
                                 <div>
                                     <p class="font-mono text-sm font-bold text-ink">
-                                        {{ ucfirst($pmBrand ?? 'Card') }} ending in {{ $pmLastFour }}
+                                        {{ __('admin.billing_ending_in', ['brand' => ucfirst($pmBrand ?? 'Card'), 'last4' => $pmLastFour]) }}
                                     </p>
                                 </div>
                             </div>
@@ -319,18 +317,18 @@
                                 <div class="flex h-10 w-14 items-center justify-center rounded-lg border border-dashed" style="border-color: rgb(var(--line));">
                                     <svg class="w-5 h-5" style="color: rgb(var(--ink-soft) / 0.5);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                                 </div>
-                                <p class="text-sm text-ink-soft">No payment method on file</p>
+                                <p class="text-sm text-ink-soft">{{ __('admin.billing_no_payment_method') }}</p>
                             </div>
                         @endif
 
                         @if($shop->hasStripeId())
                             <button wire:click="redirectToPortal" class="btn-secondary w-full">
                                 <span wire:loading.remove wire:target="redirectToPortal">
-                                    {{ $pmLastFour ? 'Update Payment Method' : 'Add Payment Method' }}
+                                    {{ $pmLastFour ? __('admin.billing_update_payment') : __('admin.billing_add_payment') }}
                                 </span>
                                 <span wire:loading wire:target="redirectToPortal" class="inline-flex items-center gap-2">
                                     <span class="loading-spinner"></span>
-                                    Redirecting...
+                                    {{ __('admin.billing_redirecting') }}
                                 </span>
                             </button>
                         @endif
@@ -339,30 +337,30 @@
 
                 {{-- Quick Info --}}
                 <section class="surface-card p-5">
-                    <p class="section-headline">Billing Summary</p>
+                    <p class="section-headline">{{ __('admin.billing_summary') }}</p>
                     <div class="mt-3 space-y-2.5">
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-ink-soft">Plan</span>
+                            <span class="text-ink-soft">{{ __('admin.billing_plan') }}</span>
                             <span class="font-mono font-bold text-ink">{{ $plans[$currentPlan]['name'] ?? 'Free' }}</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-ink-soft">Status</span>
+                            <span class="text-ink-soft">{{ __('admin.billing_status') }}</span>
                             <span class="font-mono font-bold text-ink">{{ ucfirst(str_replace('_', ' ', $statusLabel)) }}</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-ink-soft">Monthly Cost</span>
+                            <span class="text-ink-soft">{{ __('admin.billing_monthly_cost') }}</span>
                             <span class="font-mono font-bold text-ink">
                                 @if(($plans[$currentPlan]['price'] ?? 0) > 0)
-                                    {{ $plans[$currentPlan]['price'] }} OMR
+                                    {{ $plans[$currentPlan]['price'] }} {{ __('admin.billing_omr_month') }}
                                 @else
-                                    Free
+                                    {{ __('admin.billing_free') }}
                                 @endif
                             </span>
                         </div>
                         @if($isOnTrial)
                             <div class="flex items-center justify-between text-sm">
-                                <span class="text-ink-soft">Trial Remaining</span>
-                                <span class="font-mono font-bold" style="color: rgb(var(--crema));">{{ $trialDaysRemaining }} days</span>
+                                <span class="text-ink-soft">{{ __('admin.billing_trial_remaining_label') }}</span>
+                                <span class="font-mono font-bold" style="color: rgb(var(--crema));">{{ __('admin.billing_days_remaining', ['count' => $trialDaysRemaining]) }}</span>
                             </div>
                         @endif
                     </div>
@@ -370,9 +368,9 @@
 
                 {{-- Help --}}
                 <section class="surface-card p-5">
-                    <p class="section-headline">Need Help?</p>
+                    <p class="section-headline">{{ __('admin.billing_need_help') }}</p>
                     <p class="mt-2 text-sm text-ink-soft leading-relaxed">
-                        Questions about billing or need to change your plan? Contact us at
+                        {{ __('admin.billing_help_text') }}
                         <a href="mailto:support@bitpos.app" class="font-mono font-bold text-ink underline underline-offset-2 decoration-crema">support@bitpos.app</a>
                     </p>
                 </section>

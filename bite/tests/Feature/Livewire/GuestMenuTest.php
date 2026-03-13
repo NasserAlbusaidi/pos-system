@@ -32,7 +32,8 @@ class GuestMenuTest extends TestCase
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->assertSee('Coffee')
             ->assertSee('Latte')
-            ->assertSee('OMR 4.500');
+            ->assertSee('4.500')
+            ->assertSeeHtml('class="omr-symbol"');
     }
 
     public function test_guest_can_add_item_to_cart(): void

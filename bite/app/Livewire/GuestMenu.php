@@ -46,7 +46,6 @@ class GuestMenu extends Component
         // Determine locale: session override > shop default > 'en'
         $branding = $shop->branding ?? [];
         $this->locale = session('guest_locale', $branding['language'] ?? 'en');
-        App::setLocale($this->locale);
     }
 
     public function switchLanguage(string $lang)
@@ -509,9 +508,6 @@ class GuestMenu extends Component
 
     public function render()
     {
-        // Ensure locale is set on every render (Livewire may reset it between requests)
-        App::setLocale($this->locale);
-
         $categories = $this->shop->categories()
             ->with(['products' => function ($query) {
                 $query->where('is_visible', true)

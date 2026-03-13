@@ -1,11 +1,11 @@
 <div class="h-full space-y-6 fade-rise shift-report-printable">
-    <x-slot:header>Shift Report</x-slot:header>
+    <x-slot:header>{{ __('admin.shift_report') }}</x-slot:header>
 
     {{-- Controls --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print-hidden">
         <div>
-            <p class="section-headline">End of Day</p>
-            <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">Daily Shift Report</h2>
+            <p class="section-headline">{{ __('admin.shift_end_of_day') }}</p>
+            <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">{{ __('admin.shift_daily_report') }}</h2>
         </div>
         <div class="flex items-center gap-3">
             <input
@@ -18,7 +18,7 @@
                 class="btn-primary"
             >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                Print
+                {{ __('admin.shift_print') }}
             </button>
         </div>
     </div>
@@ -26,7 +26,7 @@
     {{-- Print-only header --}}
     <div class="hidden print-show" style="display: none;">
         <div style="text-align: center; margin-bottom: 16px;">
-            <h1 style="font-size: 18px; font-weight: 800; margin: 0;">{{ $shop->name }} - Shift Report</h1>
+            <h1 style="font-size: 18px; font-weight: 800; margin: 0;">{{ $shop->name }} - {{ __('admin.shift_report') }}</h1>
             <p style="font-size: 12px; color: #4f5661; margin-top: 4px;">{{ \Carbon\Carbon::parse($date)->format('l, F j, Y') }}</p>
         </div>
     </div>
@@ -34,20 +34,20 @@
     {{-- Summary Cards --}}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="surface-card p-5">
-            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Total Revenue</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($totalRevenue, $shop) }}</p>
+            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_total_revenue') }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$totalRevenue" :shop="$shop" /></p>
         </div>
         <div class="surface-card p-5">
-            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Orders</p>
+            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_orders') }}</p>
             <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ $totalOrders }}</p>
         </div>
         <div class="surface-card p-5">
-            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Avg Order Value</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($avgOrder, $shop) }}</p>
+            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_avg_order') }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$avgOrder" :shop="$shop" /></p>
         </div>
         <div class="surface-card p-5">
-            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Tax Collected</p>
-            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink">{{ formatPrice($totalTax, $shop) }}</p>
+            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_tax_collected') }}</p>
+            <p class="mt-2 font-display text-3xl font-extrabold leading-none text-ink"><x-price :amount="$totalTax" :shop="$shop" /></p>
         </div>
     </div>
 
@@ -55,15 +55,15 @@
         {{-- Payment Breakdown --}}
         <div class="surface-card overflow-hidden">
             <div class="border-b border-line bg-muted/30 px-5 py-4">
-                <p class="section-headline">Payment Breakdown</p>
+                <p class="section-headline">{{ __('admin.shift_payment_breakdown') }}</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="border-b border-line">
-                            <th class="px-5 py-3 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Method</th>
-                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Count</th>
-                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Total</th>
+                            <th class="px-5 py-3 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_method') }}</th>
+                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_count') }}</th>
+                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_total') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line/50">
@@ -71,11 +71,11 @@
                             <tr>
                                 <td class="px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink">{{ ucfirst($row->method) }}</td>
                                 <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ $row->count }}</td>
-                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ formatPrice($row->total, $shop) }}</td>
+                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink"><x-price :amount="$row->total" :shop="$shop" /></td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-5 py-8 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No payments recorded</td>
+                                <td colspan="3" class="px-5 py-8 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_no_payments') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -86,15 +86,15 @@
         {{-- Top Products --}}
         <div class="surface-card overflow-hidden">
             <div class="border-b border-line bg-muted/30 px-5 py-4">
-                <p class="section-headline">Top 5 Products</p>
+                <p class="section-headline">{{ __('admin.shift_top_products') }}</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="border-b border-line">
-                            <th class="px-5 py-3 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Product</th>
-                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Qty</th>
-                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">Revenue</th>
+                            <th class="px-5 py-3 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.product') }}</th>
+                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.qty') }}</th>
+                            <th class="px-5 py-3 text-right font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.revenue') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line/50">
@@ -102,11 +102,11 @@
                             <tr>
                                 <td class="px-5 py-3 font-mono text-xs font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
                                 <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ $product->qty }}</td>
-                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink">{{ formatPrice($product->revenue, $shop) }}</td>
+                                <td class="px-5 py-3 text-right font-mono text-xs font-bold text-ink"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-5 py-8 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">No products sold</td>
+                                <td colspan="3" class="px-5 py-8 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.shift_no_products_sold') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -119,10 +119,10 @@
     <div class="surface-card overflow-hidden">
         <div class="border-b border-line bg-muted/30 px-5 py-4">
             <div class="flex items-center justify-between">
-                <p class="section-headline">Orders by Hour</p>
+                <p class="section-headline">{{ __('admin.orders_by_hour') }}</p>
                 @if($peakHour && $peakHour['count'] > 0)
                     <span class="tag">
-                        Peak: {{ $peakHour['hour'] }} ({{ $peakHour['count'] }} orders)
+                        {{ __('admin.shift_peak', ['hour' => $peakHour['hour'], 'count' => $peakHour['count']]) }}
                     </span>
                 @endif
             </div>
@@ -135,7 +135,7 @@
 
             @if($activeHours->isEmpty())
                 <div class="py-8 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                    No orders for this date
+                    {{ __('admin.shift_no_orders_date') }}
                 </div>
             @else
                 <div class="space-y-1">
@@ -161,7 +161,7 @@
     {{-- Report Footer (visible on print) --}}
     <div class="hidden print-show" style="display: none;">
         <div style="text-align: center; margin-top: 24px; padding-top: 12px; border-top: 1px solid #c3c7cb; font-size: 10px; color: #4f5661;">
-            <p>Generated {{ now()->format('d/m/Y H:i') }} | Powered by Bite</p>
+            <p>{{ __('admin.shift_generated', ['datetime' => now()->format('d/m/Y H:i')]) }}</p>
         </div>
     </div>
 </div>

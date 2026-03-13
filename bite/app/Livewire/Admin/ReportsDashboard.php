@@ -76,8 +76,8 @@ class ReportsDashboard extends Component
                 ->where('status', 'completed')
                 ->whereBetween('paid_at', [$from, $to]);
         })
-            ->select('product_name_snapshot_en', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
-            ->groupBy('product_name_snapshot_en')
+            ->select('product_name_snapshot_en', 'product_name_snapshot_ar', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
+            ->groupBy('product_name_snapshot_en', 'product_name_snapshot_ar')
             ->orderByDesc('revenue')
             ->limit(10)
             ->get();

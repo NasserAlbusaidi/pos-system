@@ -5,6 +5,15 @@ use Livewire\Volt\Component;
 
 new class extends Component
 {
+    public function switchLocale(string $locale): void
+    {
+        $locale = in_array($locale, ['en', 'ar']) ? $locale : 'en';
+        session()->put('admin_locale', $locale);
+
+        // Full page reload — dir attribute is on <html>
+        $this->redirect(request()->header('Referer', route('dashboard')), navigate: false);
+    }
+
     public function logout(Logout $logout): void
     {
         $logout();
@@ -21,25 +30,37 @@ new class extends Component
                 </div>
                 <div>
                     <p class="font-display text-lg font-extrabold leading-none">{{ Auth::user()->shop->name }}</p>
-                    <p class="font-mono text-[9px] uppercase tracking-[0.22em] text-panel/55">Bite Console</p>
+                    <p class="font-mono text-[9px] uppercase tracking-[0.22em] text-panel/55">{{ __('admin.console') }}</p>
                 </div>
             </div>
 
-            <button wire:click="logout" class="btn-secondary !border-panel/30 !bg-panel/10 !px-3 !py-2 !text-panel">
-                Exit
-            </button>
+            <div class="flex items-center gap-2">
+                {{-- Language Toggle --}}
+                <div class="flex items-center gap-0.5 rounded-full border border-panel/15 bg-panel/10 p-0.5">
+                    <button wire:click="switchLocale('en')" class="lang-toggle {{ app()->getLocale() === 'en' ? 'lang-toggle-active' : '' }}" type="button">
+                        EN
+                    </button>
+                    <button wire:click="switchLocale('ar')" class="lang-toggle {{ app()->getLocale() === 'ar' ? 'lang-toggle-active' : '' }}" type="button">
+                        عربي
+                    </button>
+                </div>
+
+                <button wire:click="logout" class="btn-secondary !border-panel/30 !bg-panel/10 !px-3 !py-2 !text-panel">
+                    {{ __('admin.exit') }}
+                </button>
+            </div>
         </div>
 
         <nav class="overflow-x-auto border-t border-panel/10 px-3 py-2.5">
             <div class="flex min-w-max items-center gap-1.5 pr-3">
-                <a href="{{ route('dashboard') }}" wire:navigate class="tag {{ request()->routeIs('dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Dashboard</a>
-                <a href="{{ route('pos.dashboard') }}" wire:navigate class="tag {{ request()->routeIs('pos.dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">POS</a>
-                <a href="{{ route('kds.view') }}" wire:navigate class="tag {{ request()->routeIs('kds.view') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Kitchen</a>
-                <a href="{{ route('admin.reports') }}" wire:navigate class="tag {{ request()->routeIs('admin.reports') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Reports</a>
-                <a href="{{ route('admin.shift-report') }}" wire:navigate class="tag {{ request()->routeIs('admin.shift-report') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Shift Report</a>
-                <a href="{{ route('admin.settings') }}" wire:navigate class="tag {{ request()->routeIs('admin.settings') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Settings</a>
+                <a href="{{ route('dashboard') }}" wire:navigate class="tag {{ request()->routeIs('dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.dashboard') }}</a>
+                <a href="{{ route('pos.dashboard') }}" wire:navigate class="tag {{ request()->routeIs('pos.dashboard') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.pos_register') }}</a>
+                <a href="{{ route('kds.view') }}" wire:navigate class="tag {{ request()->routeIs('kds.view') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.kitchen_display') }}</a>
+                <a href="{{ route('admin.reports') }}" wire:navigate class="tag {{ request()->routeIs('admin.reports') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.reports') }}</a>
+                <a href="{{ route('admin.shift-report') }}" wire:navigate class="tag {{ request()->routeIs('admin.shift-report') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.shift_report') }}</a>
+                <a href="{{ route('admin.settings') }}" wire:navigate class="tag {{ request()->routeIs('admin.settings') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.settings') }}</a>
                 @if(Auth::user()->role === 'admin')
-                    <a href="{{ route('billing') }}" wire:navigate class="tag {{ request()->routeIs('billing') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Billing</a>
+                    <a href="{{ route('billing') }}" wire:navigate class="tag {{ request()->routeIs('billing') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.billing') }}</a>
                 @endif
             </div>
         </nav>
@@ -53,66 +74,66 @@ new class extends Component
                 </div>
                 <div class="min-w-0">
                     <p class="truncate font-display text-2xl font-extrabold leading-none">{{ Auth::user()->shop->name }}</p>
-                    <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-panel/55">Bite Product Console</p>
+                    <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-panel/55">{{ __('admin.product_console') }}</p>
                 </div>
             </div>
 
             <div class="mt-5 rounded-xl border border-panel/15 bg-panel/10 p-3">
-                <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-panel/50">Store State</p>
+                <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-panel/50">{{ __('admin.store_state') }}</p>
                 <p class="mt-1 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em]">
                     <span class="status-dot status-live"></span>
-                    Services Online
+                    {{ __('admin.services_online') }}
                 </p>
             </div>
         </div>
 
         <nav class="flex-1 space-y-6 overflow-y-auto px-4 py-5">
             <section class="space-y-2">
-                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">Operations</p>
+                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">{{ __('admin.operations') }}</p>
                 <x-admin-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="dashboard">
-                    Dashboard
+                    {{ __('admin.dashboard') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('pos.dashboard')" :active="request()->routeIs('pos.dashboard')" icon="terminal">
-                    POS Register
+                    {{ __('admin.pos_register') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('kds.view')" :active="request()->routeIs('kds.view')" icon="kitchen">
-                    Kitchen Display
+                    {{ __('admin.kitchen_display') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')" icon="dashboard">
-                    Reports
+                    {{ __('admin.reports') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.shift-report')" :active="request()->routeIs('admin.shift-report')" icon="dashboard">
-                    Shift Report
+                    {{ __('admin.shift_report') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.audit-logs')" :active="request()->routeIs('admin.audit-logs')" icon="dashboard">
-                    Audit Logs
+                    {{ __('admin.audit_logs') }}
                 </x-admin-nav-link>
             </section>
 
             <section class="space-y-2">
-                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">Catalog</p>
+                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">{{ __('admin.catalog') }}</p>
                 <x-admin-nav-link :href="route('admin.menu-builder')" :active="request()->routeIs('admin.menu-builder')" icon="coffee">
-                    Menu Builder
+                    {{ __('admin.menu_builder') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.products')" :active="request()->routeIs('admin.products')" icon="coffee">
-                    Product Catalog
+                    {{ __('admin.product_catalog') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.modifiers')" :active="request()->routeIs('admin.modifiers')" icon="modifiers">
-                    Modifiers
+                    {{ __('admin.modifiers') }}
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('guest.menu', Auth::user()->shop->slug)" :active="false" icon="coffee" :navigate="false" target="_blank" rel="noopener">
-                    Guest Menu
+                    {{ __('admin.guest_menu') }}
                 </x-admin-nav-link>
             </section>
 
             <section class="space-y-2">
-                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">Administration</p>
+                <p class="px-3 font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-panel/45">{{ __('admin.administration') }}</p>
                 <x-admin-nav-link :href="route('admin.settings')" :active="request()->routeIs('admin.settings')" icon="dashboard">
-                    Settings
+                    {{ __('admin.settings') }}
                 </x-admin-nav-link>
                 @if(Auth::user()->role === 'admin')
                     <x-admin-nav-link :href="route('billing')" :active="request()->routeIs('billing')" icon="billing">
-                        Billing
+                        {{ __('admin.billing') }}
                     </x-admin-nav-link>
                 @endif
             </section>
@@ -129,8 +150,18 @@ new class extends Component
                 </div>
             </div>
 
+            {{-- Language Toggle --}}
+            <div class="mb-3 flex items-center justify-center gap-0.5 rounded-full border border-panel/15 bg-panel/10 p-0.5">
+                <button wire:click="switchLocale('en')" class="lang-toggle {{ app()->getLocale() === 'en' ? 'lang-toggle-active' : '' }}" type="button">
+                    EN
+                </button>
+                <button wire:click="switchLocale('ar')" class="lang-toggle {{ app()->getLocale() === 'ar' ? 'lang-toggle-active' : '' }}" type="button">
+                    عربي
+                </button>
+            </div>
+
             <button wire:click="logout" class="btn-secondary w-full !border-panel/30 !bg-panel/10 !text-panel">
-                Log Out
+                {{ __('admin.log_out') }}
             </button>
         </div>
     </aside>

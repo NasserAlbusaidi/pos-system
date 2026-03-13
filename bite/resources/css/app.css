@@ -221,7 +221,7 @@
         width: 1em;
         height: 1em;
         border: 2px solid currentColor;
-        border-right-color: transparent;
+        border-inline-end-color: transparent;
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
     }
@@ -229,12 +229,12 @@
     .nav-progress {
         position: fixed;
         top: 0;
-        left: 0;
-        right: 0;
+        inset-inline-start: 0;
+        inset-inline-end: 0;
         height: 3px;
         z-index: 999;
         background: linear-gradient(90deg, rgb(var(--crema)), rgb(var(--focus)));
-        transform-origin: left;
+        transform-origin: start;
         animation: nav-progress 2s ease-in-out infinite;
     }
 }
@@ -283,6 +283,23 @@
     }
 }
 
+/* Currency symbol */
+.omr-symbol {
+    display: inline-block;
+    height: 0.65em;
+    width: auto;
+    vertical-align: baseline;
+    margin-inline-end: 0.2em;
+    position: relative;
+    top: -0.05em;
+}
+
+.price-display {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+
 /* ==========================================================================
    RTL (Right-to-Left) Support for Arabic
    ========================================================================== */
@@ -327,20 +344,6 @@
 /* Flip the surface-card top accent line from left to right */
 [dir="rtl"] .surface-card::before {
     background: linear-gradient(270deg, rgb(var(--crema) / 0.9), transparent 70%);
-}
-
-/* Flip nav-progress transform origin */
-[dir="rtl"] .nav-progress {
-    transform-origin: right;
-}
-
-/* Flip text alignment where explicitly set */
-[dir="rtl"] .text-left {
-    text-align: right;
-}
-
-[dir="rtl"] .text-right {
-    text-align: left;
 }
 
 /* Language toggle button styles */

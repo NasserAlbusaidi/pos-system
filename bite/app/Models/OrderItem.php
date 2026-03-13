@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
     use HasFactory;
+    use HasTranslations;
 
     protected $fillable = [
         'order_id',
