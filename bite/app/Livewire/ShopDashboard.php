@@ -195,6 +195,7 @@ class ShopDashboard extends Component
                         ->orWhereNull('expires_at')
                         ->orWhere('expires_at', '>', now());
                 })
+                ->with('items')
                 ->latest()
                 ->take(5)
                 ->get(),

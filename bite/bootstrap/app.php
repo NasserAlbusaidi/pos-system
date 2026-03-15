@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust Cloud Run / load balancer proxies so request()->ip() returns the real client IP.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR);
+
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         $middleware->web(append: [

@@ -162,10 +162,14 @@ class ShopSettings extends Component
 
     public function addStaff()
     {
+        $allowedRoles = Auth::user()->role === 'admin'
+            ? 'manager,cashier,kitchen,server'
+            : 'cashier,kitchen,server';
+
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email',
-            'staffRole' => 'required|in:manager,cashier,kitchen,server',
+            'staffRole' => "required|in:{$allowedRoles}",
             'staffPin' => 'nullable|digits:4',
         ]);
 

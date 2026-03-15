@@ -323,7 +323,7 @@ class GuestMenu extends Component
             'tax_amount' => round($taxAmount, 2),
             'total_amount' => round($subtotalAmount + $taxAmount, 2),
             'tracking_token' => (string) Str::uuid(),
-            'expires_at' => now()->addMinutes(6),
+            'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
         ]);
 
         foreach ($orderItems as $item) {
