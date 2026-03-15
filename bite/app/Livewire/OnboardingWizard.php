@@ -86,6 +86,23 @@ class OnboardingWizard extends Component
         $this->loadStaff();
     }
 
+    // ── Property Sanitizers ──────────────────────────────────
+
+    public function updatedAccent(string $value): void
+    {
+        $this->accent = $this->normalizeHex($value, '#CC5500');
+    }
+
+    public function updatedPaper(string $value): void
+    {
+        $this->paper = $this->normalizeHex($value, '#FDFCF8');
+    }
+
+    public function updatedInk(string $value): void
+    {
+        $this->ink = $this->normalizeHex($value, '#1A1918');
+    }
+
     // ── Navigation ──────────────────────────────────────────
 
     public function nextStep()
@@ -194,8 +211,8 @@ class OnboardingWizard extends Component
 
         // Create or find the "Menu" category
         $category = Category::firstOrCreate(
-            ['shop_id' => $shop->id, 'name' => 'Menu'],
-            ['sort_order' => 1]
+            ['shop_id' => $shop->id, 'name_en' => 'Menu'],
+            ['name_ar' => 'القائمة', 'sort_order' => 1]
         );
 
         $order = Product::where('shop_id', $shop->id)
@@ -213,7 +230,7 @@ class OnboardingWizard extends Component
             Product::forceCreate([
                 'shop_id' => $shop->id,
                 'category_id' => $category->id,
-                'name' => $name,
+                'name_en' => $name,
                 'price' => $price,
                 'sort_order' => ++$order,
             ]);

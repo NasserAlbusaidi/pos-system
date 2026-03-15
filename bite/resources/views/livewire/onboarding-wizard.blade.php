@@ -130,24 +130,24 @@
                             <div class="space-y-1.5">
                                 <label class="text-xs text-ink-soft">{{ __('admin.onboarding_accent') }}</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" wire:model="accent" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
-                                    <input type="text" wire:model="accent" class="field flex-1 font-mono text-xs uppercase" placeholder="#CC5500">
+                                    <input type="color" wire:model.live="accent" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
+                                    <input type="text" wire:model.blur="accent" class="field flex-1 font-mono text-xs uppercase" placeholder="#CC5500" maxlength="7">
                                 </div>
                                 @error('accent') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-xs text-ink-soft">{{ __('admin.onboarding_background') }}</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" wire:model="paper" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
-                                    <input type="text" wire:model="paper" class="field flex-1 font-mono text-xs uppercase" placeholder="#FDFCF8">
+                                    <input type="color" wire:model.live="paper" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
+                                    <input type="text" wire:model.blur="paper" class="field flex-1 font-mono text-xs uppercase" placeholder="#FDFCF8" maxlength="7">
                                 </div>
                                 @error('paper') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-xs text-ink-soft">{{ __('admin.onboarding_text') }}</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" wire:model="ink" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
-                                    <input type="text" wire:model="ink" class="field flex-1 font-mono text-xs uppercase" placeholder="#1A1918">
+                                    <input type="color" wire:model.live="ink" class="h-10 w-12 cursor-pointer rounded border border-line p-0.5">
+                                    <input type="text" wire:model.blur="ink" class="field flex-1 font-mono text-xs uppercase" placeholder="#1A1918" maxlength="7">
                                 </div>
                                 @error('ink') <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
                             </div>

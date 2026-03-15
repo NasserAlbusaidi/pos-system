@@ -4,10 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
         <meta name="theme-color" content="#EC6D2E">
-        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
