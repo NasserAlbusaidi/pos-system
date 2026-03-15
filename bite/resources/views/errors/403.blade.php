@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ $currentLocale ?? app()->getLocale() }}" dir="{{ $direction ?? 'ltr' }}">
+<html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-        <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#EC692E">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>Forbidden - {{ config('app.name', 'Bite') }}</title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -18,22 +15,28 @@
 
             <div class="w-full max-w-md fade-rise">
                 <div class="mb-6 flex items-center justify-center">
-                    <a href="/" wire:navigate class="inline-flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3 shadow-[0_16px_28px_-22px_rgba(10,15,24,0.9)]">
+                    <a href="/" class="inline-flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3 shadow-[0_16px_28px_-22px_rgba(10,15,24,0.9)]">
                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink text-panel font-display text-xl font-black">B</span>
                         <span class="font-display text-2xl font-extrabold tracking-tight">{{ config('app.name', 'Bite') }}</span>
                     </a>
                 </div>
 
                 <div class="surface-card px-6 py-7 shadow-[0_26px_42px_-30px_rgba(8,13,23,0.95)] sm:px-8 sm:py-9">
-                    {{ $slot }}
+                    <div class="space-y-5 text-center">
+                        <p class="section-headline">Error 403</p>
+                        <h1 class="font-display text-3xl font-extrabold leading-none text-ink">Forbidden</h1>
+                        <p class="text-sm leading-relaxed text-ink-soft">
+                            {{ $exception->getMessage() ?: "You don't have permission to access this page." }}
+                        </p>
+
+                        <div class="pt-3">
+                            <a href="/" class="btn-primary inline-flex">
+                                Go Home
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <script>
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js');
-            }
-        </script>
     </body>
 </html>

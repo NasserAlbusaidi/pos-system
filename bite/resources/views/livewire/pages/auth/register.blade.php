@@ -6,16 +6,22 @@ use App\Services\ShopProvisioningService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
     public string $name = '';
+
     public string $restaurant_name = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     /**
@@ -23,12 +29,16 @@ new #[Layout('layouts.guest')] class extends Component
      */
     public function register(): void
     {
+        $this->ensureIsNotRateLimited();
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'restaurant_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        RateLimiter::hit($this->throttleKey(), 3600);
 
         $shopName = ! empty($validated['restaurant_name'])
             ? $validated['restaurant_name']
@@ -47,6 +57,33 @@ new #[Layout('layouts.guest')] class extends Component
         Auth::login($user);
 
         $this->redirect('/onboarding', navigate: true);
+    }
+
+    /**
+     * Ensure the registration request is not rate limited.
+     * Allows 5 registration attempts per hour per IP.
+     */
+    protected function ensureIsNotRateLimited(): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return;
+        }
+
+        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => __('Too many registration attempts. Please try again in :minutes minutes.', [
+                'minutes' => ceil($seconds / 60),
+            ]),
+        ]);
+    }
+
+    /**
+     * Get the rate limiting throttle key for registration.
+     */
+    protected function throttleKey(): string
+    {
+        return 'register|'.request()->ip();
     }
 }; ?>
 

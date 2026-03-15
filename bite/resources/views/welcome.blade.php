@@ -36,7 +36,7 @@
     {{-- <link rel="alternate" hreflang="ar" href="{{ url('/ar') }}"> --}}
 
     {{-- Favicon --}}
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍊</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     {{-- JSON-LD Structured Data --}}
     <script type="application/ld+json">
@@ -52,7 +52,7 @@
             "@@type": "Offer",
             "price": "0",
             "priceCurrency": "OMR",
-            "description": "Free 14-day trial, then from 15 OMR/month"
+            "description": "Free plan available. Pro plan 20 OMR/month."
         },
         "provider": {
             "@@type": "Organization",
@@ -1428,7 +1428,7 @@
                         @if (Route::has('register'))
                             <a href="{{ route('register') }}" class="btn-primary">Start Free Trial</a>
                         @endif
-                        <a href="https://wa.me/96899999999" target="_blank" rel="noopener" class="btn-whatsapp">
+                        <a href="https://wa.me/96891233177" target="_blank" rel="noopener" class="btn-whatsapp">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             Chat on WhatsApp
                         </a>
@@ -1629,86 +1629,74 @@
             </div>
 
             <div class="pricing-grid">
-                {{-- Starter --}}
+                {{-- Free --}}
                 <div class="surface-card pricing-card animate-fade-up">
-                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-name">Free</div>
                     <div class="pricing-price">
-                        <span class="pricing-amount">15</span>
+                        <span class="pricing-amount">0</span>
                         <span class="pricing-period">OMR / month</span>
                     </div>
-                    <p class="pricing-desc">Perfect for small cafes and food trucks getting started.</p>
+                    <p class="pricing-desc">Get started at no cost. Perfect for trying Bite with your team.</p>
                     <ul class="pricing-features">
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            1 location
+                            POS Terminal
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            POS terminal + kitchen display
+                            Guest Menu
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Guest QR ordering
+                            Kitchen Display
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Up to 3 staff PINs
+                            1 staff member
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Basic reports
-                        </li>
-                        <li class="pricing-feature">
-                            <span class="pricing-check">&#10003;</span>
-                            WhatsApp support
+                            Up to 20 products
                         </li>
                     </ul>
                     <div class="pricing-cta">
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="btn-secondary" style="width: 100%;">Start 14-Day Free Trial</a>
+                            <a href="{{ route('register') }}" class="btn-secondary" style="width: 100%;">Get Started Free</a>
                         @endif
                     </div>
                 </div>
 
-                {{-- Growth --}}
+                {{-- Pro --}}
                 <div class="surface-card pricing-card pricing-card--featured animate-fade-up animate-delay-2">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div class="pricing-name">Growth</div>
+                        <div class="pricing-name">Pro</div>
                         <span class="tag tag--signal" style="font-size: 0.5rem;">Most Popular</span>
                     </div>
                     <div class="pricing-price">
-                        <span class="pricing-amount">25</span>
-                        <span class="pricing-period">OMR / month per location</span>
+                        <span class="pricing-amount">20</span>
+                        <span class="pricing-period">OMR / month</span>
                     </div>
-                    <p class="pricing-desc">For established restaurants that want the full platform.</p>
+                    <p class="pricing-desc">For restaurants that want the full platform with no limits.</p>
                     <ul class="pricing-features">
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Unlimited locations
+                            Everything in Free
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Everything in Starter
+                            Unlimited Staff
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Unlimited staff PINs
+                            Unlimited Products
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Advanced reports &amp; exports
+                            Reports &amp; Analytics
                         </li>
                         <li class="pricing-feature">
                             <span class="pricing-check">&#10003;</span>
-                            Advanced team controls
-                        </li>
-                        <li class="pricing-feature">
-                            <span class="pricing-check">&#10003;</span>
-                            Priority support
-                        </li>
-                        <li class="pricing-feature">
-                            <span class="pricing-check">&#10003;</span>
-                            Custom branding
+                            Priority Support
                         </li>
                     </ul>
                     <div class="pricing-cta">
@@ -1731,39 +1719,10 @@
                 <h2 class="section-title">Trusted by restaurants across Oman.</h2>
             </div>
 
-            <div class="testimonials-grid">
-                <div class="surface-card testimonial-card animate-fade-up">
-                    <p class="testimonial-text">"We switched from a legacy POS that cost us 80 OMR/month. Bite does more for less, and the QR ordering feature has been a game-changer for our lunch rush."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">A</div>
-                        <div>
-                            <div class="testimonial-name">Ahmed Al-Rashdi</div>
-                            <div class="testimonial-role">Owner, Fresh Bites Cafe &mdash; Muscat</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="surface-card testimonial-card animate-fade-up animate-delay-2">
-                    <p class="testimonial-text">"Setup took 25 minutes. My staff learned the PIN system in 5 minutes. The kitchen display replaced our paper ticket mess completely."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">F</div>
-                        <div>
-                            <div class="testimonial-name">Fatma Al-Balushi</div>
-                            <div class="testimonial-role">Manager, Saffron Kitchen &mdash; Sohar</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="surface-card testimonial-card animate-fade-up animate-delay-4">
-                    <p class="testimonial-text">"Finally a POS that uses OMR properly with 3 decimals. The reports help me understand which items are actually profitable."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">K</div>
-                        <div>
-                            <div class="testimonial-name">Khalid Al-Habsi</div>
-                            <div class="testimonial-role">Owner, The Grind Coffee &mdash; Nizwa</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="surface-card animate-fade-up" style="text-align: center; padding: 3rem 2rem; max-width: 600px; margin: 0 auto;">
+                <p style="color: rgb(var(--ink-soft)); font-size: 1.1rem; line-height: 1.6;">
+                    We're just getting started. Customer testimonials coming soon as restaurants across Oman begin using Bite.
+                </p>
             </div>
         </div>
     </section>
@@ -1863,7 +1822,7 @@
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn-primary">Start Free Trial</a>
                     @endif
-                    <a href="https://wa.me/96899999999" target="_blank" rel="noopener" class="btn-whatsapp">
+                    <a href="https://wa.me/96891233177" target="_blank" rel="noopener" class="btn-whatsapp">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                         Talk to Us on WhatsApp
                     </a>
@@ -1899,8 +1858,8 @@
                 <div>
                     <h4 class="footer-heading">Company</h4>
                     <ul class="footer-links">
-                        <li><a href="mailto:hello@bitepos.om">Contact Us</a></li>
-                        <li><a href="https://wa.me/96899999999" target="_blank" rel="noopener">WhatsApp Support</a></li>
+                        <li><a href="mailto:nasserbusaidi@gmail.com">Contact Us</a></li>
+                        <li><a href="https://wa.me/96891233177" target="_blank" rel="noopener">WhatsApp Support</a></li>
                     </ul>
                 </div>
 
@@ -1920,8 +1879,8 @@
             <div class="footer-bottom">
                 <p class="footer-copy">&copy; {{ now()->year }} Bite Systems. Muscat, Oman.</p>
                 <ul class="footer-legal">
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="{{ route('legal.privacy') }}">Privacy Policy</a></li>
+                    <li><a href="{{ route('legal.terms') }}">Terms of Service</a></li>
                 </ul>
             </div>
         </div>

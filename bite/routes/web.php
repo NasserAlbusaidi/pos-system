@@ -7,17 +7,17 @@ use App\Http\Controllers\ReportsExportController;
 use App\Http\Controllers\StripeSubscriptionWebhookController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Admin\AuditLogs;
-use App\Livewire\BillingSettings;
 use App\Livewire\Admin\MenuBuilder;
 use App\Livewire\Admin\ReportsDashboard;
+use App\Livewire\BillingSettings;
 use App\Livewire\Guest\OrderTracker;
 use App\Livewire\GuestMenu;
 use App\Livewire\KitchenDisplay;
 use App\Livewire\ModifierManager;
+use App\Livewire\OnboardingWizard;
 use App\Livewire\PinLogin;
 use App\Livewire\PosDashboard;
 use App\Livewire\ProductManager;
-use App\Livewire\OnboardingWizard;
 use App\Livewire\ShiftReport;
 use App\Livewire\ShopDashboard;
 use App\Livewire\ShopSettings;
@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 Route::view('/offline', 'offline');
+Route::view('/privacy', 'legal.privacy')->name('legal.privacy');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
 
 // Public Guest Routes (Path-Based Tenancy)
 Route::get('/menu/{shop:slug}', GuestMenu::class)->name('guest.menu');
