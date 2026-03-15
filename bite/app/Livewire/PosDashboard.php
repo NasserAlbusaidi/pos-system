@@ -247,7 +247,7 @@ class PosDashboard extends Component
         return 'manager-override:'.Auth::user()->shop_id.'|'.request()->ip();
     }
 
-    public function markAsPaid($orderId, $method = 'cash')
+    public function markAsPaid(int $orderId, string $method = 'cash')
     {
         $allowedMethods = ['cash', 'card', 'voucher'];
         if (! in_array($method, $allowedMethods, true)) {
@@ -316,7 +316,7 @@ class PosDashboard extends Component
         }
     }
 
-    public function markAsDelivered($orderId)
+    public function markAsDelivered(int $orderId)
     {
         $result = DB::transaction(function () use ($orderId) {
             $order = Order::where('shop_id', Auth::user()->shop_id)
@@ -362,7 +362,7 @@ class PosDashboard extends Component
         app(PrintNodeService::class)->printOrder($order, 'receipt');
     }
 
-    public function openSplit($orderId)
+    public function openSplit(int $orderId)
     {
         $order = Order::where('shop_id', Auth::user()->shop_id)
             ->with('items.modifiers')
@@ -392,36 +392,31 @@ class PosDashboard extends Component
             return;
         }
 
-        $order = Order::where('shop_id', Auth::user()->shop_id)
-            ->with('items.modifiers')
-            ->findOrFail($this->splitOrderId);
+        $result = DB::transaction(function () {
+            $order = Order::where('shop_id', Auth::user()->shop_id)
+                ->with('items.modifiers')
+                ->lockForUpdate()
+                ->findOrFail($this->splitOrderId);
 
-        if ($order->status !== 'unpaid') {
-            $this->splitError = 'Only unpaid orders can be split.';
-
-            return;
-        }
-
-        $moves = [];
-        foreach ($order->items as $item) {
-            $qty = (int) ($this->splitQuantities[$item->id] ?? 0);
-            if ($qty < 0 || $qty > $item->quantity) {
-                $this->splitError = 'Split quantities must be between 0 and the item quantity.';
-
-                return;
+            if ($order->status !== 'unpaid') {
+                return ['error' => 'Only unpaid orders can be split.'];
             }
-            if ($qty > 0) {
-                $moves[] = ['item' => $item, 'qty' => $qty];
+
+            $moves = [];
+            foreach ($order->items as $item) {
+                $qty = (int) ($this->splitQuantities[$item->id] ?? 0);
+                if ($qty < 0 || $qty > $item->quantity) {
+                    return ['error' => 'Split quantities must be between 0 and the item quantity.'];
+                }
+                if ($qty > 0) {
+                    $moves[] = ['item' => $item, 'qty' => $qty];
+                }
             }
-        }
 
-        if (empty($moves)) {
-            $this->splitError = 'Select at least one item to split.';
+            if (empty($moves)) {
+                return ['error' => 'Select at least one item to split.'];
+            }
 
-            return;
-        }
-
-        DB::transaction(function () use ($order, $moves) {
             $splitGroupId = $order->split_group_id ?: (string) Str::uuid();
             if (! $order->split_group_id) {
                 $order->update(['split_group_id' => $splitGroupId]);
@@ -503,13 +498,21 @@ class PosDashboard extends Component
                     'qty' => $move['qty'],
                 ])->all(),
             ]);
+
+            return ['error' => null];
         });
+
+        if ($result['error']) {
+            $this->splitError = $result['error'];
+
+            return;
+        }
 
         session()->flash('message', 'Order split successfully.');
         $this->closeSplit();
     }
 
-    public function openPayment($orderId)
+    public function openPayment(int $orderId)
     {
         $order = Order::where('shop_id', Auth::user()->shop_id)
             ->with('payments')
