@@ -50,6 +50,8 @@ ARG BUILD_APP_KEY="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 RUN APP_KEY="${BUILD_APP_KEY}" \
     composer install --prefer-dist --no-interaction --optimize-autoloader --no-scripts --no-dev \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database \
+    && rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
+    && APP_KEY="${BUILD_APP_KEY}" php artisan package:discover --ansi \
     && rm -f database/database.sqlite \
     && touch database/database.sqlite \
     && APP_KEY="${BUILD_APP_KEY}" php artisan migrate --force --seed --no-interaction \
