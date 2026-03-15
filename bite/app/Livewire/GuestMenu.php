@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\ModifierOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
@@ -82,11 +81,22 @@ class GuestMenu extends Component
 
     protected function calculateTotals(): array
     {
+        if (empty($this->cart)) {
+            return [0, 0];
+        }
+
+        $productIds = collect($this->cart)->pluck('id')->unique()->all();
+        $products = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
         $subtotal = 0;
         $tax = 0;
 
         foreach ($this->cart as $item) {
-            $product = $this->shop->products()->find($item['id']);
+            $product = $products->get($item['id']);
             if (! $product) {
                 continue;
             }
@@ -95,15 +105,7 @@ class GuestMenu extends Component
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
             if (! empty($modifierIds)) {
-                $allowedOptionIds = $this->shop->modifierGroups()
-                    ->with('options')
-                    ->get()
-                    ->pluck('options')
-                    ->flatten()
-                    ->pluck('id')
-                    ->all();
-                $scopedIds = array_values(array_intersect($modifierIds, $allowedOptionIds));
-                $itemTotal += ModifierOption::whereIn('id', $scopedIds)->sum('price_adjustment');
+                $itemTotal += $this->sumModifierPrices($product, $modifierIds);
             }
 
             $lineTotal = $itemTotal * $item['quantity'];
@@ -131,16 +133,7 @@ class GuestMenu extends Component
             return $base;
         }
 
-        $allowedOptionIds = $this->shop->modifierGroups()
-            ->with('options')
-            ->get()
-            ->pluck('options')
-            ->flatten()
-            ->pluck('id')
-            ->all();
-        $scopedIds = array_values(array_intersect($modifierIds, $allowedOptionIds));
-
-        return $base + ModifierOption::whereIn('id', $scopedIds)->sum('price_adjustment');
+        return $base + $this->sumModifierPrices($this->customizingProduct, $modifierIds);
     }
 
     public function incrementItem($key)
@@ -213,9 +206,10 @@ class GuestMenu extends Component
         $displayPrice = (float) $product->final_price;
         $modifierNames = [];
         if (! empty($modifierIds)) {
-            $modifierOptions = ModifierOption::whereIn('id', $modifierIds)->get();
-            $displayPrice += $modifierOptions->sum('price_adjustment');
-            $modifierNames = $modifierOptions->map(fn ($o) => $o->translated('name'))->all();
+            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
+            $displayPrice += $validOptions->sum('price_adjustment');
+            $modifierNames = $validOptions->map(fn ($o) => $o->translated('name'))->all();
+            $modifierIds = $validOptions->pluck('id')->all();
         }
 
         if (isset($this->cart[$itemKey])) {
@@ -288,24 +282,15 @@ class GuestMenu extends Component
             $modifiersData = [];
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
-            $allowedModifierIds = $product->modifierGroups
-                ->pluck('options')
-                ->flatten()
-                ->pluck('id')
-                ->all();
+            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
 
-            $validModifierIds = array_values(array_intersect($modifierIds, $allowedModifierIds));
-
-            if (! empty($validModifierIds)) {
-                $modifierOptions = ModifierOption::whereIn('id', $validModifierIds)->get();
-                foreach ($modifierOptions as $opt) {
-                    $itemPrice += $opt->price_adjustment;
-                    $modifiersData[] = [
-                        'name_en' => $opt->name_en,
-                        'name_ar' => $opt->name_ar,
-                        'price' => $opt->price_adjustment,
-                    ];
-                }
+            foreach ($validOptions as $opt) {
+                $itemPrice += $opt->price_adjustment;
+                $modifiersData[] = [
+                    'name_en' => $opt->name_en,
+                    'name_ar' => $opt->name_ar,
+                    'price' => $opt->price_adjustment,
+                ];
             }
 
             $lineTotal = $itemPrice * $quantity;
@@ -423,20 +408,14 @@ class GuestMenu extends Component
 
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
-            $allowedModifierIds = $product->modifierGroups
-                ->pluck('options')
-                ->flatten()
-                ->pluck('id')
-                ->all();
-
-            $validModifierIds = array_values(array_intersect($modifierIds, $allowedModifierIds));
+            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
+            $validModifierIds = $validOptions->pluck('id')->all();
 
             $displayPrice = (float) $product->final_price;
             $modifierNames = [];
-            if (! empty($validModifierIds)) {
-                $modifierOptions = \App\Models\ModifierOption::whereIn('id', $validModifierIds)->get();
-                $displayPrice += $modifierOptions->sum('price_adjustment');
-                $modifierNames = $modifierOptions->map(fn ($o) => $o->translated('name'))->all();
+            if ($validOptions->isNotEmpty()) {
+                $displayPrice += $validOptions->sum('price_adjustment');
+                $modifierNames = $validOptions->map(fn ($o) => $o->translated('name'))->all();
             }
 
             $modifierKey = ! empty($validModifierIds)
@@ -468,6 +447,32 @@ class GuestMenu extends Component
 
         $this->cart = $newCart;
         session()->flash('message', __('guest.favorite_loaded'));
+    }
+
+    /**
+     * Get modifier options that belong to the product's modifier groups.
+     * This is the tenant-safety boundary — only returns options owned by
+     * the product (and therefore the shop), never cross-tenant options.
+     */
+    protected function getValidModifierOptions($product, array $modifierIds): \Illuminate\Support\Collection
+    {
+        if (empty($modifierIds)) {
+            return collect();
+        }
+
+        return $product->modifierGroups
+            ->pluck('options')
+            ->flatten()
+            ->whereIn('id', $modifierIds);
+    }
+
+    /**
+     * Sum price adjustments for valid modifiers on a product.
+     */
+    protected function sumModifierPrices($product, array $modifierIds): float
+    {
+        return (float) $this->getValidModifierOptions($product, $modifierIds)
+            ->sum('price_adjustment');
     }
 
     protected function normalizeModifierIds($value): array
@@ -512,6 +517,7 @@ class GuestMenu extends Component
             ->with(['products' => function ($query) {
                 $query->where('is_visible', true)
                     ->where('is_available', true)
+                    ->with('modifierGroups.options')
                     ->orderBy('sort_order');
             }])
             ->where('is_active', true)
