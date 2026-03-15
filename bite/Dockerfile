@@ -48,7 +48,7 @@ ENV APP_ENV=production \
 ARG BUILD_APP_KEY="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 RUN APP_KEY="${BUILD_APP_KEY}" \
-    composer install --prefer-dist --no-interaction --optimize-autoloader --no-scripts \
+    composer install --prefer-dist --no-interaction --optimize-autoloader --no-scripts --no-dev \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database \
     && rm -f database/database.sqlite \
     && touch database/database.sqlite \
