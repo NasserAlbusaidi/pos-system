@@ -30,6 +30,7 @@ class ShopProvisioningService
                 ],
             ]);
             $shop->status = 'trial';
+            $shop->trial_ends_at = now()->addDays(config('billing.trial_days', 14));
             $shop->save();
 
             return User::forceCreate([
