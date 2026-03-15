@@ -41,7 +41,9 @@ ENV APP_ENV=production \
     QUEUE_CONNECTION=sync \
     MAIL_MAILER=log \
     DB_CONNECTION=sqlite \
-    DB_DATABASE=/var/www/html/database/database.sqlite
+    DB_DATABASE=/var/www/html/database/database.sqlite \
+    SENTRY_ENVIRONMENT=staging \
+    SENTRY_TRACES_SAMPLE_RATE=0.1
 
 # Throwaway key for build-time artisan commands only (migrate, seed, cache).
 # The real key is generated at container startup in start.sh.
