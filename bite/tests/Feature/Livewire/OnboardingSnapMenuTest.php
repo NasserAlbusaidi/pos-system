@@ -34,7 +34,7 @@ class OnboardingSnapMenuTest extends TestCase
         ]);
 
         config(['services.gemini.api_key' => 'test-key']);
-        config(['services.gemini.model' => 'gemini-2.0-flash']);
+        config(['services.gemini.model' => 'gemini-2.5-flash']);
     }
 
     public function test_step3_starts_in_choose_mode(): void

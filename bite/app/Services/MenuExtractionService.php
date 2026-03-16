@@ -23,7 +23,7 @@ class MenuExtractionService
             throw new RuntimeException('Gemini API key not configured');
         }
 
-        $model = config('services.gemini.model', 'gemini-2.0-flash');
+        $model = config('services.gemini.model', 'gemini-2.5-flash');
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $parts = $this->buildRequestParts($images);

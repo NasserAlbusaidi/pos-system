@@ -16,7 +16,7 @@ class MenuExtractionServiceTest extends TestCase
         parent::setUp();
 
         config(['services.gemini.api_key' => 'test-key']);
-        config(['services.gemini.model' => 'gemini-2.0-flash']);
+        config(['services.gemini.model' => 'gemini-2.5-flash']);
 
         $this->service = new MenuExtractionService;
     }
