@@ -32,7 +32,8 @@ class GroupCart extends Model
     public function addItem(string $participantId, array $item): self
     {
         return DB::transaction(function () use ($participantId, $item) {
-            $this->lockForUpdate()->refresh();
+            self::where('id', $this->id)->lockForUpdate()->first();
+            $this->refresh();
             $items = $this->items ?? [];
 
             $itemKey = $item['itemKey'] ?? null;
@@ -74,7 +75,8 @@ class GroupCart extends Model
     public function removeItem(string $participantId, string $itemKey): self
     {
         return DB::transaction(function () use ($participantId, $itemKey) {
-            $this->lockForUpdate()->refresh();
+            self::where('id', $this->id)->lockForUpdate()->first();
+            $this->refresh();
             $items = collect($this->items ?? [])
                 ->reject(fn (array $entry) => ($entry['participant_id'] ?? '') === $participantId
                     && ($entry['itemKey'] ?? '') === $itemKey)
@@ -95,7 +97,8 @@ class GroupCart extends Model
     public function updateItemQuantity(string $participantId, string $itemKey, int $delta): self
     {
         return DB::transaction(function () use ($participantId, $itemKey, $delta) {
-            $this->lockForUpdate()->refresh();
+            self::where('id', $this->id)->lockForUpdate()->first();
+            $this->refresh();
             $items = $this->items ?? [];
             $updated = [];
 

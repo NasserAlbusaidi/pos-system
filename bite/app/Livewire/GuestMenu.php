@@ -137,7 +137,8 @@ class GuestMenu extends Component
 
         // Track unique participants atomically with row lock
         DB::transaction(function () use ($groupCart) {
-            $groupCart->lockForUpdate()->refresh();
+            GroupCart::where('id', $groupCart->id)->lockForUpdate()->first();
+            $groupCart->refresh();
 
             $existingParticipants = collect($groupCart->items ?? [])
                 ->pluck('participant_id')
@@ -430,7 +431,8 @@ class GuestMenu extends Component
         }
 
         DB::transaction(function () use ($groupCart, $index) {
-            $groupCart->lockForUpdate()->refresh();
+            GroupCart::where('id', $groupCart->id)->lockForUpdate()->first();
+            $groupCart->refresh();
             $items = $groupCart->items ?? [];
             $item = $items[$index] ?? null;
 
