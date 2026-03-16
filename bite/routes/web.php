@@ -8,8 +8,11 @@ use App\Http\Controllers\StripeSubscriptionWebhookController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Admin\AuditLogs;
 use App\Livewire\Admin\MenuBuilder;
+use App\Livewire\Admin\MenuEngineering;
+use App\Livewire\Admin\PricingRules;
 use App\Livewire\Admin\ReportsDashboard;
 use App\Livewire\BillingSettings;
+use App\Livewire\CashReconciliation;
 use App\Livewire\Guest\OrderTracker;
 use App\Livewire\GuestMenu;
 use App\Livewire\KitchenDisplay;
@@ -66,6 +69,9 @@ Route::middleware(['auth', 'subscribed', 'role:manager,admin'])->group(function 
     Route::get('/audit-logs', AuditLogs::class)->name('admin.audit-logs');
     Route::get('/settings', ShopSettings::class)->name('admin.settings');
     Route::get('/shift-report', ShiftReport::class)->name('admin.shift-report');
+    Route::get('/cash-reconciliation', CashReconciliation::class)->name('admin.cash-reconciliation');
+    Route::get('/menu-engineering', MenuEngineering::class)->name('admin.menu-engineering');
+    Route::get('/pricing-rules', PricingRules::class)->name('admin.pricing-rules');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {

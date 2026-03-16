@@ -32,6 +32,10 @@ class ShopDashboard extends Component
 
     public $weeklyRevenue = [];
 
+    public $revenueHeatmap = [];
+
+    public float $dailyGoal = 0;
+
     // Notification state
     public $showNotifications = false;
 
@@ -140,6 +144,43 @@ class ShopDashboard extends Component
                 ];
             })
             ->all();
+
+        // Revenue heatmap: last 4 weeks, by day-of-week and hour
+        $driver = DB::connection()->getDriverName();
+        $hourExpr = $driver === 'sqlite' ? "cast(strftime('%H', paid_at) as integer)" : 'hour(paid_at)';
+        $dowExpr = $driver === 'sqlite' ? "cast(strftime('%w', paid_at) as integer)" : 'dayofweek(paid_at) - 1';
+
+        $heatmapRaw = Order::where('shop_id', $shopId)
+            ->where('status', 'completed')
+            ->whereBetween('paid_at', [now()->subDays(28)->startOfDay(), now()->endOfDay()])
+            ->select(
+                DB::raw("{$dowExpr} as dow"),
+                DB::raw("{$hourExpr} as hour"),
+                DB::raw('sum(total_amount) as total')
+            )
+            ->groupBy('dow', 'hour')
+            ->get();
+
+        $this->revenueHeatmap = $heatmapRaw->map(fn ($row) => [
+            'dow' => (int) $row->dow,
+            'hour' => (int) $row->hour,
+            'total' => (float) $row->total,
+        ])->all();
+
+        // Daily goal from branding config (owner can set it)
+        $branding = $this->shop->branding ?? [];
+        $this->dailyGoal = (float) ($branding['daily_goal'] ?? 0);
+    }
+
+    public function setDailyGoal(float $goal): void
+    {
+        $goal = max(0, round($goal, 3));
+        $branding = $this->shop->branding ?? [];
+        $this->shop->update([
+            'branding' => array_merge($branding, ['daily_goal' => $goal]),
+        ]);
+        $this->dailyGoal = $goal;
+        $this->dispatch('toast', message: 'Daily goal updated.', variant: 'success');
     }
 
     public function toggleNotifications()

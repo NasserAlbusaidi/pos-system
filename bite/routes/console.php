@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::call(fn () => \App\Models\Order::cancelExpired())->everyMinute();
+Schedule::call(fn () => \App\Models\GroupCart::cleanExpired())->hourly();

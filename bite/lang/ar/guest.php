@@ -12,6 +12,7 @@ return [
     'save_favorite' => 'حفظ المفضلة',
     'no_items_available' => 'لا توجد عناصر متاحة',
     'flash_sale' => 'عرض خاص',
+    'limited_offer' => 'عرض محدود',
 
     // Cart
     'add_to_order' => 'أضف إلى الطلب',
@@ -41,9 +42,17 @@ return [
     'loyalty_placeholder' => 'مثال: 5551234567',
     'invalid_phone' => 'أدخل رقم هاتف صحيح.',
 
+    // Recognition / One-Number Identity
+    'welcome_back' => 'أهلاً بعودتك!',
+    'points_label' => 'نقاط',
+    'visits_label' => 'زيارات',
+    'order_your_usual' => 'اطلب طلبك المعتاد',
+    'recent_orders' => 'الطلبات الأخيرة',
+
     // Favorites
     'favorite_saved' => 'تم حفظ المفضلة على هذا الجهاز.',
     'favorite_loaded' => 'تم تحميل المفضلة.',
+    'favorite_loaded_partial' => 'تم تحميل المفضلة. تمت إزالة :removed عنصر(عناصر) — لم تعد متاحة.',
     'favorite_empty' => 'لا توجد مفضلة محفوظة على هذا الجهاز.',
     'favorite_unavailable' => 'عناصر المفضلة لم تعد متاحة.',
     'favorite_add_first' => 'أضف عناصر إلى سلتك قبل حفظ المفضلة.',
@@ -68,8 +77,32 @@ return [
     // Rate limiting
     'too_many_orders' => 'طلبات كثيرة. يرجى الانتظار قليلاً قبل المحاولة مرة أخرى.',
 
+    // Group Ordering
+    'group_order' => 'طلب جماعي',
+    'group_ordering' => 'طلب جماعي',
+    'group_active' => 'المجموعة نشطة',
+    'group_banner' => ':count شخص(أشخاص) يطلبون معاً',
+    'share_link' => 'مشاركة الرابط',
+    'leave_group' => 'مغادرة المجموعة',
+    'share_group_order' => 'مشاركة الطلب الجماعي',
+    'share_group_desc' => 'أرسل هذا الرابط لمن معك على الطاولة للطلب معاً',
+    'copy_link' => 'نسخ الرابط',
+    'link_copied' => 'تم النسخ!',
+    'group_expires_hint' => 'ينتهي هذا الرابط خلال ساعة واحدة',
+    'group_expired' => 'انتهت صلاحية هذا الطلب الجماعي أو أنه غير موجود.',
+    'review_group_order' => 'مراجعة الطلب الجماعي',
+    'send_group_to_kitchen' => 'إرسال الطلب الجماعي إلى المطبخ؟',
+    'you' => 'أنت',
+    'participant' => 'ضيف',
+
     // Language toggle
     'language' => 'اللغة',
     'switch_arabic' => 'عربي',
     'switch_english' => 'EN',
+
+    // Feedback
+    'how_was_order' => 'كيف كان طلبك؟',
+    'submit_feedback' => 'إرسال التقييم',
+    'thank_you_feedback' => 'شكراً لتقييمك!',
+    'feedback_placeholder' => 'أي ملاحظات؟ (اختياري)',
 ];

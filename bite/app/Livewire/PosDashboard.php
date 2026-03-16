@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\AuditLog;
+use App\Models\Category;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\Payment;
@@ -61,9 +63,75 @@ class PosDashboard extends Component
     // Protected: prevents client from setting this to true via Livewire wire protocol.
     protected $managerOverrideApproved = false;
 
+    public array $upsellSuggestions = [];
+
     public function mount(): void
     {
         $this->shop = Auth::user()->shop;
+        $this->loadUpsellData();
+    }
+
+    protected function loadUpsellData(): void
+    {
+        // Pre-compute co-purchase patterns: for each product, find top 3 products
+        // frequently bought together (in the same order) over the last 30 days.
+        $shopId = Auth::user()->shop_id;
+
+        $coPurchases = DB::select("
+            SELECT
+                oi1.product_id AS source_id,
+                oi2.product_id AS suggested_id,
+                p.name_en AS suggested_name,
+                COUNT(*) AS frequency
+            FROM order_items oi1
+            JOIN order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.product_id != oi2.product_id
+            JOIN orders o ON o.id = oi1.order_id
+            JOIN products p ON p.id = oi2.product_id
+            WHERE o.shop_id = ?
+              AND o.status IN ('paid', 'preparing', 'ready', 'completed')
+              AND o.paid_at >= ?
+              AND p.is_available = 1
+            GROUP BY oi1.product_id, oi2.product_id, p.name_en
+            HAVING COUNT(*) >= 2
+            ORDER BY oi1.product_id, frequency DESC
+        ", [$shopId, now()->subDays(30)->toDateString()]);
+
+        $suggestions = [];
+        foreach ($coPurchases as $row) {
+            $sourceId = (int) $row->source_id;
+            if (! isset($suggestions[$sourceId])) {
+                $suggestions[$sourceId] = [];
+            }
+            if (count($suggestions[$sourceId]) < 3) {
+                $suggestions[$sourceId][] = [
+                    'id' => (int) $row->suggested_id,
+                    'name' => $row->suggested_name,
+                    'frequency' => (int) $row->frequency,
+                ];
+            }
+        }
+        $this->upsellSuggestions = $suggestions;
+    }
+
+    public function toggle86(int $productId): void
+    {
+        $product = Product::where('shop_id', Auth::user()->shop_id)
+            ->findOrFail($productId);
+
+        $product->update(['is_available' => ! $product->is_available]);
+
+        AuditLog::record(
+            $product->is_available ? 'product.restored' : 'product.86d',
+            $product,
+            ['product_name' => $product->name_en]
+        );
+
+        $this->dispatch('toast',
+            message: $product->is_available
+                ? "{$product->name_en} is back on the menu."
+                : "{$product->name_en} marked as 86'd (sold out).",
+            variant: $product->is_available ? 'success' : 'error'
+        );
     }
 
     protected function loadStats(): void
@@ -556,18 +624,20 @@ class PosDashboard extends Component
         }
 
         $order = Order::where('shop_id', Auth::user()->shop_id)->findOrFail($this->paymentOrderId);
-        $guests = max(1, (int) $this->splitGuestCount);
+        $guests = max(1, min(20, (int) $this->splitGuestCount));
         $balance = $order->balance_due;
-        $base = floor(($balance / $guests) * 100) / 100;
+        $decimals = $this->shop->currency_decimals ?? 3;
+        $factor = pow(10, $decimals);
+        $base = floor(($balance / $guests) * $factor) / $factor;
         $rows = [];
 
         for ($i = 0; $i < $guests; $i++) {
             $rows[] = ['amount' => $base, 'method' => 'card'];
         }
 
-        $remainder = round($balance - ($base * $guests), 2);
+        $remainder = round($balance - ($base * $guests), $decimals);
         if ($remainder > 0 && isset($rows[0])) {
-            $rows[0]['amount'] = round($rows[0]['amount'] + $remainder, 2);
+            $rows[0]['amount'] = round($rows[0]['amount'] + $remainder, $decimals);
         }
 
         $this->paymentRows = $rows;
@@ -632,19 +702,28 @@ class PosDashboard extends Component
     {
         $this->loadStats();
 
-        $orders = Order::where('shop_id', Auth::user()->shop_id)
+        $shopId = Auth::user()->shop_id;
+
+        $orders = Order::where('shop_id', $shopId)
             ->whereIn('status', ['unpaid', 'ready'])
             ->with(['items.modifiers', 'payments'])
             ->latest()
             ->get();
 
+        $menuCategories = Category::where('shop_id', $shopId)
+            ->where('is_active', true)
+            ->with(['products' => fn ($q) => $q->where('is_visible', true)->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get();
+
         return view('livewire.pos-dashboard', [
             'orders' => $orders,
+            'menuCategories' => $menuCategories,
             'splitOrder' => $this->splitOrderId
-                ? Order::where('shop_id', Auth::user()->shop_id)->with('items.modifiers')->find($this->splitOrderId)
+                ? Order::where('shop_id', $shopId)->with('items.modifiers')->find($this->splitOrderId)
                 : null,
             'paymentOrder' => $this->paymentOrderId
-                ? Order::where('shop_id', Auth::user()->shop_id)->with('payments')->find($this->paymentOrderId)
+                ? Order::where('shop_id', $shopId)->with('payments')->find($this->paymentOrderId)
                 : null,
         ]);
     }

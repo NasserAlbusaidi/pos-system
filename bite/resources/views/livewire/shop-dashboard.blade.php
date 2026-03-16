@@ -86,6 +86,115 @@
                 </div>
             </article>
         </div>
+
+        {{-- Daily Goal Progress Bar --}}
+        <div class="mt-6" x-data="{
+            editing: false,
+            goalInput: {{ $dailyGoal > 0 ? $dailyGoal : 100 }},
+        }">
+            @if($dailyGoal > 0)
+                @php
+                    $goalPercent = min(round(($dailyRevenue / $dailyGoal) * 100), 999);
+                    $goalColorClass = $goalPercent >= 100 ? 'signal' : ($goalPercent >= 50 ? 'crema' : 'alert');
+                @endphp
+                <div class="rounded-xl border border-line bg-panel p-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <p class="section-headline">{{ __('admin.daily_goal') }}</p>
+                            @if($goalPercent >= 100)
+                                <span class="inline-flex items-center rounded-full border border-signal/30 bg-signal/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-signal">
+                                    {{ __('admin.daily_goal_reached') }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <p class="font-mono text-xs text-ink-soft">
+                                <span class="font-bold text-ink"><x-price :amount="$dailyRevenue" :shop="$shop" /></span>
+                                <span class="mx-1">{{ __('admin.daily_goal_of') }}</span>
+                                <x-price :amount="$dailyGoal" :shop="$shop" />
+                            </p>
+                            <template x-if="!editing">
+                                <button
+                                    x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())"
+                                    class="btn-secondary !px-2.5 !py-1.5 !text-[10px]"
+                                >{{ __('admin.daily_goal_set') }}</button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Progress bar --}}
+                    <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                            class="h-full rounded-full transition-all duration-700 ease-out"
+                            style="width: {{ min($goalPercent, 100) }}%; background: rgb(var(--{{ $goalColorClass }}));"
+                        ></div>
+                    </div>
+                    <p class="mt-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                        {{ __('admin.daily_goal_progress', ['percent' => $goalPercent]) }}
+                    </p>
+
+                    {{-- Inline edit form --}}
+                    <template x-if="editing">
+                        <div class="mt-3 flex items-center gap-2" x-on:keydown.escape="editing = false">
+                            <input
+                                x-ref="goalField"
+                                x-model.number="goalInput"
+                                type="number"
+                                step="0.001"
+                                min="0"
+                                class="h-9 w-36 rounded-lg border border-line bg-panel px-3 font-mono text-sm text-ink outline-none focus:border-ink"
+                            />
+                            <button
+                                x-on:click="$wire.setDailyGoal(goalInput); editing = false"
+                                class="btn-primary !px-3 !py-1.5 !text-[10px]"
+                            >{{ __('admin.daily_goal_update') }}</button>
+                            <button
+                                x-on:click="editing = false"
+                                class="btn-secondary !px-3 !py-1.5 !text-[10px]"
+                            >{{ __('admin.daily_goal_cancel') }}</button>
+                        </div>
+                    </template>
+                </div>
+            @else
+                {{-- No goal set yet --}}
+                <div class="rounded-xl border border-dashed border-line bg-panel p-5" x-on:keydown.escape="editing = false">
+                    <template x-if="!editing">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p class="section-headline">{{ __('admin.daily_goal') }}</p>
+                                <p class="mt-1 text-sm text-ink-soft">{{ __('admin.daily_goal_set_prompt') }}</p>
+                            </div>
+                            <button
+                                x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())"
+                                class="btn-secondary !px-3 !py-2"
+                            >{{ __('admin.daily_goal_set') }}</button>
+                        </div>
+                    </template>
+                    <template x-if="editing">
+                        <div class="flex items-center gap-3">
+                            <p class="section-headline">{{ __('admin.daily_goal') }}</p>
+                            <input
+                                x-ref="goalField"
+                                x-model.number="goalInput"
+                                type="number"
+                                step="0.001"
+                                min="0.001"
+                                class="h-9 w-36 rounded-lg border border-line bg-panel px-3 font-mono text-sm text-ink outline-none focus:border-ink"
+                                placeholder="100.000"
+                            />
+                            <button
+                                x-on:click="$wire.setDailyGoal(goalInput); editing = false"
+                                class="btn-primary !px-3 !py-1.5 !text-[10px]"
+                            >{{ __('admin.daily_goal_update') }}</button>
+                            <button
+                                x-on:click="editing = false"
+                                class="btn-secondary !px-3 !py-1.5 !text-[10px]"
+                            >{{ __('admin.daily_goal_cancel') }}</button>
+                        </div>
+                    </template>
+                </div>
+            @endif
+        </div>
     </section>
 
     <section class="grid gap-4 lg:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
@@ -207,6 +316,80 @@
             </section>
         </div>
     </div>
+
+    {{-- Revenue Heatmap --}}
+    <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60"
+        x-data="revenueHeatmap({{ Js::from($revenueHeatmap) }}, '{{ $shop->currency ?? 'OMR' }}')"
+    >
+        <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
+            <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.revenue_heatmap') }}</h2>
+            <span class="tag">{{ __('admin.revenue_heatmap_desc') }}</span>
+        </div>
+
+        <div class="p-5">
+            <template x-if="hasData">
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse" style="min-width: 640px;">
+                        <thead>
+                            <tr>
+                                <th class="w-14 pb-2"></th>
+                                <template x-for="h in hours" :key="h">
+                                    <th class="pb-2 text-center font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-ink-soft" x-text="h.toString().padStart(2, '0')"></th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(dayLabel, dayIdx) in dayLabels" :key="dayIdx">
+                                <tr>
+                                    <td class="pe-3 py-0.5 text-end font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft" x-text="dayLabel"></td>
+                                    <template x-for="h in hours" :key="dayIdx + '-' + h">
+                                        <td class="p-0.5">
+                                            <div
+                                                class="relative mx-auto aspect-square w-full max-w-[28px] rounded-[3px] transition-opacity"
+                                                :style="getCellStyle(dayIdx, h)"
+                                                :title="getCellTooltip(dayIdx, h)"
+                                                x-on:mouseenter="activeCell = { dow: dayIdx, hour: h }"
+                                                x-on:mouseleave="activeCell = null"
+                                            >
+                                                {{-- Tooltip --}}
+                                                <div
+                                                    x-show="activeCell && activeCell.dow === dayIdx && activeCell.hour === h"
+                                                    x-cloak
+                                                    class="pointer-events-none absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-1 font-mono text-[10px] font-bold text-white shadow-lg"
+                                                    style="background: rgb(var(--ink));"
+                                                    x-text="getCellTooltip(dayIdx, h)"
+                                                ></div>
+                                            </div>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    {{-- Legend --}}
+                    <div class="mt-4 flex items-center justify-end gap-2">
+                        <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.no_sales_yet_short') }}</span>
+                        <div class="flex gap-0.5">
+                            <template x-for="opacity in [0.08, 0.25, 0.45, 0.65, 0.85, 1]" :key="opacity">
+                                <div
+                                    class="h-3 w-3 rounded-[2px]"
+                                    :style="'background: rgb(var(--crema) / ' + opacity + ');'"
+                                ></div>
+                            </template>
+                        </div>
+                        <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.revenue') }}</span>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="!hasData">
+                <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-8 text-center">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.heatmap_no_data') }}</p>
+                </div>
+            </template>
+        </div>
+    </section>
 
     <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60">
         <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
@@ -368,6 +551,62 @@
         destroy() {
             if (this.chart) this.chart.destroy();
         }
+    }));
+
+    // Revenue heatmap Alpine component
+    Alpine.data('revenueHeatmap', (rawData, currency) => ({
+        grid: {},
+        maxRevenue: 0,
+        hasData: false,
+        activeCell: null,
+        hours: Array.from({ length: 18 }, (_, i) => i + 6), // 6am - 23pm
+        dayLabels: [
+            @json(__('admin.heatmap_day_sun')),
+            @json(__('admin.heatmap_day_mon')),
+            @json(__('admin.heatmap_day_tue')),
+            @json(__('admin.heatmap_day_wed')),
+            @json(__('admin.heatmap_day_thu')),
+            @json(__('admin.heatmap_day_fri')),
+            @json(__('admin.heatmap_day_sat')),
+        ],
+
+        init() {
+            // Build a lookup: grid[dow][hour] = total
+            const grid = {};
+            let max = 0;
+            for (const entry of rawData) {
+                const dow = entry.dow;
+                const hour = entry.hour;
+                const total = parseFloat(entry.total) || 0;
+                if (!grid[dow]) grid[dow] = {};
+                grid[dow][hour] = total;
+                if (total > max) max = total;
+            }
+            this.grid = grid;
+            this.maxRevenue = max;
+            this.hasData = rawData.length > 0;
+        },
+
+        getRevenue(dow, hour) {
+            return (this.grid[dow] && this.grid[dow][hour]) ? this.grid[dow][hour] : 0;
+        },
+
+        getCellStyle(dow, hour) {
+            const rev = this.getRevenue(dow, hour);
+            if (rev === 0 || this.maxRevenue === 0) {
+                return 'background: rgb(var(--crema) / 0.06);';
+            }
+            // Scale opacity from 0.15 to 1 based on revenue proportion
+            const ratio = rev / this.maxRevenue;
+            const opacity = 0.15 + (ratio * 0.85);
+            return `background: rgb(var(--crema) / ${opacity.toFixed(2)});`;
+        },
+
+        getCellTooltip(dow, hour) {
+            const rev = this.getRevenue(dow, hour);
+            const hourStr = hour.toString().padStart(2, '0') + ':00';
+            return `${this.dayLabels[dow]} ${hourStr} — ${currency} ${rev.toFixed(3)}`;
+        },
     }));
 </script>
 @endscript

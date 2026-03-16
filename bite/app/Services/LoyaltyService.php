@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\LoyaltyCustomer;
 use App\Models\Order;
+use Illuminate\Support\Collection;
 
 class LoyaltyService
 {
@@ -29,11 +30,48 @@ class LoyaltyService
         $customer->points = (int) ($customer->points ?? 0) + $points;
         $customer->save();
 
+        $customer->recordVisit();
+
         AuditLog::record('loyalty.awarded', $order, [
             'phone' => $phone,
             'points' => $points,
             'total_points' => $customer->points,
         ]);
+    }
+
+    /**
+     * Look up a loyalty customer by normalized phone + shop_id.
+     * Returns the customer with history, or null if not found.
+     */
+    public function recognize(string $phone, int $shopId): ?LoyaltyCustomer
+    {
+        $normalized = $this->normalizePhone($phone);
+        if (! $normalized) {
+            return null;
+        }
+
+        return LoyaltyCustomer::where('shop_id', $shopId)
+            ->where('phone', $normalized)
+            ->first();
+    }
+
+    /**
+     * Return the last N orders for a given phone number at a shop.
+     */
+    public function getOrderHistory(string $phone, int $shopId, int $limit = 5): Collection
+    {
+        $normalized = $this->normalizePhone($phone);
+        if (! $normalized) {
+            return collect();
+        }
+
+        return Order::where('shop_id', $shopId)
+            ->where('loyalty_phone', $normalized)
+            ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
+            ->with('items')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
     }
 
     protected function normalizePhone(?string $value): ?string

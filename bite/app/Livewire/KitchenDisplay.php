@@ -10,6 +10,8 @@ use Livewire\Component;
 
 class KitchenDisplay extends Component
 {
+    public int $lastOrderCount = -1;
+
     public function updateStatus($orderId, $status)
     {
         if (! in_array(Auth::user()->role, ['kitchen', 'manager', 'admin'], true)) {
@@ -47,6 +49,12 @@ class KitchenDisplay extends Component
             ->with('items') // Eager load items for KDS
             ->oldest() // First in, First out
             ->get();
+
+        $currentCount = $orders->count();
+        if ($this->lastOrderCount >= 0 && $currentCount > $this->lastOrderCount) {
+            $this->dispatch('kds-new-order');
+        }
+        $this->lastOrderCount = $currentCount;
 
         return view('livewire.kitchen-display', [
             'orders' => $orders,

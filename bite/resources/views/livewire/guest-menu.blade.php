@@ -1,14 +1,34 @@
-<div class="relative flex min-h-full flex-col overflow-x-hidden bg-transparent">
+<div class="relative flex min-h-full flex-col overflow-x-hidden bg-transparent"
+     @if($this->isGroupMode) wire:poll.3s @endif>
     <header class="sticky top-0 z-50 border-b border-line/80 bg-panel/85 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink text-panel font-display text-xl font-black">B</div>
                 <div>
                     <h1 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $shop->name }}</h1>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ __('guest.guest_ordering') }}</p>
+                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">
+                        @if($this->isGroupMode)
+                            {{ __('guest.group_ordering') }}
+                        @else
+                            {{ __('guest.guest_ordering') }}
+                        @endif
+                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                {{-- Group Order Button --}}
+                @if($this->isGroupMode)
+                    <button wire:click="toggleGroupShare" class="inline-flex items-center gap-1.5 rounded-full border border-crema/40 bg-crema/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema transition-colors hover:bg-crema/20" type="button">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        {{ __('guest.group_active') }}
+                    </button>
+                @else
+                    <button wire:click="createGroup" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft transition-colors hover:border-ink hover:text-ink" type="button">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        {{ __('guest.group_order') }}
+                    </button>
+                @endif
+
                 {{-- Language Toggle --}}
                 <div class="flex items-center gap-0.5 rounded-full border border-line bg-panel p-0.5">
                     <button wire:click="switchLanguage('en')" class="lang-toggle {{ $locale === 'en' ? 'lang-toggle-active' : '' }}" type="button">
@@ -21,6 +41,28 @@
             </div>
         </div>
     </header>
+
+    {{-- Group Mode Banner --}}
+    @if($this->isGroupMode)
+        <div class="border-b border-crema/20 bg-crema/5 px-4 py-3 sm:px-6">
+            <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex h-3 w-3 rounded-full" style="background-color: {{ $participantColors[$participantId] ?? '#E57373' }}"></span>
+                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">
+                        {{ __('guest.group_banner', ['count' => count(array_unique(array_column($groupCartItems, 'participant_id')))]) }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button wire:click="toggleGroupShare" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema underline underline-offset-2 transition-colors hover:text-crema/80" type="button">
+                        {{ __('guest.share_link') }}
+                    </button>
+                    <button wire:click="leaveGroup" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft underline underline-offset-2 transition-colors hover:text-alert" type="button">
+                        {{ __('guest.leave_group') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <main class="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-6 pb-32 sm:px-6">
         <section class="surface-card p-5 sm:p-6">
@@ -81,10 +123,20 @@
 
                     <div class="grid gap-4 md:grid-cols-2">
                         @foreach($category->products as $product)
+                            @php
+                                $timePricedAmount = $pricingRules->isNotEmpty()
+                                    ? $product->getTimePriced($pricingRules)
+                                    : null;
+                                $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
+                            @endphp
                             <article class="surface-card flex flex-col justify-between p-5">
                                 @if($product->is_on_sale)
                                     <div class="absolute {{ $locale === 'ar' ? 'left-4' : 'right-4' }} top-4 rounded-full border border-crema/50 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
                                         {{ __('guest.flash_sale') }}
+                                    </div>
+                                @elseif($hasTimeDiscount)
+                                    <div class="absolute {{ $locale === 'ar' ? 'left-4' : 'right-4' }} top-4 rounded-full border border-crema/50 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
+                                        {{ __('guest.limited_offer') }}
                                     </div>
                                 @endif
 
@@ -99,7 +151,10 @@
                                             <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $product->translated('description') }}</p>
                                         </div>
                                         <div class="text-right">
-                                            @if($product->is_on_sale)
+                                            @if($hasTimeDiscount)
+                                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through"><x-price :amount="$product->final_price" :shop="$shop" /></p>
+                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema"><x-price :amount="$timePricedAmount" :shop="$shop" /></p>
+                                            @elseif($product->is_on_sale)
                                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through"><x-price :amount="$product->price" :shop="$shop" /></p>
                                                 <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema"><x-price :amount="$product->final_price" :shop="$shop" /></p>
                                             @else
@@ -129,7 +184,8 @@
         </div>
     </main>
 
-    @if(count($cart) > 0)
+    {{-- Bottom Bar: Solo Mode --}}
+    @if(!$this->isGroupMode && count($cart) > 0)
         <div class="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6">
             <div class="mx-auto w-full max-w-6xl">
                 <button wire:click="toggleReview" class="surface-card flex w-full items-center justify-between gap-3 border-ink bg-ink px-5 py-4 text-panel transition-transform duration-200 hover:-translate-y-0.5">
@@ -143,42 +199,120 @@
         </div>
     @endif
 
+    {{-- Bottom Bar: Group Mode --}}
+    @if($this->isGroupMode && count($groupCartItems) > 0)
+        <div class="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6">
+            <div class="mx-auto w-full max-w-6xl">
+                <button wire:click="toggleReview" class="surface-card flex w-full items-center justify-between gap-3 border-crema bg-ink px-5 py-4 text-panel transition-transform duration-200 hover:-translate-y-0.5">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center rounded-full border border-crema/30 bg-crema/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
+                            {{ $this->cartItemCount }} {{ __('guest.items') }}
+                        </span>
+                        <span class="font-display text-base font-bold leading-none sm:text-2xl">{{ __('guest.review_group_order') }}</span>
+                    </div>
+                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl"><x-price :amount="$this->total" :shop="$shop" /></span>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Review Modal --}}
     @if($showReviewModal)
         <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
             <div class="surface-card flex h-full w-full max-w-2xl flex-col overflow-hidden sm:h-auto sm:max-h-[90vh] sm:rounded-xl">
                 <div class="border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
-                    <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ __('guest.your_order') }}</h3>
+                    <h3 class="font-display text-3xl font-extrabold leading-none text-ink">
+                        @if($this->isGroupMode)
+                            {{ __('guest.group_order') }}
+                        @else
+                            {{ __('guest.your_order') }}
+                        @endif
+                    </h3>
                     <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.review_before_sending') }}</p>
                 </div>
 
                 <div class="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-8">
                     <section class="space-y-3">
                         <p class="section-headline">{{ __('guest.items') }}</p>
-                        <div class="divide-y divide-line rounded-xl border border-line bg-panel">
-                            @foreach($cart as $key => $item)
-                                <div class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4">
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex items-center gap-1">
-                                            <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
-                                            <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
-                                            <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+
+                        @if($this->isGroupMode)
+                            {{-- Group Cart Items (grouped by participant) --}}
+                            <div class="divide-y divide-line rounded-xl border border-line bg-panel">
+                                @php
+                                    $groupedByParticipant = collect($groupCartItems)->groupBy('participant_id');
+                                @endphp
+                                @foreach($groupedByParticipant as $pid => $items)
+                                    <div class="px-3 py-3 sm:px-4">
+                                        <div class="mb-2 flex items-center gap-2">
+                                            <span class="inline-flex h-2.5 w-2.5 rounded-full" style="background-color: {{ $participantColors[$pid] ?? '#E57373' }}"></span>
+                                            <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                                                @if($pid === $participantId)
+                                                    {{ __('guest.you') }}
+                                                @else
+                                                    {{ __('guest.participant') }} {{ array_search($pid, array_keys($groupedByParticipant->toArray())) + 1 }}
+                                                @endif
+                                            </span>
                                         </div>
-                                        <div>
-                                            <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
-                                            @if(!empty($item['modifierNames']))
-                                                <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
-                                            @endif
+                                        @foreach($items as $item)
+                                            <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3 {{ !$loop->last ? 'border-b border-line/50' : '' }}">
+                                                <div class="flex items-start gap-3">
+                                                    @if($pid === $participantId)
+                                                        <div class="flex items-center gap-1">
+                                                            <button wire:click="decrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
+                                                            <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
+                                                            <button wire:click="incrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+                                                        </div>
+                                                    @else
+                                                        <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $item['quantity'] }}x</span>
+                                                    @endif
+                                                    <div>
+                                                        <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
+                                                        @if(!empty($item['modifierNames']))
+                                                            <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-start gap-2">
+                                                    <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="($item['price'] ?? 0) * ($item['quantity'] ?? 1)" :shop="$shop" /></p>
+                                                    @if($pid === $participantId)
+                                                        <button wire:click="removeItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
+                                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            {{-- Solo Cart Items --}}
+                            <div class="divide-y divide-line rounded-xl border border-line bg-panel">
+                                @foreach($cart as $key => $item)
+                                    <div class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex items-center gap-1">
+                                                <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
+                                                <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
+                                                <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
+                                                @if(!empty($item['modifierNames']))
+                                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
+                                            <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
+                                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="flex items-start gap-2">
-                                        <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
-                                        <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
-                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </section>
 
                     <section class="grid grid-cols-3 gap-2 sm:gap-3">
@@ -198,11 +332,58 @@
 
                     <section class="space-y-2">
                         <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.loyalty_phone') }}</label>
-                        <input type="tel" wire:model="loyaltyPhone" class="field w-full font-mono text-sm font-semibold" placeholder="{{ __('guest.loyalty_placeholder') }}">
+                        <input type="tel" wire:model="loyaltyPhone" wire:change.debounce.500ms="recognizeCustomer" class="field w-full font-mono text-sm font-semibold" placeholder="{{ __('guest.loyalty_placeholder') }}">
                         @if($loyaltyError)
                             <div class="rounded-lg border border-alert/35 bg-alert/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-alert">
                                 {{ $loyaltyError }}
                             </div>
+                        @endif
+
+                        {{-- Welcome Back Banner --}}
+                        @if($showWelcomeBack && is_array($recognizedCustomer))
+                            <div class="mt-3 rounded-xl border border-crema/30 bg-crema/5 px-4 py-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-bold text-ink">
+                                            {{ __('guest.welcome_back') }}
+                                            @if($recognizedCustomer['name'] ?? null)
+                                                {{ $recognizedCustomer['name'] }}
+                                            @endif
+                                        </p>
+                                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+                                            {{ $recognizedCustomer['points'] ?? 0 }} {{ __('guest.points_label') }}
+                                            &middot;
+                                            {{ $recognizedCustomer['visit_count'] ?? 0 }} {{ __('guest.visits_label') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                @if(!empty($recognizedCustomer['favorites']))
+                                    <button wire:click="orderUsual" class="btn-secondary mt-3 w-full justify-center !border-crema/40 !bg-crema/10 !text-crema hover:!bg-crema/20">
+                                        {{ __('guest.order_your_usual') }}
+                                    </button>
+                                @endif
+                            </div>
+
+                            {{-- Recent Order History --}}
+                            @if(!empty($customerOrderHistory))
+                                <div class="mt-3 space-y-2">
+                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.recent_orders') }}</p>
+                                    <div class="divide-y divide-line rounded-lg border border-line bg-panel">
+                                        @foreach($customerOrderHistory as $pastOrder)
+                                            <div class="px-3 py-2">
+                                                <div class="flex items-center justify-between">
+                                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-soft">{{ $pastOrder['date'] }}</p>
+                                                    <p class="font-mono text-[10px] font-bold uppercase text-ink"><x-price :amount="$pastOrder['total']" :shop="$shop" /></p>
+                                                </div>
+                                                <p class="mt-1 text-xs text-ink-soft">
+                                                    {{ collect($pastOrder['items'])->map(fn($i) => $i['quantity'] . 'x ' . $i['name'])->join(', ') }}
+                                                </p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         @endif
                     </section>
                 </div>
@@ -211,7 +392,7 @@
                     <button wire:click="toggleReview" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
                     <button x-on:click="$dispatch('confirm-action', {
                                 title: '{{ __('guest.place_order') }}',
-                                message: '{{ __('guest.send_to_kitchen') }}',
+                                message: '{{ $this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen') }}',
                                 action: 'submitOrder',
                                 componentId: $wire.id,
                                 destructive: false,
@@ -219,6 +400,46 @@
                             class="btn-primary w-full justify-center">
                         {{ __('guest.place_order') }}
                     </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Group Share Modal --}}
+    @if($showGroupShareModal && $this->isGroupMode)
+        <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+            <div class="surface-card flex w-full max-w-md flex-col overflow-hidden border-t sm:border sm:rounded-xl">
+                <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
+                    <div>
+                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('guest.share_group_order') }}</h3>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.share_group_desc') }}</p>
+                    </div>
+                    <button wire:click="toggleGroupShare" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4 p-6 sm:p-8">
+                    <div class="rounded-lg border border-line bg-muted/30 px-4 py-3">
+                        <p class="break-all font-mono text-xs font-semibold text-ink">{{ $this->groupShareUrl }}</p>
+                    </div>
+
+                    <button
+                        x-data
+                        x-on:click="
+                            navigator.clipboard.writeText('{{ $this->groupShareUrl }}').then(() => {
+                                $el.textContent = '{{ __('guest.link_copied') }}';
+                                setTimeout(() => { $el.textContent = '{{ __('guest.copy_link') }}'; }, 2000);
+                            });
+                        "
+                        class="btn-primary w-full justify-center"
+                        type="button">
+                        {{ __('guest.copy_link') }}
+                    </button>
+
+                    <p class="text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+                        {{ __('guest.group_expires_hint') }}
+                    </p>
                 </div>
             </div>
         </div>

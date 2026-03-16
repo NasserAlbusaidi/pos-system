@@ -12,6 +12,7 @@ return [
     'save_favorite' => 'Save Favorite',
     'no_items_available' => 'No items available',
     'flash_sale' => 'Flash Sale',
+    'limited_offer' => 'Limited Offer',
 
     // Cart
     'add_to_order' => 'Add to Order',
@@ -41,9 +42,17 @@ return [
     'loyalty_placeholder' => 'e.g. 5551234567',
     'invalid_phone' => 'Enter a valid phone number.',
 
+    // Recognition / One-Number Identity
+    'welcome_back' => 'Welcome back!',
+    'points_label' => 'points',
+    'visits_label' => 'visits',
+    'order_your_usual' => 'Order your usual',
+    'recent_orders' => 'Recent Orders',
+
     // Favorites
     'favorite_saved' => 'Favorite saved on this device.',
     'favorite_loaded' => 'Favorite loaded.',
+    'favorite_loaded_partial' => 'Favorite loaded. :removed item(s) removed — no longer available.',
     'favorite_empty' => 'No favorite saved on this device yet.',
     'favorite_unavailable' => 'Favorite items are no longer available.',
     'favorite_add_first' => 'Add items to your cart before saving a favorite.',
@@ -68,8 +77,32 @@ return [
     // Rate limiting
     'too_many_orders' => 'Too many orders. Please wait a moment before trying again.',
 
+    // Group Ordering
+    'group_order' => 'Group Order',
+    'group_ordering' => 'Group Ordering',
+    'group_active' => 'Group Active',
+    'group_banner' => ':count person(s) ordering together',
+    'share_link' => 'Share Link',
+    'leave_group' => 'Leave Group',
+    'share_group_order' => 'Share Group Order',
+    'share_group_desc' => 'Send this link to your table to order together',
+    'copy_link' => 'Copy Link',
+    'link_copied' => 'Copied!',
+    'group_expires_hint' => 'This group link expires in 1 hour',
+    'group_expired' => 'This group order has expired or does not exist.',
+    'review_group_order' => 'Review Group Order',
+    'send_group_to_kitchen' => 'Send group order to kitchen?',
+    'you' => 'You',
+    'participant' => 'Guest',
+
     // Language toggle
     'language' => 'Language',
     'switch_arabic' => 'عربي',
     'switch_english' => 'EN',
+
+    // Feedback
+    'how_was_order' => 'How was your order?',
+    'submit_feedback' => 'Submit Feedback',
+    'thank_you_feedback' => 'Thank you for your feedback!',
+    'feedback_placeholder' => 'Any comments? (optional)',
 ];

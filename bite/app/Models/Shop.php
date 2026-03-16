@@ -51,4 +51,9 @@ class Shop extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function pricingRules()
+    {
+        return $this->hasMany(PricingRule::class);
+    }
 }

@@ -438,8 +438,39 @@ return [
     'chart_revenue' => 'Revenue',
     'chart_orders' => 'Orders',
 
+    // Daily Goal
+    'daily_goal' => 'Daily Goal',
+    'daily_goal_progress' => ':percent% of daily goal',
+    'daily_goal_reached' => 'Goal reached!',
+    'daily_goal_set_prompt' => 'Set a daily revenue goal to track progress',
+    'daily_goal_set' => 'Set Goal',
+    'daily_goal_update' => 'Update',
+    'daily_goal_cancel' => 'Cancel',
+    'daily_goal_of' => 'of',
+
+    // Revenue Heatmap
+    'revenue_heatmap' => 'Revenue Heatmap',
+    'revenue_heatmap_desc' => 'Last 4 weeks',
+    'heatmap_no_data' => 'Not enough data yet. Revenue patterns will appear after a few days of orders.',
+    'heatmap_day_sun' => 'Sun',
+    'heatmap_day_mon' => 'Mon',
+    'heatmap_day_tue' => 'Tue',
+    'heatmap_day_wed' => 'Wed',
+    'heatmap_day_thu' => 'Thu',
+    'heatmap_day_fri' => 'Fri',
+    'heatmap_day_sat' => 'Sat',
+
     // Language
     'language' => 'Language',
     'switch_arabic' => 'عربي',
     'switch_english' => 'EN',
+
+    // Auto-86 Menu Status
+    'menu_status' => 'Menu Status',
+    'items_86d' => 'items 86\'d',
+    'restore_item' => 'Restore to menu',
+    'mark_86' => 'Mark as 86\'d (sold out)',
+
+    // Smart Upsell
+    'customers_also_order' => 'Customers also order',
 ];

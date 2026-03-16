@@ -77,6 +77,34 @@
                                 </div>
                             @endif
 
+                            {{-- Smart Upsell Suggestions --}}
+                            @if($order->items->isNotEmpty())
+                                @php
+                                    $orderUpsells = collect();
+                                    $orderProductIds = $order->items->pluck('product_id')->filter()->unique()->all();
+                                    foreach ($orderProductIds as $pid) {
+                                        if (isset($upsellSuggestions[$pid])) {
+                                            foreach ($upsellSuggestions[$pid] as $suggestion) {
+                                                if (! in_array($suggestion['id'], $orderProductIds, true) && ! $orderUpsells->contains('id', $suggestion['id'])) {
+                                                    $orderUpsells->push($suggestion);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $orderUpsells = $orderUpsells->take(3);
+                                @endphp
+                                @if($orderUpsells->isNotEmpty())
+                                    <div class="rounded-lg border border-crema/20 bg-crema/5 px-3 py-2">
+                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.customers_also_order') }}</p>
+                                        <p class="mt-1 font-mono text-[10px] text-ink-soft">
+                                            @foreach($orderUpsells as $index => $upsell)
+                                                <span class="text-crema font-semibold">{{ $upsell['name'] }}</span>@if(! $loop->last)<span class="text-ink-soft/50">, </span>@endif
+                                            @endforeach
+                                        </p>
+                                    </div>
+                                @endif
+                            @endif
+
                             @if($order->payments->isNotEmpty())
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="rounded-lg border border-line bg-panel px-3 py-2">
@@ -193,6 +221,54 @@
                     {{ __('admin.system_reset') }}
                 </button>
             </section>
+
+            {{-- Auto-86: Menu Status Panel (admin/manager only) --}}
+            @if(in_array(Auth::user()->role, ['admin', 'manager'], true))
+                <section class="surface-card overflow-hidden" x-data="{ open: false }">
+                    <button x-on:click="open = !open" class="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/30">
+                        <div>
+                            <p class="section-headline">{{ __('admin.menu_status') }}</p>
+                            @php
+                                $totalProducts = $menuCategories->sum(fn ($cat) => $cat->products->count());
+                                $unavailableCount = $menuCategories->sum(fn ($cat) => $cat->products->where('is_available', false)->count());
+                            @endphp
+                            @if($unavailableCount > 0)
+                                <p class="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-alert">{{ $unavailableCount }} {{ __('admin.items_86d') }}</p>
+                            @endif
+                        </div>
+                        <svg class="h-4 w-4 text-ink-soft transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+
+                    <div x-show="open" x-collapse>
+                        <div class="max-h-[50vh] space-y-4 overflow-y-auto border-t border-line px-5 py-4">
+                            @foreach($menuCategories as $category)
+                                @if($category->products->isNotEmpty())
+                                    <div>
+                                        <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ $category->name_en }}</p>
+                                        <div class="mt-2 space-y-1">
+                                            @foreach($category->products as $product)
+                                                <div class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 transition-colors {{ ! $product->is_available ? 'bg-alert/5' : 'hover:bg-muted/30' }}">
+                                                    <span class="min-w-0 truncate font-mono text-xs {{ ! $product->is_available ? 'text-ink-soft/50 line-through' : 'text-ink' }}">{{ $product->name_en }}</span>
+                                                    <button
+                                                        wire:click="toggle86({{ $product->id }})"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="toggle86({{ $product->id }})"
+                                                        class="flex-shrink-0 rounded-full border px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-all duration-200 {{ ! $product->is_available ? 'border-alert/50 bg-alert/15 text-alert hover:bg-alert/25' : 'border-transparent text-ink-soft/30 hover:border-line hover:text-ink-soft' }}"
+                                                        title="{{ ! $product->is_available ? __('admin.restore_item') : __('admin.mark_86') }}"
+                                                    >
+                                                        <span wire:loading.remove wire:target="toggle86({{ $product->id }})">86</span>
+                                                        <span wire:loading wire:target="toggle86({{ $product->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
+                                                    </button>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
         </aside>
     </div>
 

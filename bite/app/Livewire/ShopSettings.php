@@ -218,10 +218,14 @@ class ShopSettings extends Component
         $shop = Auth::user()->shop;
         $user = User::where('id', $this->editingStaffId)->where('shop_id', $shop->id)->firstOrFail();
 
+        $allowedRoles = Auth::user()->role === 'admin'
+            ? 'manager,cashier,kitchen,server'
+            : 'cashier,kitchen,server';
+
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email,'.$user->id,
-            'staffRole' => 'required|in:manager,cashier,kitchen,server',
+            'staffRole' => "required|in:{$allowedRoles}",
             'staffPin' => 'nullable|digits:4',
         ]);
 

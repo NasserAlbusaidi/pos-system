@@ -58,6 +58,7 @@ new class extends Component
                 <a href="{{ route('kds.view') }}" wire:navigate class="tag {{ request()->routeIs('kds.view') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.kitchen_display') }}</a>
                 <a href="{{ route('admin.reports') }}" wire:navigate class="tag {{ request()->routeIs('admin.reports') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.reports') }}</a>
                 <a href="{{ route('admin.shift-report') }}" wire:navigate class="tag {{ request()->routeIs('admin.shift-report') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.shift_report') }}</a>
+                <a href="{{ route('admin.pricing-rules') }}" wire:navigate class="tag {{ request()->routeIs('admin.pricing-rules') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">Pricing Rules</a>
                 <a href="{{ route('admin.settings') }}" wire:navigate class="tag {{ request()->routeIs('admin.settings') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.settings') }}</a>
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('billing') }}" wire:navigate class="tag {{ request()->routeIs('billing') ? '!border-crema !bg-crema !text-panel' : '!bg-panel/10 !text-panel/70 !border-panel/20' }}">{{ __('admin.billing') }}</a>
@@ -120,6 +121,9 @@ new class extends Component
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('admin.modifiers')" :active="request()->routeIs('admin.modifiers')" icon="modifiers">
                     {{ __('admin.modifiers') }}
+                </x-admin-nav-link>
+                <x-admin-nav-link :href="route('admin.pricing-rules')" :active="request()->routeIs('admin.pricing-rules')" icon="dashboard">
+                    Pricing Rules
                 </x-admin-nav-link>
                 <x-admin-nav-link :href="route('guest.menu', Auth::user()->shop->slug)" :active="false" icon="coffee" :navigate="false" target="_blank" rel="noopener">
                     {{ __('admin.guest_menu') }}

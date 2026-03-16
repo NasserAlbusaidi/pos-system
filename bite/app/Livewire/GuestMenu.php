@@ -2,13 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Models\GroupCart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
+use App\Models\PricingRule;
 use App\Models\Shop;
 use App\Notifications\NewOrderNotification;
+use App\Services\LoyaltyService;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -36,7 +40,20 @@ class GuestMenu extends Component
 
     public $modifierError = null;
 
+    public $recognizedCustomer = null;
+
+    public $showWelcomeBack = false;
+
+    public $customerOrderHistory = [];
+
     public $locale = 'en';
+
+    // Group ordering state
+    public $groupToken = null;
+
+    public $participantId = null;
+
+    public $showGroupShareModal = false;
 
     public function mount(Shop $shop)
     {
@@ -45,6 +62,19 @@ class GuestMenu extends Component
         // Determine locale: session override > shop default > 'en'
         $branding = $shop->branding ?? [];
         $this->locale = session('guest_locale', $branding['language'] ?? 'en');
+
+        // Generate or retrieve a stable participant ID for this browser session
+        $this->participantId = session('guest_participant_id');
+        if (! $this->participantId) {
+            $this->participantId = (string) Str::uuid();
+            session()->put('guest_participant_id', $this->participantId);
+        }
+
+        // Check if joining a group via ?group=UUID query parameter
+        $groupParam = request()->query('group');
+        if ($groupParam && Str::isUuid($groupParam)) {
+            $this->joinGroup($groupParam);
+        }
     }
 
     public function switchLanguage(string $lang)
@@ -54,6 +84,162 @@ class GuestMenu extends Component
         session()->put('guest_locale', $lang);
         App::setLocale($lang);
     }
+
+    // ──────────────────────────────────
+    // Group ordering methods
+    // ──────────────────────────────────
+
+    /**
+     * Create a new group cart and enter group mode.
+     */
+    public function createGroup(): void
+    {
+        $groupCart = GroupCart::create([
+            'shop_id' => $this->shop->id,
+            'group_token' => (string) Str::uuid(),
+            'items' => [],
+            'participant_count' => 1,
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this->groupToken = $groupCart->group_token;
+        $this->showGroupShareModal = true;
+
+        // Migrate any existing solo cart items into the group cart
+        if (! empty($this->cart)) {
+            foreach ($this->cart as $itemKey => $item) {
+                $groupCart->addItem($this->participantId, array_merge($item, [
+                    'itemKey' => $itemKey,
+                ]));
+            }
+            $this->cart = [];
+        }
+    }
+
+    /**
+     * Join an existing group cart by token.
+     */
+    public function joinGroup(string $token): void
+    {
+        if (! Str::isUuid($token)) {
+            return;
+        }
+
+        $groupCart = GroupCart::where('group_token', $token)
+            ->where('shop_id', $this->shop->id)
+            ->first();
+
+        if (! $groupCart || $groupCart->isExpired()) {
+            session()->flash('message', __('guest.group_expired'));
+
+            return;
+        }
+
+        // Track unique participants atomically with row lock
+        DB::transaction(function () use ($groupCart) {
+            $groupCart->lockForUpdate()->refresh();
+
+            $existingParticipants = collect($groupCart->items ?? [])
+                ->pluck('participant_id')
+                ->unique()
+                ->all();
+
+            if (! in_array($this->participantId, $existingParticipants)) {
+                $currentCount = max(count($existingParticipants), (int) $groupCart->participant_count);
+                $groupCart->update([
+                    'participant_count' => $currentCount + 1,
+                ]);
+            }
+        });
+
+        $this->groupToken = $groupCart->group_token;
+
+        // Clear solo cart when entering group mode
+        $this->cart = [];
+    }
+
+    /**
+     * Leave the group and return to solo mode.
+     */
+    public function leaveGroup(): void
+    {
+        $this->groupToken = null;
+        $this->showGroupShareModal = false;
+    }
+
+    /**
+     * Check if the group cart is still valid. If expired, reset to solo mode.
+     * Returns true if we are NOT in group mode or the group cart is still valid.
+     */
+    protected function ensureGroupCartValid(): bool
+    {
+        if (! $this->groupToken) {
+            return true;
+        }
+
+        $groupCart = GroupCart::where('group_token', $this->groupToken)
+            ->where('shop_id', $this->shop->id)
+            ->first();
+
+        if (! $groupCart || $groupCart->isExpired()) {
+            $this->groupToken = null;
+            $this->showGroupShareModal = false;
+            session()->flash('message', __('guest.group_expired'));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Toggle the share modal for the group link.
+     */
+    public function toggleGroupShare(): void
+    {
+        $this->showGroupShareModal = ! $this->showGroupShareModal;
+    }
+
+    /**
+     * Get the current group cart model (if in group mode).
+     */
+    #[Computed]
+    public function groupCart(): ?GroupCart
+    {
+        if (! $this->groupToken) {
+            return null;
+        }
+
+        return GroupCart::where('group_token', $this->groupToken)
+            ->where('shop_id', $this->shop->id)
+            ->first();
+    }
+
+    /**
+     * Get the shareable URL for the group cart.
+     */
+    #[Computed]
+    public function groupShareUrl(): ?string
+    {
+        if (! $this->groupToken) {
+            return null;
+        }
+
+        return route('guest.menu', $this->shop->slug).'?group='.$this->groupToken;
+    }
+
+    /**
+     * Whether we are in group ordering mode.
+     */
+    #[Computed]
+    public function isGroupMode(): bool
+    {
+        return $this->groupToken !== null;
+    }
+
+    // ──────────────────────────────────
+    // Totals (works for both solo + group)
+    // ──────────────────────────────────
 
     #[Computed]
     public function total()
@@ -81,27 +267,33 @@ class GuestMenu extends Component
 
     protected function calculateTotals(): array
     {
-        if (empty($this->cart)) {
+        $cartItems = $this->getActiveCartItems();
+
+        if (empty($cartItems)) {
             return [0, 0];
         }
 
-        $productIds = collect($this->cart)->pluck('id')->unique()->all();
+        $productIds = collect($cartItems)->pluck('id')->unique()->all();
         $products = $this->shop->products()
             ->with('modifierGroups.options')
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
 
+        $pricingRules = $this->loadActivePricingRules();
+
         $subtotal = 0;
         $tax = 0;
 
-        foreach ($this->cart as $item) {
+        foreach ($cartItems as $item) {
             $product = $products->get($item['id']);
             if (! $product) {
                 continue;
             }
 
-            $itemTotal = $product->final_price;
+            $itemTotal = $pricingRules->isNotEmpty()
+                ? $product->getTimePriced($pricingRules)
+                : $product->final_price;
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
             if (! empty($modifierIds)) {
@@ -120,6 +312,34 @@ class GuestMenu extends Component
         return [$subtotal, $tax];
     }
 
+    /**
+     * Get the active cart items — from group cart if in group mode, otherwise solo cart.
+     */
+    protected function getActiveCartItems(): array
+    {
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if (! $groupCart) {
+                return [];
+            }
+
+            return $groupCart->items ?? [];
+        }
+
+        return $this->cart;
+    }
+
+    /**
+     * Get the active cart item count for the bottom bar badge.
+     */
+    #[Computed]
+    public function cartItemCount(): int
+    {
+        $items = $this->getActiveCartItems();
+
+        return (int) collect($items)->sum(fn ($item) => $item['quantity'] ?? 1);
+    }
+
     #[Computed]
     public function customizingProductPrice()
     {
@@ -127,7 +347,11 @@ class GuestMenu extends Component
             return 0;
         }
 
-        $base = $this->customizingProduct->final_price;
+        $pricingRules = $this->loadActivePricingRules();
+        $base = $pricingRules->isNotEmpty()
+            ? $this->customizingProduct->getTimePriced($pricingRules)
+            : $this->customizingProduct->final_price;
+
         $modifierIds = $this->normalizeModifierIds($this->selectedModifiers);
         if (empty($modifierIds)) {
             return $base;
@@ -136,8 +360,21 @@ class GuestMenu extends Component
         return $base + $this->sumModifierPrices($this->customizingProduct, $modifierIds);
     }
 
+    // ──────────────────────────────────
+    // Cart manipulation (solo + group)
+    // ──────────────────────────────────
+
     public function incrementItem($key)
     {
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                $groupCart->updateItemQuantity($this->participantId, $key, 1);
+            }
+
+            return;
+        }
+
         if (isset($this->cart[$key])) {
             $this->cart[$key]['quantity']++;
         }
@@ -145,6 +382,15 @@ class GuestMenu extends Component
 
     public function decrementItem($key)
     {
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                $groupCart->updateItemQuantity($this->participantId, $key, -1);
+            }
+
+            return;
+        }
+
         if (isset($this->cart[$key])) {
             $this->cart[$key]['quantity']--;
             if ($this->cart[$key]['quantity'] <= 0) {
@@ -155,7 +401,48 @@ class GuestMenu extends Component
 
     public function removeItem($key)
     {
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                $groupCart->removeItem($this->participantId, $key);
+            }
+
+            return;
+        }
+
         unset($this->cart[$key]);
+    }
+
+    /**
+     * Remove a specific item from the group cart by its array index.
+     * Only allows removing your own items.
+     * Uses DB transaction + row lock to prevent race conditions.
+     */
+    public function removeGroupItem(int $index): void
+    {
+        if (! $this->isGroupMode) {
+            return;
+        }
+
+        $groupCart = $this->groupCart;
+        if (! $groupCart) {
+            return;
+        }
+
+        DB::transaction(function () use ($groupCart, $index) {
+            $groupCart->lockForUpdate()->refresh();
+            $items = $groupCart->items ?? [];
+            $item = $items[$index] ?? null;
+
+            // Only allow removing your own items
+            if (! $item || ($item['participant_id'] ?? '') !== $this->participantId) {
+                return;
+            }
+
+            unset($items[$index]);
+            $groupCart->items = array_values($items);
+            $groupCart->save();
+        });
     }
 
     public function toggleReview()
@@ -165,6 +452,10 @@ class GuestMenu extends Component
 
     public function addToCart($productId)
     {
+        if (! $this->ensureGroupCartValid()) {
+            return;
+        }
+
         $product = $this->shop->products()->with('modifierGroups.options')->find($productId);
 
         if (! $product) {
@@ -203,7 +494,10 @@ class GuestMenu extends Component
         $modifierKey = ! empty($modifierIds) ? implode('-', collect($modifierIds)->sort()->toArray()) : 'plain';
         $itemKey = $productId.'-'.$modifierKey;
 
-        $displayPrice = (float) $product->final_price;
+        $pricingRules = $this->loadActivePricingRules();
+        $displayPrice = $pricingRules->isNotEmpty()
+            ? (float) $product->getTimePriced($pricingRules)
+            : (float) $product->final_price;
         $modifierNames = [];
         if (! empty($modifierIds)) {
             $validOptions = $this->getValidModifierOptions($product, $modifierIds);
@@ -212,17 +506,34 @@ class GuestMenu extends Component
             $modifierIds = $validOptions->pluck('id')->all();
         }
 
-        if (isset($this->cart[$itemKey])) {
-            $this->cart[$itemKey]['quantity']++;
+        if ($this->isGroupMode) {
+            // Group mode: write to GroupCart model
+            $groupCart = $this->groupCart;
+            if ($groupCart && ! $groupCart->isExpired()) {
+                $groupCart->addItem($this->participantId, [
+                    'id' => $product->id,
+                    'itemKey' => $itemKey,
+                    'name' => $product->translated('name'),
+                    'price' => $displayPrice,
+                    'quantity' => 1,
+                    'selectedModifiers' => $modifierIds,
+                    'modifierNames' => $modifierNames,
+                ]);
+            }
         } else {
-            $this->cart[$itemKey] = [
-                'id' => $product->id,
-                'name' => $product->translated('name'),
-                'price' => $displayPrice,
-                'quantity' => 1,
-                'selectedModifiers' => $modifierIds,
-                'modifierNames' => $modifierNames,
-            ];
+            // Solo mode: write to local $cart
+            if (isset($this->cart[$itemKey])) {
+                $this->cart[$itemKey]['quantity']++;
+            } else {
+                $this->cart[$itemKey] = [
+                    'id' => $product->id,
+                    'name' => $product->translated('name'),
+                    'price' => $displayPrice,
+                    'quantity' => 1,
+                    'selectedModifiers' => $modifierIds,
+                    'modifierNames' => $modifierNames,
+                ];
+            }
         }
 
         // Reset customization state
@@ -232,9 +543,73 @@ class GuestMenu extends Component
         $this->modifierError = null;
     }
 
+    /**
+     * Called when loyaltyPhone changes. If 8+ digits, look up the customer.
+     */
+    public function recognizeCustomer(): void
+    {
+        $phone = trim($this->loyaltyPhone);
+        $digits = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($digits) < 8) {
+            $this->recognizedCustomer = null;
+            $this->showWelcomeBack = false;
+            $this->customerOrderHistory = [];
+
+            return;
+        }
+
+        $loyaltyService = app(LoyaltyService::class);
+        $customer = $loyaltyService->recognize($phone, $this->shop->id);
+
+        if ($customer) {
+            $this->recognizedCustomer = [
+                'name' => $customer->name,
+                'points' => (int) $customer->points,
+                'visit_count' => (int) $customer->visit_count,
+                'favorites' => $customer->getFavorites(),
+            ];
+            $this->showWelcomeBack = true;
+
+            // Fetch recent order history
+            $orders = $loyaltyService->getOrderHistory($phone, $this->shop->id, 5);
+            $this->customerOrderHistory = $orders->map(fn ($order) => [
+                'id' => $order->id,
+                'total' => (float) $order->total_amount,
+                'date' => $order->created_at->diffForHumans(),
+                'items' => $order->items->map(fn ($item) => [
+                    'name' => $item->product_name_snapshot_en,
+                    'quantity' => $item->quantity,
+                ])->all(),
+            ])->all();
+        } else {
+            $this->recognizedCustomer = null;
+            $this->showWelcomeBack = false;
+            $this->customerOrderHistory = [];
+        }
+    }
+
+    /**
+     * Load the customer's favorites into the cart (reorder their usual).
+     */
+    public function orderUsual(): void
+    {
+        if (! $this->recognizedCustomer || empty($this->recognizedCustomer['favorites'])) {
+            return;
+        }
+
+        $this->applyFavorite($this->recognizedCustomer['favorites']);
+    }
+
     public function submitOrder()
     {
-        if (empty($this->cart)) {
+        if (! $this->ensureGroupCartValid()) {
+            return;
+        }
+
+        $cartItems = $this->getActiveCartItems();
+
+        if (empty($cartItems)) {
             return;
         }
 
@@ -256,18 +631,20 @@ class GuestMenu extends Component
         }
 
         // Fetch fresh product data to prevent price tampering
-        $productIds = collect($this->cart)->pluck('id')->unique()->toArray();
+        $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
         $products = $this->shop->products()
             ->with('modifierGroups.options')
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
 
+        $pricingRules = $this->loadActivePricingRules();
+
         $subtotalAmount = 0;
         $taxAmount = 0;
         $orderItems = [];
 
-        foreach ($this->cart as $item) {
+        foreach ($cartItems as $item) {
             $product = $products->get($item['id']);
             if (! $product) {
                 continue;
@@ -278,7 +655,9 @@ class GuestMenu extends Component
                 continue;
             }
 
-            $itemPrice = $product->final_price;
+            $itemPrice = $pricingRules->isNotEmpty()
+                ? $product->getTimePriced($pricingRules)
+                : $product->final_price;
             $modifiersData = [];
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
@@ -315,34 +694,47 @@ class GuestMenu extends Component
             return;
         }
 
-        $order = Order::forceCreate([
-            'shop_id' => $this->shop->id,
-            'status' => 'unpaid',
-            'loyalty_phone' => $loyaltyPhone,
-            'subtotal_amount' => $subtotalAmount,
-            'tax_amount' => round($taxAmount, 2),
-            'total_amount' => round($subtotalAmount + $taxAmount, 2),
-            'tracking_token' => (string) Str::uuid(),
-            'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
-        ]);
-
-        foreach ($orderItems as $item) {
-            $orderItem = OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'product_name_snapshot_en' => $item['product_name_snapshot_en'],
-                'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
-                'price_snapshot' => $item['price_snapshot'],
-                'quantity' => $item['quantity'],
+        $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $loyaltyPhone, $orderItems) {
+            $order = Order::forceCreate([
+                'shop_id' => $this->shop->id,
+                'status' => 'unpaid',
+                'loyalty_phone' => $loyaltyPhone,
+                'subtotal_amount' => $subtotalAmount,
+                'tax_amount' => round($taxAmount, 2),
+                'total_amount' => round($subtotalAmount + $taxAmount, 2),
+                'tracking_token' => (string) Str::uuid(),
+                'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
             ]);
 
-            foreach ($item['modifiers'] as $mod) {
-                OrderItemModifier::create([
-                    'order_item_id' => $orderItem->id,
-                    'modifier_option_name_snapshot_en' => $mod['name_en'],
-                    'modifier_option_name_snapshot_ar' => $mod['name_ar'],
-                    'price_adjustment_snapshot' => $mod['price'],
+            foreach ($orderItems as $item) {
+                $orderItem = OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'product_name_snapshot_en' => $item['product_name_snapshot_en'],
+                    'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
+                    'price_snapshot' => $item['price_snapshot'],
+                    'quantity' => $item['quantity'],
                 ]);
+
+                foreach ($item['modifiers'] as $mod) {
+                    OrderItemModifier::create([
+                        'order_item_id' => $orderItem->id,
+                        'modifier_option_name_snapshot_en' => $mod['name_en'],
+                        'modifier_option_name_snapshot_ar' => $mod['name_ar'],
+                        'price_adjustment_snapshot' => $mod['price'],
+                    ]);
+                }
+            }
+
+            return $order;
+        });
+
+        // Save current cart as customer's favorites for "Order your usual"
+        if ($loyaltyPhone) {
+            $loyaltyService = app(LoyaltyService::class);
+            $customer = $loyaltyService->recognize($loyaltyPhone, $this->shop->id);
+            if ($customer) {
+                $customer->saveFavorites(array_values($this->isGroupMode ? $cartItems : $this->cart));
             }
         }
 
@@ -352,22 +744,36 @@ class GuestMenu extends Component
             $this->shop->notify(new NewOrderNotification($order));
         }
 
+        // Clean up group cart if in group mode
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                $groupCart->delete();
+            }
+            $this->groupToken = null;
+        }
+
         $this->cart = [];
         $this->loyaltyPhone = '';
         $this->loyaltyError = null;
+        $this->recognizedCustomer = null;
+        $this->showWelcomeBack = false;
+        $this->customerOrderHistory = [];
 
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
     }
 
     public function saveFavorite()
     {
-        if (empty($this->cart)) {
+        $cartItems = $this->getActiveCartItems();
+
+        if (empty($cartItems)) {
             session()->flash('message', __('guest.favorite_add_first'));
 
             return;
         }
 
-        $items = collect($this->cart)
+        $items = collect($cartItems)
             ->values()
             ->map(fn ($item) => [
                 'id' => $item['id'],
@@ -399,10 +805,15 @@ class GuestMenu extends Component
             ->get()
             ->keyBy('id');
 
+        $pricingRules = $this->loadActivePricingRules();
+
         $newCart = [];
+        $removedCount = 0;
         foreach ($items as $item) {
             $product = $products->get($item['id']);
             if (! $product) {
+                $removedCount++;
+
                 continue;
             }
 
@@ -411,7 +822,9 @@ class GuestMenu extends Component
             $validOptions = $this->getValidModifierOptions($product, $modifierIds);
             $validModifierIds = $validOptions->pluck('id')->all();
 
-            $displayPrice = (float) $product->final_price;
+            $displayPrice = $pricingRules->isNotEmpty()
+                ? (float) $product->getTimePriced($pricingRules)
+                : (float) $product->final_price;
             $modifierNames = [];
             if ($validOptions->isNotEmpty()) {
                 $displayPrice += $validOptions->sum('price_adjustment');
@@ -445,8 +858,27 @@ class GuestMenu extends Component
             return;
         }
 
+        $loadedMessage = $removedCount > 0
+            ? __('guest.favorite_loaded_partial', ['removed' => $removedCount])
+            : __('guest.favorite_loaded');
+
+        // In group mode, push favorites into the group cart
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart && ! $groupCart->isExpired()) {
+                foreach ($newCart as $itemKey => $item) {
+                    $groupCart->addItem($this->participantId, array_merge($item, [
+                        'itemKey' => $itemKey,
+                    ]));
+                }
+            }
+            session()->flash('message', $loadedMessage);
+
+            return;
+        }
+
         $this->cart = $newCart;
-        session()->flash('message', __('guest.favorite_loaded'));
+        session()->flash('message', $loadedMessage);
     }
 
     /**
@@ -496,6 +928,17 @@ class GuestMenu extends Component
         return $groups;
     }
 
+    /**
+     * Load active pricing rules for the current shop.
+     * Returns an empty collection if no rules are active right now.
+     */
+    protected function loadActivePricingRules(): \Illuminate\Support\Collection
+    {
+        return PricingRule::where('shop_id', $this->shop->id)
+            ->activeNow()
+            ->get();
+    }
+
     protected function normalizePhone(?string $value): ?string
     {
         $value = trim((string) $value);
@@ -525,10 +968,36 @@ class GuestMenu extends Component
             ->get()
             ->filter(fn ($category) => $category->products->isNotEmpty());
 
+        // Prepare group cart items for the view
+        $groupCartItems = [];
+        $participantColors = [];
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                $groupCartItems = $groupCart->items ?? [];
+
+                // Build participant color map
+                $uniqueParticipants = collect($groupCartItems)
+                    ->pluck('participant_id')
+                    ->unique()
+                    ->values();
+
+                $colors = ['#E57373', '#64B5F6', '#81C784', '#FFD54F', '#BA68C8', '#4DB6AC', '#FF8A65', '#A1887F'];
+                foreach ($uniqueParticipants as $index => $pid) {
+                    $participantColors[$pid] = $colors[$index % count($colors)];
+                }
+            }
+        }
+
+        $pricingRules = $this->loadActivePricingRules();
+
         return view('livewire.guest-menu', [
             'categories' => $categories,
             'locale' => $this->locale,
             'isRtl' => $this->locale === 'ar',
+            'groupCartItems' => $groupCartItems,
+            'participantColors' => $participantColors,
+            'pricingRules' => $pricingRules,
         ])->layout('layouts.app', ['shop' => $this->shop]);
     }
 }

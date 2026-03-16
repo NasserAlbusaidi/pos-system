@@ -438,8 +438,39 @@ return [
     'chart_revenue' => 'الإيرادات',
     'chart_orders' => 'الطلبات',
 
+    // Daily Goal
+    'daily_goal' => 'الهدف اليومي',
+    'daily_goal_progress' => ':percent% من الهدف اليومي',
+    'daily_goal_reached' => 'تم تحقيق الهدف!',
+    'daily_goal_set_prompt' => 'حدد هدف إيرادات يومي لتتبع التقدم',
+    'daily_goal_set' => 'تحديد الهدف',
+    'daily_goal_update' => 'تحديث',
+    'daily_goal_cancel' => 'إلغاء',
+    'daily_goal_of' => 'من',
+
+    // Revenue Heatmap
+    'revenue_heatmap' => 'خريطة الإيرادات الحرارية',
+    'revenue_heatmap_desc' => 'آخر 4 أسابيع',
+    'heatmap_no_data' => 'لا توجد بيانات كافية بعد. ستظهر أنماط الإيرادات بعد عدة أيام من الطلبات.',
+    'heatmap_day_sun' => 'أحد',
+    'heatmap_day_mon' => 'إثنين',
+    'heatmap_day_tue' => 'ثلاثاء',
+    'heatmap_day_wed' => 'أربعاء',
+    'heatmap_day_thu' => 'خميس',
+    'heatmap_day_fri' => 'جمعة',
+    'heatmap_day_sat' => 'سبت',
+
     // Language
     'language' => 'اللغة',
     'switch_arabic' => 'عربي',
     'switch_english' => 'EN',
+
+    // Auto-86 Menu Status
+    'menu_status' => 'حالة القائمة',
+    'items_86d' => 'أصناف نفدت',
+    'restore_item' => 'إعادة للقائمة',
+    'mark_86' => 'تحديد كنفد (86)',
+
+    // Smart Upsell
+    'customers_also_order' => 'الزبائن يطلبون أيضاً',
 ];

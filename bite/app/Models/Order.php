@@ -29,6 +29,8 @@ class Order extends Model
         'fulfilled_at',
         'paid_at',
         'expires_at',
+        'customer_rating',
+        'customer_feedback',
     ];
 
     protected $guarded = [

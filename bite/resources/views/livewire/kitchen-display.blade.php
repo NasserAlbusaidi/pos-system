@@ -1,4 +1,24 @@
-<div class="space-y-6 fade-rise" wire:poll.5s>
+<div class="space-y-6 fade-rise" wire:poll.5s
+     x-data="{
+         audioCtx: null,
+         playChime() {
+             if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+             const ctx = this.audioCtx;
+             const osc = ctx.createOscillator();
+             const gain = ctx.createGain();
+             osc.connect(gain);
+             gain.connect(ctx.destination);
+             osc.frequency.setValueAtTime(880, ctx.currentTime);
+             osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+             osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+             gain.gain.setValueAtTime(0.3, ctx.currentTime);
+             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+             osc.start(ctx.currentTime);
+             osc.stop(ctx.currentTime + 0.4);
+         }
+     }"
+     x-on:kds-new-order.window="playChime()"
+>
     <x-slot:header>{{ __('admin.kitchen_display') }}</x-slot:header>
 
     <section class="surface-card p-5 sm:p-6">

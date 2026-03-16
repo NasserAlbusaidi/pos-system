@@ -78,7 +78,7 @@ class StripeWebhookController extends Controller
                 }
 
                 $metadata = $data->metadata ?? null;
-                $orderId = $metadata->order_id ?? null;
+                $orderId = $metadata ? ($metadata->order_id ?? null) : null;
                 if (! $orderId) {
                     $this->markWebhookProcessed($eventId);
 
