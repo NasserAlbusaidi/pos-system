@@ -473,4 +473,27 @@ return [
 
     // Smart Upsell
     'customers_also_order' => 'الزبائن يطلبون أيضاً',
+
+    // Snap-to-Menu
+    'snap_upload_title' => 'ارفع قائمتك',
+    'snap_upload_desc' => 'التقط صورة لقائمة الطعام الورقية وسنستخرج كل شيء تلقائياً — العناصر والأسعار والتصنيفات بالعربية والإنجليزية.',
+    'snap_upload_hint' => 'يدعم JPG و PNG و PDF. يمكنك رفع حتى 4 صور.',
+    'snap_upload_button' => 'ارفع صور القائمة',
+    'snap_or_manual' => 'أو أضف العناصر يدوياً',
+    'snap_extracting' => 'جارٍ استخراج القائمة...',
+    'snap_extracting_desc' => 'الذكاء الاصطناعي يقرأ قائمتك. يستغرق حوالي 10 ثوانٍ.',
+    'snap_review_title' => 'مراجعة القائمة المستخرجة',
+    'snap_review_desc' => 'عدّل أي عناصر أدناه، ثم احفظ لإنشاء قائمتك الرقمية.',
+    'snap_category' => 'التصنيف',
+    'snap_name_en' => 'الاسم (إنجليزي)',
+    'snap_name_ar' => 'الاسم (عربي)',
+    'snap_description' => 'الوصف',
+    'snap_price' => 'السعر',
+    'snap_remove_item' => 'حذف',
+    'snap_add_item' => 'إضافة عنصر',
+    'snap_save_menu' => 'حفظ القائمة',
+    'snap_try_again' => 'ارفع صور مختلفة',
+    'snap_error' => 'لم نتمكن من استخراج العناصر. حاول بصورة أوضح أو أضف العناصر يدوياً.',
+    'snap_no_items' => 'لم يتم العثور على عناصر في الصورة. جرّب صورة مختلفة أو أضف يدوياً.',
+    'snap_items_found' => 'تم العثور على :count عنصر في :categories تصنيف',
 ];

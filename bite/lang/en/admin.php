@@ -473,4 +473,27 @@ return [
 
     // Smart Upsell
     'customers_also_order' => 'Customers also order',
+
+    // Snap-to-Menu
+    'snap_upload_title' => 'Upload your menu',
+    'snap_upload_desc' => 'Take a photo of your paper menu and we\'ll extract everything automatically — items, prices, categories, in both English and Arabic.',
+    'snap_upload_hint' => 'Supports JPG, PNG, and PDF. Upload up to 4 images.',
+    'snap_upload_button' => 'Upload Menu Photos',
+    'snap_or_manual' => 'or add items manually',
+    'snap_extracting' => 'Extracting your menu...',
+    'snap_extracting_desc' => 'AI is reading your menu. This takes about 10 seconds.',
+    'snap_review_title' => 'Review Extracted Menu',
+    'snap_review_desc' => 'Edit any items below, then save to create your digital menu.',
+    'snap_category' => 'Category',
+    'snap_name_en' => 'Name (English)',
+    'snap_name_ar' => 'Name (Arabic)',
+    'snap_description' => 'Description',
+    'snap_price' => 'Price',
+    'snap_remove_item' => 'Remove',
+    'snap_add_item' => 'Add Item',
+    'snap_save_menu' => 'Save Menu',
+    'snap_try_again' => 'Upload Different Photos',
+    'snap_error' => 'Could not extract menu items. Please try a clearer photo or add items manually.',
+    'snap_no_items' => 'No items were found in the photo. Try a different image or add items manually.',
+    'snap_items_found' => ':count items found across :categories categories',
 ];

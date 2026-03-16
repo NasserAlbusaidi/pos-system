@@ -179,85 +179,329 @@
             {{-- STEP 3: First Menu Items                       --}}
             {{-- ═══════════════════════════════════════════════ --}}
             @if ($step === 3)
-                <div class="border-b border-line bg-muted/30 px-6 py-5">
-                    <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.onboarding_menu_items') }}</h2>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.onboarding_menu_items_desc') }}</p>
-                </div>
 
-                <form wire:submit.prevent="saveMenuItems" class="p-6 space-y-4">
-                    <p class="text-sm text-ink-soft">
-                        {{ __('admin.onboarding_menu_items_hint') }}
-                    </p>
-
-                    <div class="space-y-3">
-                        @foreach ($menuItems as $index => $item)
-                            <div class="flex items-start gap-3" wire:key="menu-item-{{ $index }}">
-                                <div class="flex-1 space-y-1.5">
-                                    <input
-                                        type="text"
-                                        wire:model="menuItems.{{ $index }}.name"
-                                        class="field"
-                                        placeholder="{{ __('admin.onboarding_item_name_placeholder') }}"
-                                    >
-                                    @error("menuItems.{$index}.name") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                                <div class="w-32 space-y-1.5">
-                                    <div class="relative">
-                                        <input
-                                            type="number"
-                                            step="0.001"
-                                            min="0"
-                                            wire:model="menuItems.{{ $index }}.price"
-                                            class="field font-mono pr-12"
-                                            placeholder="0.000"
-                                        >
-                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $currency_code }}</span>
-                                    </div>
-                                    @error("menuItems.{$index}.price") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                                @if (count($menuItems) > 1)
-                                    <button
-                                        type="button"
-                                        wire:click="removeMenuItem({{ $index }})"
-                                        class="mt-2.5 text-ink-soft hover:text-alert transition-colors"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                    </button>
-                                @endif
-                            </div>
-                        @endforeach
+                {{-- ─── Mode: choose ─── --}}
+                @if ($menuMode === 'choose')
+                    <div class="border-b border-line bg-muted/30 px-6 py-5">
+                        <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.onboarding_menu_items') }}</h2>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.onboarding_menu_items_desc') }}</p>
                     </div>
 
-                    @if (count($menuItems) < 10)
-                        <button
-                            type="button"
-                            wire:click="addMenuItem"
-                            class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                            {{ __('admin.onboarding_add_another') }}
-                        </button>
-                    @endif
+                    <div class="p-6 space-y-6">
+                        {{-- Error banner --}}
+                        @if ($extractionError)
+                            <div class="rounded-lg border border-alert/30 bg-alert/5 px-4 py-3">
+                                <p class="text-sm text-alert">
+                                    {{ __('admin.snap_' . ($extractionError === 'no_items' ? 'no_items' : 'error')) }}
+                                </p>
+                            </div>
+                        @endif
 
-                    {{-- Actions --}}
-                    <div class="flex items-center justify-between pt-4">
-                        <button type="button" wire:click="previousStep" class="btn-secondary">
-                            {{ __('admin.onboarding_back') }}
-                        </button>
-                        <div class="flex items-center gap-3">
+                        {{-- File upload dropzone --}}
+                        <div
+                            x-data="{ dragging: false }"
+                            x-on:dragover.prevent="dragging = true"
+                            x-on:dragleave.prevent="dragging = false"
+                            x-on:drop.prevent="dragging = false; $refs.menuPhotoInput.files = $event.dataTransfer.files; $refs.menuPhotoInput.dispatchEvent(new Event('change'))"
+                            class="relative rounded-xl border-2 border-dashed transition-colors cursor-pointer text-center py-10 px-6"
+                            :class="dragging ? 'border-signal bg-signal/5' : 'border-line hover:border-ink-soft'"
+                            x-on:click="$refs.menuPhotoInput.click()"
+                        >
+                            <input
+                                type="file"
+                                x-ref="menuPhotoInput"
+                                wire:model="menuPhotos"
+                                accept="image/jpeg,image/png,application/pdf"
+                                multiple
+                                class="hidden"
+                            >
+
+                            <div class="flex flex-col items-center gap-3">
+                                {{-- Camera icon --}}
+                                <div class="w-12 h-12 rounded-xl bg-panel-muted flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-ink-soft" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-ink">{{ __('admin.snap_upload_title') }}</p>
+                                    <p class="mt-1 text-xs text-ink-soft leading-relaxed max-w-sm mx-auto">{{ __('admin.snap_upload_desc') }}</p>
+                                </div>
+                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-soft/60">{{ __('admin.snap_upload_hint') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- After files selected: show count + upload button --}}
+                        @if (count($menuPhotos) > 0)
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-ink-soft">
+                                    {{ count($menuPhotos) }} {{ count($menuPhotos) === 1 ? 'file' : 'files' }} selected
+                                </p>
+                                <button type="button" wire:click="extractMenu" class="btn-primary">
+                                    <span wire:loading.remove wire:target="extractMenu">{{ __('admin.snap_upload_button') }}</span>
+                                    <span wire:loading wire:target="extractMenu" class="inline-flex items-center gap-2">
+                                        <span class="loading-spinner"></span>
+                                        {{ __('admin.onboarding_saving') }}
+                                    </span>
+                                </button>
+                            </div>
+                        @endif
+
+                        {{-- Validation errors --}}
+                        @error('menuPhotos') <p class="text-alert text-xs">{{ $message }}</p> @enderror
+                        @error('menuPhotos.*') <p class="text-alert text-xs">{{ $message }}</p> @enderror
+
+                        {{-- Divider with manual entry link --}}
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 h-px bg-line"></div>
+                            <button type="button" wire:click="showManualEntry" class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors">
+                                {{ __('admin.snap_or_manual') }}
+                            </button>
+                            <div class="flex-1 h-px bg-line"></div>
+                        </div>
+
+                        {{-- Navigation --}}
+                        <div class="flex items-center justify-between pt-2">
+                            <button type="button" wire:click="previousStep" class="btn-secondary">
+                                {{ __('admin.onboarding_back') }}
+                            </button>
                             <button type="button" wire:click="nextStep" class="btn-secondary">
                                 {{ __('admin.onboarding_skip') }}
                             </button>
-                            <button type="submit" class="btn-primary">
-                                <span wire:loading.remove wire:target="saveMenuItems">{{ __('admin.onboarding_save_continue') }}</span>
-                                <span wire:loading wire:target="saveMenuItems" class="inline-flex items-center gap-2">
-                                    <span class="loading-spinner"></span>
-                                    {{ __('admin.onboarding_saving') }}
-                                </span>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ─── Mode: extracting ─── --}}
+                @if ($menuMode === 'extracting')
+                    <div class="p-8 sm:p-10 flex flex-col items-center justify-center text-center space-y-4" style="min-height: 300px;">
+                        <span class="loading-spinner" style="width: 2rem; height: 2rem;"></span>
+                        <h2 class="font-display text-2xl font-extrabold text-ink">{{ __('admin.snap_extracting') }}</h2>
+                        <p class="text-sm text-ink-soft">{{ __('admin.snap_extracting_desc') }}</p>
+                    </div>
+                @endif
+
+                {{-- ─── Mode: review ─── --}}
+                @if ($menuMode === 'review')
+                    <div class="border-b border-line bg-muted/30 px-6 py-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.snap_review_title') }}</h2>
+                                <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                                    {{ __('admin.snap_items_found', ['count' => count($extractedItems), 'categories' => count(collect($extractedItems)->pluck('category_en')->unique())]) }}
+                                </p>
+                            </div>
+                            <button type="button" wire:click="resetExtraction" class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors">
+                                {{ __('admin.snap_try_again') }}
                             </button>
                         </div>
                     </div>
-                </form>
+
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-ink-soft">{{ __('admin.snap_review_desc') }}</p>
+
+                        {{-- Scrollable container --}}
+                        <div class="space-y-3 overflow-y-auto" style="max-height: 50vh;">
+                            @foreach ($extractedItems as $index => $item)
+                                <div class="rounded-lg border border-line p-4 space-y-3" wire:key="extracted-item-{{ $index }}">
+                                    {{-- Category + remove --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-1 space-y-1.5">
+                                            <label class="text-xs text-ink-soft">{{ __('admin.snap_category') }}</label>
+                                            <input
+                                                type="text"
+                                                wire:model="extractedItems.{{ $index }}.category_en"
+                                                class="field"
+                                                placeholder="Category"
+                                            >
+                                        </div>
+                                        @if (count($extractedItems) > 1)
+                                            <button
+                                                type="button"
+                                                wire:click="removeExtractedItem({{ $index }})"
+                                                class="mt-5 text-ink-soft hover:text-alert transition-colors"
+                                                title="{{ __('admin.snap_remove_item') }}"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    {{-- Name fields: 2-column grid --}}
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div class="space-y-1.5">
+                                            <label class="text-xs text-ink-soft">{{ __('admin.snap_name_en') }}</label>
+                                            <input
+                                                type="text"
+                                                wire:model="extractedItems.{{ $index }}.name_en"
+                                                class="field"
+                                                placeholder="Item name"
+                                            >
+                                            @error("extractedItems.{$index}.name_en") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-xs text-ink-soft">{{ __('admin.snap_name_ar') }}</label>
+                                            <input
+                                                type="text"
+                                                wire:model="extractedItems.{{ $index }}.name_ar"
+                                                class="field"
+                                                dir="rtl"
+                                                placeholder="اسم العنصر"
+                                            >
+                                            @error("extractedItems.{$index}.name_ar") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
+                                        </div>
+                                    </div>
+
+                                    {{-- Description + price --}}
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-1 space-y-1.5">
+                                            <label class="text-xs text-ink-soft">{{ __('admin.snap_description') }}</label>
+                                            <input
+                                                type="text"
+                                                wire:model="extractedItems.{{ $index }}.description_en"
+                                                class="field"
+                                                placeholder="Description (optional)"
+                                            >
+                                        </div>
+                                        <div class="w-32 space-y-1.5">
+                                            <label class="text-xs text-ink-soft">{{ __('admin.snap_price') }}</label>
+                                            <div class="relative">
+                                                <input
+                                                    type="number"
+                                                    step="0.001"
+                                                    min="0"
+                                                    wire:model="extractedItems.{{ $index }}.price"
+                                                    class="field font-mono pr-12"
+                                                    placeholder="0.000"
+                                                >
+                                                <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $currency_code }}</span>
+                                            </div>
+                                            @error("extractedItems.{$index}.price") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Add Item button --}}
+                        <button
+                            type="button"
+                            wire:click="addExtractedItem"
+                            class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            {{ __('admin.snap_add_item') }}
+                        </button>
+
+                        {{-- Navigation --}}
+                        <div class="flex items-center justify-between pt-4">
+                            <button type="button" wire:click="previousStep" class="btn-secondary">
+                                {{ __('admin.onboarding_back') }}
+                            </button>
+                            <div class="flex items-center gap-3">
+                                <button type="button" wire:click="nextStep" class="btn-secondary">
+                                    {{ __('admin.onboarding_skip') }}
+                                </button>
+                                <button type="button" wire:click="saveExtractedMenu" class="btn-primary">
+                                    <span wire:loading.remove wire:target="saveExtractedMenu">{{ __('admin.snap_save_menu') }}</span>
+                                    <span wire:loading wire:target="saveExtractedMenu" class="inline-flex items-center gap-2">
+                                        <span class="loading-spinner"></span>
+                                        {{ __('admin.onboarding_saving') }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ─── Mode: manual ─── --}}
+                @if ($menuMode === 'manual')
+                    <div class="border-b border-line bg-muted/30 px-6 py-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.onboarding_menu_items') }}</h2>
+                                <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.onboarding_menu_items_desc') }}</p>
+                            </div>
+                            <button type="button" wire:click="resetExtraction" class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors">
+                                {{ __('admin.snap_upload_button') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <form wire:submit.prevent="saveMenuItems" class="p-6 space-y-4">
+                        <p class="text-sm text-ink-soft">
+                            {{ __('admin.onboarding_menu_items_hint') }}
+                        </p>
+
+                        <div class="space-y-3">
+                            @foreach ($menuItems as $index => $item)
+                                <div class="flex items-start gap-3" wire:key="menu-item-{{ $index }}">
+                                    <div class="flex-1 space-y-1.5">
+                                        <input
+                                            type="text"
+                                            wire:model="menuItems.{{ $index }}.name"
+                                            class="field"
+                                            placeholder="{{ __('admin.onboarding_item_name_placeholder') }}"
+                                        >
+                                        @error("menuItems.{$index}.name") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <div class="w-32 space-y-1.5">
+                                        <div class="relative">
+                                            <input
+                                                type="number"
+                                                step="0.001"
+                                                min="0"
+                                                wire:model="menuItems.{{ $index }}.price"
+                                                class="field font-mono pr-12"
+                                                placeholder="0.000"
+                                            >
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $currency_code }}</span>
+                                        </div>
+                                        @error("menuItems.{$index}.price") <p class="text-alert text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    @if (count($menuItems) > 1)
+                                        <button
+                                            type="button"
+                                            wire:click="removeMenuItem({{ $index }})"
+                                            class="mt-2.5 text-ink-soft hover:text-alert transition-colors"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if (count($menuItems) < 10)
+                            <button
+                                type="button"
+                                wire:click="addMenuItem"
+                                class="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft hover:text-ink transition-colors"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                {{ __('admin.onboarding_add_another') }}
+                            </button>
+                        @endif
+
+                        {{-- Actions --}}
+                        <div class="flex items-center justify-between pt-4">
+                            <button type="button" wire:click="previousStep" class="btn-secondary">
+                                {{ __('admin.onboarding_back') }}
+                            </button>
+                            <div class="flex items-center gap-3">
+                                <button type="button" wire:click="nextStep" class="btn-secondary">
+                                    {{ __('admin.onboarding_skip') }}
+                                </button>
+                                <button type="submit" class="btn-primary">
+                                    <span wire:loading.remove wire:target="saveMenuItems">{{ __('admin.onboarding_save_continue') }}</span>
+                                    <span wire:loading wire:target="saveMenuItems" class="inline-flex items-center gap-2">
+                                        <span class="loading-spinner"></span>
+                                        {{ __('admin.onboarding_saving') }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                @endif
+
             @endif
 
             {{-- ═══════════════════════════════════════════════ --}}

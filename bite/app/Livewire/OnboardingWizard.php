@@ -5,14 +5,18 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\MenuExtractionService;
 use Database\Seeders\DemoMenuSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class OnboardingWizard extends Component
 {
+    use WithFileUploads;
+
     // ── Wizard state ────────────────────────────────────────
     public int $step = 1;
 
@@ -38,6 +42,14 @@ class OnboardingWizard extends Component
 
     // ── Step 3: First Menu Items ────────────────────────────
     public array $menuItems = [];
+
+    public array $menuPhotos = [];
+
+    public array $extractedItems = [];
+
+    public string $menuMode = 'choose'; // choose | extracting | review | manual
+
+    public string $extractionError = '';
 
     // ── Step 4: Staff PINs ──────────────────────────────────
     public array $staffMembers = [];
@@ -186,6 +198,166 @@ class OnboardingWizard extends Component
             array_splice($this->menuItems, $index, 1);
             $this->menuItems = array_values($this->menuItems);
         }
+    }
+
+    public function updatedMenuPhotos(): void
+    {
+        $this->onboardingUser();
+
+        $this->validate([
+            'menuPhotos' => 'required|array|min:1|max:4',
+            'menuPhotos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ]);
+    }
+
+    public function extractMenu(): void
+    {
+        $this->onboardingUser();
+
+        $this->validate([
+            'menuPhotos' => 'required|array|min:1|max:4',
+            'menuPhotos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ]);
+
+        $this->menuMode = 'extracting';
+        $this->extractionError = '';
+
+        try {
+            $images = [];
+            foreach ($this->menuPhotos as $photo) {
+                $images[] = [
+                    'mime_type' => $photo->getMimeType(),
+                    'data' => base64_encode(file_get_contents($photo->getRealPath())),
+                ];
+            }
+
+            $service = app(MenuExtractionService::class);
+            $items = $service->extract($images);
+
+            if (empty($items)) {
+                $this->extractionError = 'no_items';
+                $this->menuMode = 'choose';
+
+                return;
+            }
+
+            $this->extractedItems = $items;
+            $this->menuMode = 'review';
+        } catch (\Throwable $e) {
+            report($e);
+            $this->extractionError = 'failed';
+            $this->menuMode = 'choose';
+        }
+    }
+
+    public function addExtractedItem(): void
+    {
+        $this->onboardingUser();
+
+        $this->extractedItems[] = [
+            'category_en' => '',
+            'category_ar' => '',
+            'name_en' => '',
+            'name_ar' => '',
+            'description_en' => '',
+            'description_ar' => '',
+            'price' => 0,
+        ];
+    }
+
+    public function removeExtractedItem(int $index): void
+    {
+        $this->onboardingUser();
+
+        if (count($this->extractedItems) > 1) {
+            array_splice($this->extractedItems, $index, 1);
+            $this->extractedItems = array_values($this->extractedItems);
+        }
+    }
+
+    public function resetExtraction(): void
+    {
+        $this->onboardingUser();
+
+        $this->menuPhotos = [];
+        $this->extractedItems = [];
+        $this->extractionError = '';
+        $this->menuMode = 'choose';
+    }
+
+    public function showManualEntry(): void
+    {
+        $this->onboardingUser();
+
+        $this->menuMode = 'manual';
+    }
+
+    public function saveExtractedMenu(): void
+    {
+        $user = $this->onboardingUser();
+
+        // Filter out items without names
+        $items = collect($this->extractedItems)
+            ->filter(fn ($item) => ! empty(trim($item['name_en'] ?? '')) || ! empty(trim($item['name_ar'] ?? '')));
+
+        if ($items->isEmpty()) {
+            $this->nextStep();
+
+            return;
+        }
+
+        $this->validate([
+            'extractedItems.*.name_en' => 'nullable|string|max:255',
+            'extractedItems.*.name_ar' => 'nullable|string|max:255',
+            'extractedItems.*.description_en' => 'nullable|string|max:500',
+            'extractedItems.*.description_ar' => 'nullable|string|max:500',
+            'extractedItems.*.category_en' => 'nullable|string|max:255',
+            'extractedItems.*.category_ar' => 'nullable|string|max:255',
+            'extractedItems.*.price' => 'nullable|numeric|min:0',
+        ]);
+
+        $shop = $user->shop;
+
+        // Group by category for organized creation
+        $grouped = $items->groupBy(fn ($item) => trim($item['category_en'] ?? '') ?: 'Menu');
+
+        $categorySortOrder = Category::where('shop_id', $shop->id)->max('sort_order') ?? 0;
+
+        foreach ($grouped as $categoryName => $categoryItems) {
+            $categoryAr = trim($categoryItems->first()['category_ar'] ?? '') ?: 'القائمة';
+
+            $category = Category::firstOrCreate(
+                ['shop_id' => $shop->id, 'name_en' => $categoryName],
+                ['name_ar' => $categoryAr, 'sort_order' => ++$categorySortOrder]
+            );
+
+            $productSortOrder = Product::where('shop_id', $shop->id)
+                ->where('category_id', $category->id)
+                ->max('sort_order') ?? 0;
+
+            foreach ($categoryItems as $item) {
+                $nameEn = trim($item['name_en'] ?? '');
+                $nameAr = trim($item['name_ar'] ?? '');
+
+                if ($nameEn === '' && $nameAr === '') {
+                    continue;
+                }
+
+                Product::forceCreate([
+                    'shop_id' => $shop->id,
+                    'category_id' => $category->id,
+                    'name_en' => $nameEn,
+                    'name_ar' => $nameAr,
+                    'description_en' => trim($item['description_en'] ?? ''),
+                    'description_ar' => trim($item['description_ar'] ?? ''),
+                    'price' => max(0.0, (float) ($item['price'] ?? 0)),
+                    'sort_order' => ++$productSortOrder,
+                ]);
+            }
+        }
+
+        $this->dispatch('toast', message: 'Menu items saved.', variant: 'success');
+        $this->nextStep();
     }
 
     public function saveMenuItems()
