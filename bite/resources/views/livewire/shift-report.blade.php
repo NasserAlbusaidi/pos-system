@@ -24,7 +24,7 @@
     </div>
 
     {{-- Print-only header --}}
-    <div class="hidden print-show" style="display: none;">
+    <div class="hidden print-show">
         <div style="text-align: center; margin-bottom: 16px;">
             <h1 style="font-size: 18px; font-weight: 800; margin: 0;">{{ $shop->name }} - {{ __('admin.shift_report') }}</h1>
             <p style="font-size: 12px; color: #4f5661; margin-top: 4px;">{{ \Carbon\Carbon::parse($date)->format('l, F j, Y') }}</p>
@@ -159,7 +159,7 @@
     </div>
 
     {{-- Report Footer (visible on print) --}}
-    <div class="hidden print-show" style="display: none;">
+    <div class="hidden print-show">
         <div style="text-align: center; margin-top: 24px; padding-top: 12px; border-top: 1px solid #c3c7cb; font-size: 10px; color: #4f5661;">
             <p>{{ __('admin.shift_generated', ['datetime' => now()->format('d/m/Y H:i')]) }}</p>
         </div>
