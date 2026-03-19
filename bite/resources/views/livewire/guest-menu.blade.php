@@ -388,6 +388,12 @@
                     </section>
                 </div>
 
+                @if($orderError)
+                    <div class="mx-4 mb-0 mt-0 rounded-lg border border-alert/35 bg-alert/10 px-4 py-3 font-mono text-[11px] font-semibold leading-relaxed text-alert sm:mx-8">
+                        {{ $orderError }}
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-4 sm:p-8">
                     <button wire:click="toggleReview" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
                     <button x-on:click="$dispatch('confirm-action', {

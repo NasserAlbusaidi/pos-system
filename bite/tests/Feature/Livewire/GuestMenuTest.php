@@ -99,4 +99,86 @@ class GuestMenuTest extends TestCase
             'price_snapshot' => 4.50,
         ]);
     }
+
+    public function test_submit_order_rejects_unavailable_items(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+        $available = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Latte',
+            'price' => 4.50,
+            'is_available' => true,
+        ]);
+        $eightySixed = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Croissant',
+            'price' => 2.00,
+            'is_available' => true,
+        ]);
+
+        // Customer adds both items while they are available
+        $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $available->id)
+            ->call('addToCart', $eightySixed->id);
+
+        // Staff 86's the croissant after the customer loaded the menu
+        $eightySixed->update(['is_available' => false]);
+
+        // Customer tries to submit — should be rejected
+        $component->call('submitOrder')
+            ->assertSet('showReviewModal', true)
+            ->assertNotSet('orderError', null);
+
+        // Verify the error message contains the unavailable item name
+        $orderError = $component->get('orderError');
+        $this->assertStringContainsString('Croissant', $orderError);
+
+        // No order should have been created
+        $this->assertDatabaseMissing('orders', [
+            'shop_id' => $shop->id,
+        ]);
+    }
+
+    public function test_submit_order_succeeds_when_all_items_available(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+        $product = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Latte',
+            'price' => 4.50,
+            'is_available' => true,
+        ]);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->call('submitOrder')
+            ->assertSet('orderError', null);
+
+        $this->assertDatabaseHas('orders', [
+            'shop_id' => $shop->id,
+            'status' => 'unpaid',
+        ]);
+    }
+
+    public function test_add_to_cart_ignores_unavailable_product(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+        $product = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Croissant',
+            'price' => 2.00,
+            'is_available' => false,
+        ]);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->assertSet('cart', []);
+    }
 }

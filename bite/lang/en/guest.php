@@ -74,6 +74,9 @@ return [
     'status_completed' => 'Order delivered. Enjoy your meal.',
     'status_cancelled' => 'Order expired before payment. Please reorder.',
 
+    // Availability
+    'items_unavailable' => 'Sorry, these items are no longer available: :items. Please remove them and try again.',
+
     // Rate limiting
     'too_many_orders' => 'Too many orders. Please wait a moment before trying again.',
 

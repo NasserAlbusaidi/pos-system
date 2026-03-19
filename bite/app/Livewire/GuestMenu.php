@@ -46,6 +46,8 @@ class GuestMenu extends Component
 
     public $customerOrderHistory = [];
 
+    public $orderError = null;
+
     public $locale = 'en';
 
     // Group ordering state
@@ -485,7 +487,10 @@ class GuestMenu extends Component
             return;
         }
 
-        $product = $this->shop->products()->with('modifierGroups.options')->find($productId);
+        $product = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->where('is_available', true)
+            ->find($productId);
 
         if (! $product) {
             return;
@@ -650,6 +655,7 @@ class GuestMenu extends Component
         }
         RateLimiter::hit($rateLimitKey, 60);
 
+        $this->orderError = null;
         $this->loyaltyError = null;
         $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
         if ($this->loyaltyPhone !== '' && ! $loyaltyPhone) {
@@ -659,13 +665,30 @@ class GuestMenu extends Component
             return;
         }
 
-        // Fetch fresh product data to prevent price tampering
+        // Fetch fresh product data to prevent price tampering and verify availability
         $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
         $products = $this->shop->products()
             ->with('modifierGroups.options')
+            ->where('is_available', true)
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
+
+        // Check for 86'd (unavailable) items
+        $unavailableNames = collect($cartItems)
+            ->filter(fn ($item) => ! $products->has($item['id']))
+            ->pluck('name')
+            ->unique()
+            ->all();
+
+        if (! empty($unavailableNames)) {
+            $this->orderError = __('guest.items_unavailable', [
+                'items' => implode(', ', $unavailableNames),
+            ]);
+            $this->showReviewModal = true;
+
+            return;
+        }
 
         $pricingRules = $this->loadActivePricingRules();
 
