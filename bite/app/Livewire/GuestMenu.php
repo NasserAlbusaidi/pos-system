@@ -752,8 +752,8 @@ class GuestMenu extends Component
                 'status' => 'unpaid',
                 'loyalty_phone' => $loyaltyPhone,
                 'subtotal_amount' => $subtotalAmount,
-                'tax_amount' => round($taxAmount, 2),
-                'total_amount' => round($subtotalAmount + $taxAmount, 2),
+                'tax_amount' => round($taxAmount, 3),
+                'total_amount' => round($subtotalAmount + $taxAmount, 3),
                 'tracking_token' => (string) Str::uuid(),
                 'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
             ]);

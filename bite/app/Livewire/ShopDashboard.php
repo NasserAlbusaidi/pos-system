@@ -74,7 +74,7 @@ class ShopDashboard extends Component
             ->count();
 
         $this->avgOrderValue = $completedOrdersCount > 0
-            ? round($this->dailyRevenue / $completedOrdersCount, 2)
+            ? round($this->dailyRevenue / $completedOrdersCount, 3)
             : 0;
 
         $this->itemsSoldToday = (int) OrderItem::whereHas('order', function ($query) use ($shopId) {

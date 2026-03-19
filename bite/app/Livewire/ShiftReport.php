@@ -47,7 +47,7 @@ class ShiftReport extends Component
         $totalOrders = (clone $ordersQuery)->count();
         $totalRevenue = (float) (clone $ordersQuery)->sum('total_amount');
         $totalTax = (float) (clone $ordersQuery)->sum('tax_amount');
-        $avgOrder = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
+        $avgOrder = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 3) : 0;
 
         // Payment breakdown from the payments table
         $paymentBreakdown = Payment::where('shop_id', $shopId)
@@ -90,7 +90,7 @@ class ShiftReport extends Component
                 $key = str_pad((string) $hour, 2, '0', STR_PAD_LEFT);
 
                 return [
-                    'hour' => $key . ':00',
+                    'hour' => $key.':00',
                     'count' => (int) ($ordersByHourRaw[$key] ?? 0),
                 ];
             })

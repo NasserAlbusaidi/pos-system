@@ -374,7 +374,7 @@ class PosDashboard extends Component
 
         $rows = collect($rows)
             ->map(fn ($row) => [
-                'amount' => round((float) ($row['amount'] ?? 0), 2),
+                'amount' => round((float) ($row['amount'] ?? 0), 3),
                 'method' => in_array(trim((string) ($row['method'] ?? '')), $allowedMethods, true)
                     ? trim((string) $row['method'])
                     : 'cash',
@@ -578,18 +578,18 @@ class PosDashboard extends Component
             $originalTax = (float) ($order->tax_amount ?? 0);
             $baseSubtotal = $originalSubtotal > 0 ? $originalSubtotal : ($orderSubtotal + $newSubtotal);
 
-            $newTax = $baseSubtotal > 0 ? round($originalTax * ($newSubtotal / $baseSubtotal), 2) : 0;
-            $orderTax = round($originalTax - $newTax, 2);
+            $newTax = $baseSubtotal > 0 ? round($originalTax * ($newSubtotal / $baseSubtotal), 3) : 0;
+            $orderTax = round($originalTax - $newTax, 3);
 
             $order->update([
                 'subtotal_amount' => $orderSubtotal,
                 'tax_amount' => $orderTax,
-                'total_amount' => round($orderSubtotal + $orderTax, 2),
+                'total_amount' => round($orderSubtotal + $orderTax, 3),
             ]);
             $newOrder->update([
                 'subtotal_amount' => $newSubtotal,
                 'tax_amount' => $newTax,
-                'total_amount' => round($newSubtotal + $newTax, 2),
+                'total_amount' => round($newSubtotal + $newTax, 3),
             ]);
 
             if ($order->items()->count() === 0) {
@@ -687,7 +687,7 @@ class PosDashboard extends Component
         }
 
         $order = Order::where('shop_id', Auth::user()->shop_id)->findOrFail($this->paymentOrderId);
-        $amount = round((float) $this->splitAmount, 2);
+        $amount = round((float) $this->splitAmount, 3);
         if ($amount <= 0 || $amount > $order->balance_due) {
             $this->paymentError = 'Enter a valid amount up to the remaining balance.';
 
@@ -711,7 +711,7 @@ class PosDashboard extends Component
 
         $rows = collect($this->paymentRows)->map(function ($row) {
             return [
-                'amount' => round((float) ($row['amount'] ?? 0), 2),
+                'amount' => round((float) ($row['amount'] ?? 0), 3),
                 'method' => trim((string) ($row['method'] ?? 'cash')),
             ];
         })->filter(fn ($row) => $row['amount'] > 0)->values()->all();
@@ -722,7 +722,7 @@ class PosDashboard extends Component
             return;
         }
 
-        $sum = round(collect($rows)->sum('amount'), 2);
+        $sum = round(collect($rows)->sum('amount'), 3);
         if ($sum > $order->balance_due + 0.01) {
             $this->paymentError = 'Payments cannot exceed the remaining balance.';
 

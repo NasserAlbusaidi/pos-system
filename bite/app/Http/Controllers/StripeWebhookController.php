@@ -92,7 +92,7 @@ class StripeWebhookController extends Controller
                     return;
                 }
 
-                $amount = round(((float) ($data->amount_received ?? 0)) / 100, 2);
+                $amount = round(((float) ($data->amount_received ?? 0)) / 100, 3);
                 if ($amount <= 0) {
                     $this->markWebhookProcessed($eventId);
 

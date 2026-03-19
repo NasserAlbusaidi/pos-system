@@ -100,7 +100,7 @@ class ReportsDashboard extends Component
             ->whereBetween('paid_at', [$from, $to])
             ->count();
 
-        $avgOrder = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
+        $avgOrder = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 3) : 0;
 
         return view('livewire.admin.reports-dashboard', [
             'rangeDays' => $this->rangeDays,
