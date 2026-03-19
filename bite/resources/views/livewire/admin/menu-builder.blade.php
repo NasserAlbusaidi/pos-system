@@ -24,7 +24,7 @@
                 <!-- Category Header -->
                 <div class="border-b border-line bg-muted/35 px-5 py-4 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-display text-lg font-extrabold leading-none text-ink">{{ $category->name_en }}</h3>
+                        <h3 class="font-display text-lg font-extrabold leading-none text-ink">{{ $category->translated('name') }}</h3>
                         <button
                             @click="let nameEn = prompt('Category name (English):', @js($category->name_en)); if (nameEn !== null) { nameEn = nameEn.trim(); if (nameEn.length) { let nameAr = prompt('Category name (Arabic):', @js($category->name_ar ?? '')); @this.renameCategory({{ $category->id }}, nameEn, nameAr) } }"
                             class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink transition-colors"
@@ -80,7 +80,7 @@
                             <div class="flex items-center space-x-4">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-muted font-mono text-[9px] font-semibold text-ink-soft">{{ $product->id }}</div>
                                 <div>
-                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name_en }}</div>
+                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->translated('name') }}</div>
                                     <div class="font-mono text-[10px] font-semibold text-ink-soft"><x-price :amount="$product->price" :shop="$shop" /></div>
                                 </div>
                             </div>
