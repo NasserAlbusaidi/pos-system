@@ -36,6 +36,7 @@ return [
     'optional' => 'Optional',
     'add_for' => 'Add for :price',
     'select_at_least' => 'Select at least :count option(s) for :group.',
+    'base_price' => 'Base',
 
     // Loyalty
     'loyalty_phone' => 'Loyalty Phone (Optional)',

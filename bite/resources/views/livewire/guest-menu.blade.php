@@ -530,6 +530,8 @@
                                         </span>
                                         @if($option->price_adjustment > 0)
                                             <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                        @elseif($group->min_selection > 0 && $group->options->count() > 1)
+                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.base_price') }}</span>
                                         @endif
                                     </label>
                                 @endforeach

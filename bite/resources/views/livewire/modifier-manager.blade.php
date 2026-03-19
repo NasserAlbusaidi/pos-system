@@ -58,7 +58,7 @@
 
                             <div class="space-y-2">
                                 <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.modifier_extra_cost') }}</label>
-                                <input type="number" step="0.01" wire:model="optionPrice" class="w-full field transition-all" placeholder="1.00">
+                                <input type="number" step="0.001" inputmode="decimal" wire:model="optionPrice" class="w-full field transition-all" placeholder="0.100">
                                 @error('optionPrice') <span class="font-mono text-[10px] font-semibold text-alert">{{ $message }}</span> @enderror
                             </div>
 

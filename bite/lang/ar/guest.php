@@ -36,6 +36,7 @@ return [
     'optional' => 'اختياري',
     'add_for' => 'أضف بـ :price',
     'select_at_least' => 'اختر على الأقل :count خيار(ات) لـ :group.',
+    'base_price' => 'أساسي',
 
     // Loyalty
     'loyalty_phone' => 'رقم هاتف الولاء (اختياري)',
