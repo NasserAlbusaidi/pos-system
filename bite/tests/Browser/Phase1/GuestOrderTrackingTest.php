@@ -23,7 +23,7 @@ class GuestOrderTrackingTest extends DuskTestCase
         $order->update(['tracking_token' => $token]);
 
         $this->browse(function (Browser $browser) use ($token) {
-            $browser->visit('/track/' . $token)
+            $browser->visit('/track/'.$token)
                 ->waitForText('OMR 2.500')
                 ->assertSee('OMR 2.500')
                 // Status timeline shows PAID as active
@@ -45,7 +45,7 @@ class GuestOrderTrackingTest extends DuskTestCase
         $order->update(['tracking_token' => $token]);
 
         $this->browse(function (Browser $browser) use ($order, $token) {
-            $browser->visit('/track/' . $token)
+            $browser->visit('/track/'.$token)
                 ->waitForText('Payment confirmed')
                 ->assertSee('Payment confirmed');
 

@@ -20,11 +20,11 @@ class GuestOrderFlowTest extends DuskTestCase
         ]);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 // Product names have CSS uppercase
                 ->waitForText('ICED LATTE')
                 ->assertSee('OMR 3.000')
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 // "Review Order" button appears in the fixed bottom bar
                 ->waitForText('Review Order')
                 ->click('button[wire\\:click="toggleReview"]')
@@ -52,7 +52,7 @@ class GuestOrderFlowTest extends DuskTestCase
         [$category, $product] = $this->createProductWithCategory($shop);
 
         $this->browse(function (Browser $browser) use ($shop) {
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 ->waitForText('Test Category')
                 ->assertSee('Test Category')
                 // Product names have CSS uppercase
@@ -68,10 +68,10 @@ class GuestOrderFlowTest extends DuskTestCase
         [$group, $option] = $this->createModifierGroup($shop, $product, required: false);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 // Product names have CSS uppercase
                 ->waitForText('TEST COFFEE')
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 // Modifier group/option names also have CSS uppercase
                 ->waitForText('SIZE')
                 ->assertSee('LARGE')

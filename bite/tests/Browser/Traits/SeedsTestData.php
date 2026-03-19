@@ -17,7 +17,7 @@ trait SeedsTestData
     protected function createShopWithAdmin(array $shopOverrides = []): array
     {
         $shop = Shop::factory()->create(array_merge([
-            'slug' => 'test-shop-' . uniqid(),
+            'slug' => 'test-shop-'.uniqid(),
             'tax_rate' => 0,
             'branding' => [
                 'accent' => '#cc5500',
@@ -30,7 +30,7 @@ trait SeedsTestData
         $admin = User::factory()->create([
             'shop_id' => $shop->id,
             'role' => 'admin',
-            'email' => 'admin-' . uniqid() . '@test.com',
+            'email' => 'admin-'.uniqid().'@test.com',
             'password' => Hash::make('password'),
             'pin_code' => Hash::make('1234'),
         ]);
@@ -43,7 +43,7 @@ trait SeedsTestData
         return User::factory()->create([
             'shop_id' => $shop->id,
             'role' => $role,
-            'email' => $role . '-' . uniqid() . '@test.com',
+            'email' => $role.'-'.uniqid().'@test.com',
             'password' => Hash::make('password'),
             'pin_code' => Hash::make($pin),
         ]);
@@ -51,12 +51,12 @@ trait SeedsTestData
 
     protected function createSuperAdmin(): User
     {
-        $shop = Shop::factory()->create(['slug' => 'super-shop-' . uniqid()]);
+        $shop = Shop::factory()->create(['slug' => 'super-shop-'.uniqid()]);
 
         return User::factory()->superAdmin()->create([
             'shop_id' => $shop->id,
             'role' => 'admin',
-            'email' => 'super-' . uniqid() . '@test.com',
+            'email' => 'super-'.uniqid().'@test.com',
             'password' => Hash::make('password'),
         ]);
     }

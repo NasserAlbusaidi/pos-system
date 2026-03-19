@@ -15,7 +15,7 @@ class PinLoginPage extends Page
 
     public function url(): string
     {
-        return '/pos/pin/' . $this->slug;
+        return '/pos/pin/'.$this->slug;
     }
 
     public function assert($browser): void

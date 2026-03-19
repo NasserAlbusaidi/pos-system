@@ -24,8 +24,8 @@ class PosOrderTest extends DuskTestCase
                 ->visit('/pos')
                 ->waitForText('OMR 3.500')
                 ->assertSeeIn('.surface-card', 'Cappuccino')
-                ->click('button[wire\\:click="markAsPaid(' . $order->id . ', \'cash\')"]')
-                ->waitUntilMissing('button[wire\\:click="markAsPaid(' . $order->id . ', \'cash\')"]');
+                ->click('button[wire\\:click="markAsPaid('.$order->id.', \'cash\')"]')
+                ->waitUntilMissing('button[wire\\:click="markAsPaid('.$order->id.', \'cash\')"]');
         });
 
         $this->assertDatabaseHas('orders', [
@@ -45,9 +45,9 @@ class PosOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($admin, $order) {
             $browser->loginAs($admin)
                 ->visit('/pos')
-                ->waitFor('button[wire\\:click="markAsPaid(' . $order->id . ', \'card\')"]')
-                ->click('button[wire\\:click="markAsPaid(' . $order->id . ', \'card\')"]')
-                ->waitUntilMissing('button[wire\\:click="markAsPaid(' . $order->id . ', \'card\')"]');
+                ->waitFor('button[wire\\:click="markAsPaid('.$order->id.', \'card\')"]')
+                ->click('button[wire\\:click="markAsPaid('.$order->id.', \'card\')"]')
+                ->waitUntilMissing('button[wire\\:click="markAsPaid('.$order->id.', \'card\')"]');
         });
 
         $this->assertDatabaseHas('orders', [

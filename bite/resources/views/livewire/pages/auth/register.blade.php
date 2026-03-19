@@ -35,7 +35,9 @@ new #[Layout('layouts.guest')] class extends Component
             'name' => ['required', 'string', 'max:255'],
             'restaurant_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'confirmed', 'regex:/^\S+$/', Rules\Password::defaults()],
+        ], [
+            'password.regex' => 'The password must not contain spaces.',
         ]);
 
         RateLimiter::hit($this->throttleKey(), 3600);

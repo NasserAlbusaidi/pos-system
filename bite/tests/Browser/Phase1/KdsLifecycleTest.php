@@ -39,11 +39,11 @@ class KdsLifecycleTest extends DuskTestCase
                 ->waitForText('SANDWICH')
                 ->assertSee('SANDWICH')
                 // paid -> preparing: click "Start Preparing"
-                ->click('button[wire\\:click="updateStatus(' . $order->id . ', \'preparing\')"]')
+                ->click('button[wire\\:click="updateStatus('.$order->id.', \'preparing\')"]')
                 // After transition, button changes to "Order Ready"
-                ->waitFor('button[wire\\:click="updateStatus(' . $order->id . ', \'ready\')"]')
+                ->waitFor('button[wire\\:click="updateStatus('.$order->id.', \'ready\')"]')
                 // preparing -> ready: click "Order Ready"
-                ->click('button[wire\\:click="updateStatus(' . $order->id . ', \'ready\')"]')
+                ->click('button[wire\\:click="updateStatus('.$order->id.', \'ready\')"]')
                 // After ready, order disappears from KDS (only paid+preparing shown)
                 ->waitUntilMissingText('SANDWICH');
         });

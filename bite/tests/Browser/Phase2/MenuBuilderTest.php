@@ -43,13 +43,13 @@ class MenuBuilderTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($admin, $shop, $product) {
             // Verify product is initially visible on guest menu
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 ->waitForText('HIDDEN ITEM')
                 ->assertSee('HIDDEN ITEM');
 
             // Toggle visibility off in menu builder
-            $productRow = 'div[data-id="' . $product->id . '"]';
-            $visibilityBtn = 'button[wire\\:click="toggleVisibility(' . $product->id . ')"]';
+            $productRow = 'div[data-id="'.$product->id.'"]';
+            $visibilityBtn = 'button[wire\\:click="toggleVisibility('.$product->id.')"]';
 
             $browser->loginAs($admin)
                 ->visit('/menu-builder')
@@ -64,7 +64,7 @@ class MenuBuilderTest extends DuskTestCase
                 ->assertSeeIn($visibilityBtn, 'HIDDEN');
 
             // Verify product is now hidden on guest menu
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 ->pause(500)
                 ->assertDontSee('HIDDEN ITEM');
 
@@ -81,7 +81,7 @@ class MenuBuilderTest extends DuskTestCase
                 ->assertSeeIn($visibilityBtn, 'VISIBLE');
 
             // Verify product is visible again on guest menu
-            $browser->visit('/menu/' . $shop->slug)
+            $browser->visit('/menu/'.$shop->slug)
                 ->waitForText('HIDDEN ITEM')
                 ->assertSee('HIDDEN ITEM');
         });

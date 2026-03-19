@@ -56,11 +56,11 @@ class KdsMultiOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kitchen, $order1) {
             $browser->loginAs($kitchen)
                 ->visit('/kds')
-                ->waitFor('button[wire\\:click="updateStatus(' . $order1->id . ', \'preparing\')"]')
+                ->waitFor('button[wire\\:click="updateStatus('.$order1->id.', \'preparing\')"]')
                 // Transition only order1 to preparing
-                ->click('button[wire\\:click="updateStatus(' . $order1->id . ', \'preparing\')"]')
+                ->click('button[wire\\:click="updateStatus('.$order1->id.', \'preparing\')"]')
                 // Wait for the button to change to "Order Ready" for order1
-                ->waitFor('button[wire\\:click="updateStatus(' . $order1->id . ', \'ready\')"]');
+                ->waitFor('button[wire\\:click="updateStatus('.$order1->id.', \'ready\')"]');
         });
 
         $order1->refresh();

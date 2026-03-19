@@ -55,13 +55,13 @@
             </div>
         @endif
 
-        <div class="min-h-screen">
+        <div class="min-h-screen overflow-x-hidden">
             @auth
                 <livewire:layout.navigation />
             @endauth
 
             @if (isset($header))
-                <header class="border-b border-line/70 bg-panel/75 backdrop-blur-xl">
+                <header class="relative z-10 border-b border-line/70 bg-panel/75 backdrop-blur-xl">
                     <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

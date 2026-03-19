@@ -36,7 +36,9 @@ new #[Layout('layouts.guest')] class extends Component
         $this->validate([
             'token' => ['required'],
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'confirmed', 'regex:/^\S+$/', Rules\Password::defaults()],
+        ], [
+            'password.regex' => 'The password must not contain spaces.',
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we

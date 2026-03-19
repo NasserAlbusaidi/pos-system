@@ -41,6 +41,6 @@ class SlugGenerator
         }
 
         // Final fallback: timestamp-based
-        return $base . '-' . dechex(time());
+        return $base.'-'.dechex(time());
     }
 }

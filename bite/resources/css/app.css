@@ -81,7 +81,7 @@
 
 @layer components {
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
         color: rgb(var(--panel));
         background-color: rgb(var(--ink));
         border-color: rgb(var(--ink));
@@ -96,7 +96,7 @@
     }
 
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
         color: rgb(var(--ink));
         background-color: rgb(var(--panel));
         border-color: rgb(var(--line));
@@ -109,7 +109,7 @@
     }
 
     .btn-danger {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
         color: rgb(var(--panel));
         background-color: rgb(var(--alert));
         border-color: rgb(var(--alert));
@@ -348,7 +348,7 @@
 
 /* Language toggle button styles */
 .lang-toggle {
-    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-200;
+    @apply inline-flex items-center gap-1 rounded-full border px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-200;
     border-color: rgb(var(--line));
     background-color: rgb(var(--panel));
     color: rgb(var(--ink-soft));

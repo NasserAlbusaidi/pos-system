@@ -15,7 +15,7 @@ class GuestMenuPage extends Page
 
     public function url(): string
     {
-        return '/menu/' . $this->slug;
+        return '/menu/'.$this->slug;
     }
 
     public function assert($browser): void

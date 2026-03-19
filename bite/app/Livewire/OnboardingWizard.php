@@ -3,11 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\Category;
+use App\Models\ModifierGroup;
+use App\Models\ModifierOption;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\MenuExtractionService;
 use Database\Seeders\DemoMenuSeeder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -453,13 +456,15 @@ class OnboardingWizard extends Component
     {
         $shop = $this->onboardingUser()->shop;
 
-        // Only load if the shop has no categories yet (or very few)
-        $existingCategories = Category::where('shop_id', $shop->id)->count();
-        if ($existingCategories > 1) {
-            $this->dispatch('toast', message: 'Your shop already has menu items. Demo menu not loaded.', variant: 'error');
-
-            return;
+        // Clear existing menu data before loading demo (safe during onboarding)
+        $modifierGroupIds = ModifierGroup::where('shop_id', $shop->id)->pluck('id');
+        if ($modifierGroupIds->isNotEmpty()) {
+            ModifierOption::whereIn('modifier_group_id', $modifierGroupIds)->delete();
+            DB::table('product_modifier_group')->whereIn('modifier_group_id', $modifierGroupIds)->delete();
         }
+        ModifierGroup::where('shop_id', $shop->id)->delete();
+        Product::where('shop_id', $shop->id)->delete();
+        Category::where('shop_id', $shop->id)->delete();
 
         (new DemoMenuSeeder)->seedForShop($shop);
         $this->demoMenuLoaded = true;

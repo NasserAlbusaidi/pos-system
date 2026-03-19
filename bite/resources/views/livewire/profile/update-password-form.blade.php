@@ -20,7 +20,9 @@ new class extends Component
         try {
             $validated = $this->validate([
                 'current_password' => ['required', 'string', 'current_password'],
-                'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+                'password' => ['required', 'string', 'regex:/^\S+$/', Password::defaults(), 'confirmed'],
+            ], [
+                'password.regex' => 'The password must not contain spaces.',
             ]);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');

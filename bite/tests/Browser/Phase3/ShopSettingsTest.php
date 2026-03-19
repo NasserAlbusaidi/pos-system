@@ -36,9 +36,9 @@ class ShopSettingsTest extends DuskTestCase
             'trial_ends_at' => now()->addDays(14),
         ]);
 
-        $email = 'waiter-' . uniqid() . '@test.com';
+        $email = 'waiter-'.uniqid().'@test.com';
 
-        $this->browse(function (Browser $browser) use ($admin, $shop, $email) {
+        $this->browse(function (Browser $browser) use ($admin, $email) {
             $browser->loginAs($admin)
                 ->visit('/settings')
                 ->type('#staff-name', 'New Waiter')

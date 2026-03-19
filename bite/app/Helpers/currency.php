@@ -6,6 +6,6 @@ if (! function_exists('formatPrice')) {
         $decimals = $shop->currency_decimals ?? 3;
         $symbol = $shop->currency_symbol ?? 'OMR';
 
-        return $symbol . ' ' . number_format($amount, $decimals);
+        return $symbol.' '.number_format($amount, $decimals);
     }
 }

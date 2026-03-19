@@ -25,11 +25,11 @@ class PosSplitOrderTest extends DuskTestCase
             $browser->loginAs($admin)
                 ->visit('/pos')
                 ->waitForText('OMR 20.000')
-                ->click('button[wire\\:click="openSplit(' . $order->id . ')"]')
+                ->click('button[wire\\:click="openSplit('.$order->id.')"]')
                 ->waitForText('Split Order')
-                ->waitFor('input[wire\\:model\\.live="splitQuantities.' . $item->id . '"]')
-                ->clear('input[wire\\:model\\.live="splitQuantities.' . $item->id . '"]')
-                ->type('input[wire\\:model\\.live="splitQuantities.' . $item->id . '"]', '1')
+                ->waitFor('input[wire\\:model\\.live="splitQuantities.'.$item->id.'"]')
+                ->clear('input[wire\\:model\\.live="splitQuantities.'.$item->id.'"]')
+                ->type('input[wire\\:model\\.live="splitQuantities.'.$item->id.'"]', '1')
                 ->click('button[wire\\:click="applySplit"]')
                 ->waitUntilMissing('button[wire\\:click="applySplit"]');
         });
@@ -60,8 +60,8 @@ class PosSplitOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($admin, $order) {
             $browser->loginAs($admin)
                 ->visit('/pos')
-                ->waitFor('button[wire\\:click="openSplit(' . $order->id . ')"]')
-                ->click('button[wire\\:click="openSplit(' . $order->id . ')"]')
+                ->waitFor('button[wire\\:click="openSplit('.$order->id.')"]')
+                ->click('button[wire\\:click="openSplit('.$order->id.')"]')
                 ->waitForText('Split Order')
                 // Don't set any split quantities (all default to 0)
                 ->click('button[wire\\:click="applySplit"]')

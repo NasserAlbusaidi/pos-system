@@ -16,7 +16,7 @@ class PinLoginTest extends DuskTestCase
         $server = $this->createStaffUser($shop, 'server', '5678');
 
         $this->browse(function (Browser $browser) use ($shop) {
-            $browser->visit('/pos/pin/' . $shop->slug)
+            $browser->visit('/pos/pin/'.$shop->slug)
                 ->waitFor('input[type="password"]')
                 ->type('input[type="password"]', '5678')
                 ->click('button[type="submit"]')
@@ -31,7 +31,7 @@ class PinLoginTest extends DuskTestCase
         $this->createStaffUser($shop, 'server', '5678');
 
         $this->browse(function (Browser $browser) use ($shop) {
-            $browser->visit('/pos/pin/' . $shop->slug)
+            $browser->visit('/pos/pin/'.$shop->slug)
                 ->waitFor('input[type="password"]')
                 ->type('input[type="password"]', '9999')
                 ->click('button[type="submit"]')
@@ -47,7 +47,7 @@ class PinLoginTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($shop) {
             // Login as kitchen staff via PIN
-            $browser->visit('/pos/pin/' . $shop->slug)
+            $browser->visit('/pos/pin/'.$shop->slug)
                 ->waitFor('input[type="password"]')
                 ->type('input[type="password"]', '4321')
                 ->click('button[type="submit"]')

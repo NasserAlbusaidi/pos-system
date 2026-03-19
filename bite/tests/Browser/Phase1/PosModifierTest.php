@@ -20,9 +20,9 @@ class PosModifierTest extends DuskTestCase
         [$group, $option] = $this->createModifierGroup($shop, $product, required: true);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
-            $browser->visit('/menu/' . $shop->slug)
-                ->waitFor('button[wire\\:click="addToCart(' . $product->id . ')"]')
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+            $browser->visit('/menu/'.$shop->slug)
+                ->waitFor('button[wire\\:click="addToCart('.$product->id.')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 ->waitForText('SIZE')
                 ->assertSee('LARGE')
                 ->assertSee('REQUIRED')
@@ -40,12 +40,12 @@ class PosModifierTest extends DuskTestCase
         [$group, $option] = $this->createModifierGroup($shop, $product, required: true);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
-            $browser->visit('/menu/' . $shop->slug)
-                ->waitFor('button[wire\\:click="addToCart(' . $product->id . ')"]')
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+            $browser->visit('/menu/'.$shop->slug)
+                ->waitFor('button[wire\\:click="addToCart('.$product->id.')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 ->waitForText('SIZE')
                 // Try to add without selecting the required modifier
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 ->waitForText('SELECT AT LEAST')
                 ->assertSee('SELECT AT LEAST');
         });
@@ -61,15 +61,15 @@ class PosModifierTest extends DuskTestCase
         [$group, $option] = $this->createModifierGroup($shop, $product, required: false);
 
         $this->browse(function (Browser $browser) use ($shop, $product, $group, $option) {
-            $browser->visit('/menu/' . $shop->slug)
-                ->waitFor('button[wire\\:click="addToCart(' . $product->id . ')"]')
-                ->click('button[wire\\:click="addToCart(' . $product->id . ')"]')
+            $browser->visit('/menu/'.$shop->slug)
+                ->waitFor('button[wire\\:click="addToCart('.$product->id.')"]')
+                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
                 ->waitForText('SIZE')
                 ->assertSee('OPTIONAL')
                 // Modal header shows base price initially: OMR 1.500
                 ->assertSee('OMR 1.500')
                 // Select the Large modifier option (radio button)
-                ->click('input[wire\\:model\\.live="selectedModifiers.' . $group->id . '"][value="' . $option->id . '"]')
+                ->click('input[wire\\:model\\.live="selectedModifiers.'.$group->id.'"][value="'.$option->id.'"]')
                 // Price in modal should update to 1.500 + 1.000 = 2.500
                 ->waitForText('OMR 2.500')
                 ->assertSee('OMR 2.500');

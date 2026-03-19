@@ -22,7 +22,7 @@ class SuperAdminImpersonationTest extends DuskTestCase
 
             $browser->script('window.confirm = () => true;');
 
-            $browser->click('form[action*="impersonate/' . $admin->id . '"] button')
+            $browser->click('form[action*="impersonate/'.$admin->id.'"] button')
                 ->waitForLocation('/dashboard')
                 ->assertPathIs('/dashboard')
                 // Verify we see the impersonated shop's dashboard
@@ -45,7 +45,7 @@ class SuperAdminImpersonationTest extends DuskTestCase
 
             $browser->script('window.confirm = () => true;');
 
-            $browser->click('form[action*="impersonate/' . $admin->id . '"] button')
+            $browser->click('form[action*="impersonate/'.$admin->id.'"] button')
                 ->waitForLocation('/dashboard')
                 ->assertPathIs('/dashboard')
                 // Dashboard shows the impersonated shop's name in sidebar

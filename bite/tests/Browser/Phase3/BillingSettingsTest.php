@@ -13,7 +13,7 @@ class BillingSettingsTest extends DuskTestCase
     public function test_billing_page_shows_trial_status(): void
     {
         $shop = Shop::factory()->create([
-            'slug' => 'billing-test-' . uniqid(),
+            'slug' => 'billing-test-'.uniqid(),
             'trial_ends_at' => now()->addDays(10),
             'branding' => ['onboarding_completed' => true],
         ]);
@@ -36,7 +36,7 @@ class BillingSettingsTest extends DuskTestCase
     public function test_billing_page_shows_current_plan(): void
     {
         $shop = Shop::factory()->create([
-            'slug' => 'plan-test-' . uniqid(),
+            'slug' => 'plan-test-'.uniqid(),
             'branding' => ['onboarding_completed' => true],
         ]);
 

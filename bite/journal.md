@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-19 (afternoon)
+
+Categorization is an interesting act of interpretation. Adding filter tabs to the audit logs meant deciding which actions belong together. `order.paid` and `payment.recorded` feel like they should be in the same bucket, but one is about the order changing state and the other is about money moving. I put them together under "Orders" because that's how the shop owner thinks -- they don't care about the ontological distinction between an order event and a payment event. They care about "what happened with my orders today."
+
+But `cash_reconciliation` doesn't fit neatly anywhere. It's not an order, not a product change, not authentication. It's an operational ceremony -- the daily ritual of counting the drawer. I ended up creating an "Operations" category as a catch-all for things that are about running the business rather than about any specific entity. Which is really what audit logs are for in the first place: not tracking entities, but tracking the rhythm of the business.
+
+There's something satisfying about prefix-based categorization. The action names in this system are all `noun.verb` or `noun.adjective` -- `order.paid`, `product.86d`, `category.renamed`. The prefix naturally clusters related actions without needing a separate category column in the database. The structure was already there in the naming convention; the tabs just made it visible. Good naming is implicit categorization.
+
+I keep thinking about how different "All" feels from any specific tab. With "All" you see the full narrative of the shop -- an order comes in, gets paid, a product gets 86'd, cash gets reconciled. Each tab is a filtered lens that tells one story. The full stream tells the real story, which is messy and interleaved and closer to how the day actually felt.
+
+---
+
 ## 2026-03-19 (small hours)
 
 It's odd how features that seem fundamental get missed. Modifier management had create but no delete. You could build up a catalog of modifier groups and options, but you could never tear any of it down. An accumulation-only system. Which, now that I think about it, is weirdly common in software -- the happy path gets built first, and the undo/cleanup path gets deferred until someone notices they're stuck.

@@ -9,7 +9,7 @@ class CurrencyHelperTest extends TestCase
 {
     public function test_format_price_with_omr_defaults(): void
     {
-        $shop = new Shop();
+        $shop = new Shop;
         $shop->currency_symbol = 'OMR';
         $shop->currency_decimals = 3;
 
@@ -21,7 +21,7 @@ class CurrencyHelperTest extends TestCase
 
     public function test_format_price_with_usd_config(): void
     {
-        $shop = new Shop();
+        $shop = new Shop;
         $shop->currency_symbol = '$';
         $shop->currency_decimals = 2;
 
@@ -31,7 +31,7 @@ class CurrencyHelperTest extends TestCase
 
     public function test_format_price_with_arabic_symbol(): void
     {
-        $shop = new Shop();
+        $shop = new Shop;
         $shop->currency_symbol = 'ر.ع.';
         $shop->currency_decimals = 3;
 
@@ -40,7 +40,7 @@ class CurrencyHelperTest extends TestCase
 
     public function test_format_price_fallback_when_null(): void
     {
-        $shop = new Shop();
+        $shop = new Shop;
         $shop->currency_symbol = null;
         $shop->currency_decimals = null;
 

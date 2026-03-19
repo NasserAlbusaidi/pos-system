@@ -58,7 +58,7 @@ class ProductManagerTest extends DuskTestCase
                 // Product names are uppercased via CSS text-transform in the list
                 ->waitForText('OLD LATTE')
                 // Click the Edit button for this product
-                ->click('button[wire\\:click="editProduct(' . $product->id . ')"]')
+                ->click('button[wire\\:click="editProduct('.$product->id.')"]')
                 ->waitForText('Edit Product')
                 // Clear and fill new values
                 ->clear('input[wire\\:model="name_en"]')

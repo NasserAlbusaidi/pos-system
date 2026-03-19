@@ -15,7 +15,7 @@ class OnboardingWizardTest extends DuskTestCase
 
     public function test_new_admin_can_complete_onboarding(): void
     {
-        $slug = 'onboard-test-' . uniqid();
+        $slug = 'onboard-test-'.uniqid();
 
         $shop = Shop::factory()->create([
             'slug' => $slug,
@@ -32,7 +32,7 @@ class OnboardingWizardTest extends DuskTestCase
         $admin = User::factory()->create([
             'shop_id' => $shop->id,
             'role' => 'admin',
-            'email' => 'onboard-' . uniqid() . '@test.com',
+            'email' => 'onboard-'.uniqid().'@test.com',
             'password' => Hash::make('password'),
             'is_super_admin' => false,
         ]);
