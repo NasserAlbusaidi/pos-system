@@ -25,7 +25,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <p class="section-headline">Production Queue</p>
-                <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">{{ __('admin.back_of_house') }}</h2>
+                <h2 class="mt-1 text-2xl font-extrabold leading-none text-ink sm:text-3xl">{{ __('admin.back_of_house') }}</h2>
             </div>
             <div class="flex items-center gap-2">
                 <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
@@ -60,7 +60,7 @@
                 <header class="flex items-center justify-between border-b border-panel/15 bg-panel/10 px-4 py-3">
                     <div>
                         <p class="font-mono text-xs font-bold uppercase tracking-[0.16em] text-panel/70">{{ __('admin.order_number', ['id' => $order->id]) }}</p>
-                        <p class="mt-1 font-display text-3xl font-extrabold leading-none text-panel">{{ __('admin.kitchen_ticket') }}</p>
+                        <p class="mt-1 font-display text-2xl font-extrabold leading-none text-panel sm:text-3xl">{{ __('admin.kitchen_ticket') }}</p>
                     </div>
                     <div class="text-right">
                         <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-panel/65">
@@ -98,6 +98,19 @@
                         <div class="rounded-lg border border-panel/20 bg-panel/10 px-3 py-2 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-panel/65">
                             {{ __('admin.awaiting_next_stage') }}
                         </div>
+                    @endif
+
+                    @if(in_array(Auth::user()->role, ['admin', 'manager'], true))
+                        <button
+                            wire:click="cancelOrder({{ $order->id }})"
+                            wire:confirm="{{ __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
+                            wire:loading.attr="disabled"
+                            wire:target="cancelOrder({{ $order->id }})"
+                            class="w-full text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-panel/50 hover:text-alert transition-colors"
+                        >
+                            <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ __('admin.cancel_order') }}</span>
+                            <span wire:loading wire:target="cancelOrder({{ $order->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
+                        </button>
                     @endif
                 </div>
             </article>

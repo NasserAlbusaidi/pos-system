@@ -471,6 +471,11 @@ return [
     'restore_item' => 'Restore to menu',
     'mark_86' => 'Mark as 86\'d (sold out)',
 
+    // Order Cancellation
+    'cancel_order' => 'Cancel Order',
+    'cancel_order_confirm' => 'Cancel order #:id? This cannot be undone.',
+    'order_cancelled_message' => 'Order #:id cancelled.',
+
     // Smart Upsell
     'customers_also_order' => 'Customers also order',
 

@@ -5,10 +5,10 @@ namespace App\Livewire;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
 use App\Services\LoyaltyService;
@@ -48,6 +48,8 @@ class PosDashboard extends Component
     public $unpaidCount = 0;
 
     public $readyCount = 0;
+
+    public int $lastOrderCount = -1;
 
     public $managerPin = '';
 
@@ -137,23 +139,23 @@ class PosDashboard extends Component
     protected function loadStats(): void
     {
         $shopId = Auth::user()->shop_id;
+        $today = today()->toDateString();
 
-        $this->salesToday = (float) Order::where('shop_id', $shopId)
-            ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
-            ->whereDate('paid_at', today())
-            ->sum('total_amount');
+        $stats = DB::query()
+            ->from('orders')
+            ->where('shop_id', $shopId)
+            ->selectRaw(implode(', ', [
+                'COALESCE(SUM(CASE WHEN status IN (?, ?, ?, ?) AND DATE(paid_at) = ? THEN total_amount ELSE 0 END), 0) AS sales_today',
+                'COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) AS orders_today',
+                'COUNT(CASE WHEN status = ? THEN 1 END) AS unpaid_count',
+                'COUNT(CASE WHEN status = ? THEN 1 END) AS ready_count',
+            ]), ['paid', 'preparing', 'ready', 'completed', $today, $today, 'unpaid', 'ready'])
+            ->first();
 
-        $this->ordersToday = Order::where('shop_id', $shopId)
-            ->whereDate('created_at', today())
-            ->count();
-
-        $this->unpaidCount = Order::where('shop_id', $shopId)
-            ->where('status', 'unpaid')
-            ->count();
-
-        $this->readyCount = Order::where('shop_id', $shopId)
-            ->where('status', 'ready')
-            ->count();
+        $this->salesToday = (float) $stats->sales_today;
+        $this->ordersToday = (int) $stats->orders_today;
+        $this->unpaidCount = (int) $stats->unpaid_count;
+        $this->readyCount = (int) $stats->ready_count;
     }
 
     public function clearOldOrders()
@@ -201,6 +203,35 @@ class PosDashboard extends Component
 
         AuditLog::record('orders.system_reset', null, ['shop_id' => $shopId]);
         session()->flash('message', 'System reset complete.');
+    }
+
+    public function cancelOrder(int $orderId): void
+    {
+        if ($this->requiresManagerOverride()) {
+            $this->requestManagerOverride('cancelOrder', ['orderId' => $orderId]);
+
+            return;
+        }
+
+        $order = Order::where('shop_id', Auth::user()->shop_id)
+            ->whereIn('status', ['unpaid', 'paid', 'preparing', 'ready'])
+            ->findOrFail($orderId);
+
+        $previousStatus = $order->status;
+
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'cancelled']);
+        });
+
+        AuditLog::record('order.cancelled', $order, [
+            'cancelled_by' => Auth::user()->name,
+            'previous_status' => $previousStatus,
+        ]);
+
+        $this->dispatch('toast',
+            message: __('admin.order_cancelled_message', ['id' => $order->id]),
+            variant: 'success'
+        );
     }
 
     protected function completeReadyOrdersForCleanup(int $shopId, ?callable $scope = null): void
@@ -297,6 +328,12 @@ class PosDashboard extends Component
 
         if ($action === 'systemReset') {
             $this->systemReset();
+
+            return;
+        }
+
+        if ($action === 'cancelOrder') {
+            $this->cancelOrder($payload['orderId']);
 
             return;
         }
@@ -709,6 +746,12 @@ class PosDashboard extends Component
             ->with(['items.modifiers', 'payments'])
             ->latest()
             ->get();
+
+        $currentCount = $orders->count();
+        if ($this->lastOrderCount >= 0 && $currentCount > $this->lastOrderCount) {
+            $this->dispatch('pos-new-order');
+        }
+        $this->lastOrderCount = $currentCount;
 
         $menuCategories = Category::where('shop_id', $shopId)
             ->where('is_active', true)

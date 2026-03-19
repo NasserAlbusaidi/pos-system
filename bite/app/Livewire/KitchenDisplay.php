@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\AuditLog;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -39,6 +40,29 @@ class KitchenDisplay extends Component
 
         $order->update(['status' => $status]);
         AuditLog::record('order.status_updated', $order, ['status' => $status]);
+    }
+
+    public function cancelOrder(int $orderId): void
+    {
+        if (! in_array(Auth::user()->role, ['manager', 'admin'], true)) {
+            abort(403, 'Only managers can cancel orders from KDS.');
+        }
+
+        $order = Order::where('shop_id', Auth::user()->shop_id)
+            ->whereIn('status', ['paid', 'preparing'])
+            ->findOrFail($orderId);
+
+        $previousStatus = $order->status;
+
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'cancelled']);
+        });
+
+        AuditLog::record('order.cancelled', $order, [
+            'cancelled_by' => Auth::user()->name,
+            'previous_status' => $previousStatus,
+            'source' => 'kds',
+        ]);
     }
 
     #[Layout('layouts.admin')]

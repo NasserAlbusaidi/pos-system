@@ -1,4 +1,24 @@
-<div class="h-full space-y-6 fade-rise" wire:poll.5s>
+<div class="h-full space-y-6 fade-rise" wire:poll.5s
+     x-data="{
+         audioCtx: null,
+         playChime() {
+             if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+             const ctx = this.audioCtx;
+             const osc = ctx.createOscillator();
+             const gain = ctx.createGain();
+             osc.connect(gain);
+             gain.connect(ctx.destination);
+             osc.frequency.setValueAtTime(660, ctx.currentTime);
+             osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+             osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.2);
+             gain.gain.setValueAtTime(0.3, ctx.currentTime);
+             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+             osc.start(ctx.currentTime);
+             osc.stop(ctx.currentTime + 0.5);
+         }
+     }"
+     x-on:pos-new-order.window="playChime()"
+>
     <x-slot:header>{{ __('admin.pos_register') }}</x-slot:header>
 
     <div class="grid h-full gap-6 lg:grid-cols-4">
@@ -34,10 +54,10 @@
                             <div class="flex items-start gap-2">
                                 <button
                                     onclick="window.open('/receipt/{{ $order->id }}', '_blank', 'width=380,height=700')"
-                                    class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink transition-colors print-hidden"
+                                    class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink transition-colors print-hidden"
                                     title="{{ __('admin.print_receipt') }}"
                                 >
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                                 </button>
                             <div class="text-right">
                                 <span class="inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $statusTone }}">
@@ -154,6 +174,17 @@
                                         <span wire:loading wire:target="markAsDelivered({{ $order->id }})" class="loading-spinner"></span>
                                     </button>
                                 @endif
+
+                                <button
+                                    wire:click="cancelOrder({{ $order->id }})"
+                                    wire:confirm="{{ __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
+                                    wire:loading.attr="disabled"
+                                    wire:target="cancelOrder({{ $order->id }})"
+                                    class="w-full text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-alert hover:text-alert/80 transition-colors"
+                                >
+                                    <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ __('admin.cancel_order') }}</span>
+                                    <span wire:loading wire:target="cancelOrder({{ $order->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
+                                </button>
                             </div>
                         </div>
                     </article>
@@ -253,7 +284,7 @@
                                                         wire:click="toggle86({{ $product->id }})"
                                                         wire:loading.attr="disabled"
                                                         wire:target="toggle86({{ $product->id }})"
-                                                        class="flex-shrink-0 rounded-full border px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-all duration-200 {{ ! $product->is_available ? 'border-alert/50 bg-alert/15 text-alert hover:bg-alert/25' : 'border-transparent text-ink-soft/30 hover:border-line hover:text-ink-soft' }}"
+                                                        class="flex-shrink-0 rounded-full border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-200 {{ ! $product->is_available ? 'border-alert/50 bg-alert/15 text-alert hover:bg-alert/25' : 'border-transparent text-ink-soft/30 hover:border-line hover:text-ink-soft' }}"
                                                         title="{{ ! $product->is_available ? __('admin.restore_item') : __('admin.mark_86') }}"
                                                     >
                                                         <span wire:loading.remove wire:target="toggle86({{ $product->id }})">86</span>
@@ -280,7 +311,7 @@
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.split_order', ['id' => $splitOrder->id]) }}</h3>
                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.split_order_desc') }}</p>
                     </div>
-                    <button wire:click="closeSplit" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
+                    <button wire:click="closeSplit" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -303,7 +334,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.split_qty') }}</label>
-                                    <input type="number" min="0" max="{{ $item->quantity }}" wire:model.live="splitQuantities.{{ $item->id }}" class="field w-24 text-center font-mono text-xs font-bold uppercase">
+                                    <input type="number" min="0" max="{{ $item->quantity }}" wire:model.live="splitQuantities.{{ $item->id }}" class="field w-full text-center font-mono text-xs font-bold uppercase sm:w-24">
                                 </div>
                             </div>
                         </div>
@@ -326,7 +357,7 @@
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.payments_for_order', ['id' => $paymentOrder->id]) }}</h3>
                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.balance_due') }} <x-price :amount="$paymentOrder->balance_due" :shop="$shop" /></p>
                     </div>
-                    <button wire:click="closePayment" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
+                    <button wire:click="closePayment" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -344,14 +375,14 @@
                         <div class="rounded-lg border border-line bg-panel p-3">
                             <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.guests') }}</label>
                             <div class="mt-2 flex items-center gap-2">
-                                <input type="number" min="1" wire:model="splitGuestCount" class="field w-20 text-center font-mono text-xs font-bold uppercase">
+                                <input type="number" min="1" wire:model="splitGuestCount" class="field w-full text-center font-mono text-xs font-bold uppercase sm:w-20">
                                 <button wire:click="splitByGuests" class="btn-secondary !px-3 !py-2">{{ __('admin.split') }}</button>
                             </div>
                         </div>
                         <div class="rounded-lg border border-line bg-panel p-3">
                             <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.amount') }}</label>
                             <div class="mt-2 flex items-center gap-2">
-                                <input type="number" min="0" step="0.01" wire:model="splitAmount" class="field w-24 text-center font-mono text-xs font-bold uppercase">
+                                <input type="number" min="0" step="0.01" wire:model="splitAmount" class="field w-full text-center font-mono text-xs font-bold uppercase sm:w-24">
                                 <button wire:click="splitByAmount" class="btn-secondary !px-3 !py-2">{{ __('admin.split') }}</button>
                             </div>
                         </div>
