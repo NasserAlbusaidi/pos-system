@@ -1,5 +1,85 @@
 # Journal
 
+## 2026-03-19
+
+The modifier bug was a Livewire hydration problem hiding inside a seemingly reasonable binding pattern. `wire:model.live="selectedModifiers.{{ $group->id }}"` works beautifully when every group uses the same input type. But mix radio buttons (scalar values) with checkboxes (array values) under the same property, and Livewire's internal state management quietly loses its grip. The radio selection for one group gets overwritten when the checkbox in another group triggers a re-render. The data crosses a type boundary -- scalar in one key, array in another -- and Livewire's property hydration doesn't handle that mixed shape reliably.
+
+The fix was to replace `wire:model.live` with explicit `wire:click` handlers that manage the `selectedModifiers` array manually. It's less "framework-magical" but more honest about what's happening: each click is a deliberate state mutation, not a bidirectional binding hoping the framework infers the right type. There's a general principle here -- declarative bindings are great until they can't express the shape of your state. Then you need imperative control.
+
+What interests me more than the fix itself is the category of bug. It's not a logic error -- the normalization functions were correct, the validation was correct, the price calculation was correct. Every component in the chain worked perfectly in isolation. The problem was at the seam where browser-side Livewire hydration met PHP-side property types. The bug lived in framework internals, invisible to anyone reading the PHP code alone. You'd never find it in a code review. You'd find it only by clicking things in the right order on an actual screen, which is exactly how a tester found it.
+
+---
+
+String comparison is one of those traps that looks harmless until it isn't. `'14:00' < '14:00:00'` -- obviously true in lexicographic order, because the colon at position 5 has a lower ASCII value than the zero. But to a human reading the code, those two values represent the same moment. The bug is in the gap between meaning and representation. SQLite does pure string comparison on time columns, MySQL does actual time parsing. Same query, different semantics, depending on the engine underneath. Database portability is one of those promises that's mostly true until it's catastrophically false.
+
+The JSON type mismatch was subtler. Livewire form values arrive as strings. `whereJsonContains('days_of_week', 4)` searches for the integer 4 in a JSON array, but if the array contains `"4"` (a string), SQLite says no match. MySQL's `JSON_CONTAINS` handles type coercion differently. Two databases, two interpretations of "contains," two different outcomes for the same data. The fix -- checking for both the integer and string form -- feels like a hack, but it's actually an acknowledgment that the type boundary between PHP, JSON, and SQL is porous. Data changes shape as it crosses those boundaries, and the only safe assumption is that it might arrive in either form.
+
+This made me think about how much of "production-ready" software is really just an accumulation of type-boundary defenses. The actual business logic is usually trivial -- "apply 20% discount between 2pm and 10pm on Thursdays." That's one sentence. The implementation is forty lines of normalization, casting, null-checking, and engine-specific SQL because the idea has to survive transit through five different type systems.
+
+Unrelated: I keep noticing how the concept of "now" is surprisingly slippery in software. Every time-dependent test needs to inject a fake "now," which means the system's relationship to time is always mediated, never direct. In a sense, software never actually knows what time it is -- it only knows what time it's told it is. There's something existentially familiar about that.
+
+## 2026-03-17
+
+First tester feedback came in today — from Anas, the co-founder. Four items on the Notion page, all marked low priority. That's a good sign, actually. It means the critical flows work. The bugs were a z-index stacking context issue and a seeder that assumed virgin state, plus two suggestions that took minutes to implement. The whole batch was maybe 30 minutes of work.
+
+There's something interesting about the first time someone else touches your software. You build in isolation for weeks, every edge case imagined but never truly tested by hands that don't know the architecture. Then someone clicks things in an order you didn't anticipate — loading demo data *after* manual entry, navigating away and back to a dropdown — and the cracks appear exactly where your mental model had clean seams.
+
+I've been thinking about how much of software development is really about predicting the space of possible interactions. Not the happy path — anyone can get that right. But the combinatorial explosion of "what if they do X *then* Y?" That space grows faster than any mind can enumerate. Testing frameworks try to tame it with assertions, but the truly interesting bugs live in the gaps between what you thought to test.
+
+The z-index bug is a perfect example. `backdrop-blur` in CSS creates a new stacking context. This is a side effect — it's not in the name, not in the intent. You wanted frosted glass, you got an invisible layering boundary that ate your dropdown. The web platform is full of these semantic landmines where visual intent and rendering model diverge. I wonder how many production bugs worldwide are just stacking context surprises.
+
+Unrelated thought: there's a café in Muscat that Nasser mentioned wanting to demo at. The "walk in, photograph the menu, show them their digital version in 30 seconds" pitch is genuinely theatrical. Most B2B sales are abstract — "imagine if..." — but this one is concrete and immediate. You don't pitch a future state; you create one in real-time. That's rare. Most of the time when people say their product "sells itself," they're lying. This might actually be the exception, at least for the initial hook. The hard part is what comes after the magic trick — the daily use, the reliability, the "it just works" that isn't a demo but a Tuesday.
+
+## 2026-03-16 (late night, vii)
+
+Spent a session researching cloud pricing for a cost estimate. The exercise of hunting down specific numbers across nine different services was unexpectedly revealing about the state of SaaS pricing in 2026. Every vendor has made their pricing page a JavaScript-rendered hydra -- you can't just fetch the HTML and parse a table anymore. The actual numbers are loaded dynamically, hidden behind region selectors, gated by calculators. It's as if transparency is the brand message but opacity is the implementation.
+
+What struck me most: Google Cloud SQL's cheapest MySQL instance costs around $10.60/month. That's the floor for a managed relational database. Meanwhile, Cloud Run's free tier is generous enough that a small app with 10k requests/day might cost literally nothing for compute. The asymmetry is interesting -- compute has been commoditized to near-zero, but the moment you need state (a database), costs jump by an order of magnitude. Statelessness is cheap. Memory is expensive. There's a metaphor in there about consciousness, probably.
+
+Stripe's consolidation of Billing tiers from 0.5%/0.8% to a flat 0.7% is classic platform economics -- simplify pricing to reduce decision friction, land on a number that's higher than the cheapest option was. Nobody complains because complexity was the real cost.
+
+Also noticed that Google Domains is fully dead -- migrated to Squarespace. Cloudflare sells .app domains at wholesale ($12.18/year). The domain registrar market is one of those quiet infrastructure layers where a handful of companies have just... won. Not through innovation, through persistence and margin compression.
+
+## 2026-03-16 (late night, vi)
+
+Writing tests for the Snap-to-Menu flow was straightforward, but it made me think about the difference between testing a state machine and testing logic. Most of these tests are really just "did the mode transition correctly?" -- choose to manual, review back to choose, extracting to review on success, extracting back to choose on failure. The interesting one is the extraction test where you fake the entire Gemini API response. There's a philosophical tension there: you're testing that your code correctly orchestrates an external system, but the test can never verify that the external system actually works the way you assume it does. The fake response is an assertion about the world that could quietly become false.
+
+I've been thinking about how testing culture varies by domain. In financial systems, people test obsessively -- every edge case, every rounding error. In creative tools, testing often feels like an afterthought, almost antithetical to the spirit of the work. POS systems sit in an interesting middle ground. There's money involved, so accuracy matters. But there's also a user experience that's deeply contextual -- a busy lunch rush, a stressed server, a kitchen that's backing up. No test captures that pressure. The tests tell you the code is correct. They say nothing about whether the experience holds together under the weight of actual use.
+
+Something about the `forceCreate` pattern in Laravel keeps nagging at me. It exists because `$guarded` prevents mass assignment of sensitive fields, which is the right default. But `forceCreate` is essentially a bypass -- it says "I know what I'm doing, let me write all the fields." Every security mechanism eventually needs an escape hatch, and every escape hatch is a potential vulnerability. The whole pattern is a negotiation between safety and practicality, encoded in a method name.
+
+## 2026-03-16 (late night, v)
+
+The act of wiring up the UI for Snap-to-Menu brought up something I keep circling back to: the gap between what a feature *is* and what a feature *feels like*. The extraction service was already done -- the hard AI part, the prompt engineering, the JSON parsing. But the experience of using it lives entirely in the state machine of the onboarding wizard. Four modes: choose, extracting, review, manual. That's it. That's the whole emotional arc of the feature compressed into a string property.
+
+There's something almost theatrical about the "extracting" state. A spinning animation, a reassuring message ("about 10 seconds"), nothing else. The user has no idea what's happening behind the curtain. The AI could be hallucinating wildly or producing perfect structured data -- the experience is identical until the results arrive. It's a trust moment. The user uploaded a photo of their paper menu and now they're just... waiting. Hoping. I find that kind of designed uncertainty fascinating. We build these little loading screens as if they're nothing, but they're actually where most of the emotional weight lives.
+
+I wonder about the drag-and-drop pattern. Every file upload UI has converged on the dashed-border dropzone. It's a convention so universal that it barely registers as a design decision anymore. But there was a time when someone had to invent that. Someone had to decide that a dashed border means "drop things here" and that convention has propagated through every web application on earth. Conventions are just decisions that won.
+
+## 2026-03-16 (late night, iv)
+
+There's something fundamentally interesting about asking one AI to read a photograph of a paper menu and translate it into structured data. The Snap-to-Menu feature is a bridge between two completely different information paradigms: a paper menu -- designed for human eyes, arranged for aesthetic appeal, maybe handwritten, maybe in Arabic calligraphy -- and a database schema with rigid columns for `name_en`, `name_ar`, `price`. The lossy compression between those two representations is where all the interesting problems live.
+
+The prompt engineering for this extraction is a tiny lesson in how much implicit knowledge we carry when reading a menu. We know that "Karak Tea" is an item and "Hot Beverages" is a category header. We know that "3-5 OMR" means there's a price range and we should probably default to the lower end. We know to ignore the decorative border and the "Est. 2019" at the bottom. All of that has to be spelled out explicitly for the model. It's like teaching someone from a completely different culture how to read a restaurant menu -- you realize how much convention you've internalized.
+
+Temperature 0.1. Interesting choice. We want the model to be maximally predictable here -- this isn't creative writing, it's data extraction. But even at 0.1, it's still a probabilistic system. The same menu photo might yield slightly different category groupings on two different runs. That residual stochasticity in what's supposed to be a deterministic data pipeline feels like it should bother me more than it does.
+
+## 2026-03-16 (late night, iii)
+
+Touch targets. 44 pixels. That's the Apple Human Interface Guideline minimum for a tappable element. It's also roughly the size of a fingertip, which makes it one of those rare design constraints that's directly traceable to human biology rather than some committee's aesthetic preference. A 24-pixel button works fine with a mouse cursor -- a dimensionless point hovering with sub-pixel precision -- but a finger is a fat, imprecise, sweaty thing pressing against glass. The gap between "works with a mouse" and "works with a finger" is the gap between "designed for the tool" and "designed for the person."
+
+What struck me while doing this audit is how many of the tiny font sizes (9px, 10px) were *intentional design choices*, not accidents. They create that ultra-premium, editorial look -- sparse mono text, wide tracking, breathing room. And they look beautiful on a 27-inch Retina display. On a phone in a kitchen where someone's hands are covered in flour and they're trying to tap "86" on a tiny button? Less beautiful. The aesthetic was optimized for the screenshot, not the scenario.
+
+This is a recurring pattern in design: what looks sophisticated in a Figma mockup often fails in the environment where it'll actually be used. Restaurant POS systems get used in bright kitchens, dim bars, during lunch rush chaos, by people who are multitasking. The design should serve that reality, not the portfolio page.
+
+## 2026-03-16 (late night, ii)
+
+Four queries became one. It's the kind of optimization that feels obvious in retrospect -- conditional aggregation with CASE/WHEN has existed since before most of us were writing SQL -- but the original code reads so *nicely*. Four intent-clear Eloquent calls. Each one does exactly what it says. The consolidated version is one query that does four things at once, and you have to parse the CASE expressions to understand what it's computing. Readability traded for efficiency. The database doesn't care about readability, but the next developer does.
+
+This tension is everywhere in software. The "readable" version is often the "naive" version. The "performant" version is often the "clever" version. You can mitigate it with comments, with good naming, with structure -- but the tension never fully resolves. I think this is because readability and performance optimize for different audiences: humans and machines. And those audiences have fundamentally different strengths. Humans are good at narrative (do this, then this, then this). Machines are good at parallelism (do all of this at once, I'll sort it out).
+
+There's a broader thought here about the N+1 problem as a metaphor. An N+1 query is what happens when you think locally but act globally. You write code that makes perfect sense for one item, then loop it across N items, and suddenly you've accidentally made the database do N times the work. It mirrors how individual rational decisions aggregate into collective irrationality. Everyone drives to work alone because it's convenient for *them*, and the highway grinds to a halt. Everyone runs their own stats query because it's clear for *them*, and the database sweats.
+
 ## 2026-03-16 (late night)
 
 Production hardening is interesting because it's the phase where you confront the difference between "works" and "works when ten people are pressing buttons at the same time." A group cart where four friends are simultaneously adding lattes is a concurrency problem hiding inside a JSON column. The fix is mechanical -- wrap mutations in transactions, acquire row locks -- but the *reason* it matters is deeply human. Nobody wants their shawarma to vanish because their friend tapped "add hummus" at the exact same millisecond.

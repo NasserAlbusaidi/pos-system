@@ -452,6 +452,33 @@ class GuestMenu extends Component
         $this->showReviewModal = ! $this->showReviewModal;
     }
 
+    /**
+     * Explicitly manage modifier selection to avoid Livewire hydration issues
+     * with mixed scalar (radio) and array (checkbox) values in the same property.
+     */
+    public function selectModifier(int $groupId, int $optionId, bool $isMultiple = false): void
+    {
+        $optionIdStr = (string) $optionId;
+
+        if ($isMultiple) {
+            // Checkbox: toggle the option in an array
+            $current = $this->selectedModifiers[$groupId] ?? [];
+            if (! is_array($current)) {
+                $current = [$current];
+            }
+
+            if (in_array($optionIdStr, $current)) {
+                $current = array_values(array_filter($current, fn ($id) => $id !== $optionIdStr));
+            } else {
+                $current[] = $optionIdStr;
+            }
+            $this->selectedModifiers[$groupId] = $current;
+        } else {
+            // Radio: replace the scalar value for this group
+            $this->selectedModifiers[$groupId] = $optionIdStr;
+        }
+    }
+
     public function addToCart($productId)
     {
         if (! $this->ensureGroupCartValid()) {

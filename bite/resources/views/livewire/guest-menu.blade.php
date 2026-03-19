@@ -258,9 +258,9 @@
                                                 <div class="flex items-start gap-3">
                                                     @if($pid === $participantId)
                                                         <div class="flex items-center gap-1">
-                                                            <button wire:click="decrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
-                                                            <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
-                                                            <button wire:click="incrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+                                                            <button wire:click="decrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
+                                                            <span class="inline-flex h-9 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
+                                                            <button wire:click="incrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
                                                         </div>
                                                     @else
                                                         <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $item['quantity'] }}x</span>
@@ -275,7 +275,7 @@
                                                 <div class="flex items-start gap-2">
                                                     <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="($item['price'] ?? 0) * ($item['quantity'] ?? 1)" :shop="$shop" /></p>
                                                     @if($pid === $participantId)
-                                                        <button wire:click="removeItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
+                                                        <button wire:click="removeItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
                                                             <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                                         </button>
                                                     @endif
@@ -292,9 +292,9 @@
                                     <div class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4">
                                         <div class="flex items-start gap-3">
                                             <div class="flex items-center gap-1">
-                                                <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
-                                                <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
-                                                <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
+                                                <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
+                                                <span class="inline-flex h-9 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
+                                                <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
@@ -305,7 +305,7 @@
                                         </div>
                                         <div class="flex items-start gap-2">
                                             <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
-                                            <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
+                                            <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
                                                 <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
                                         </div>
@@ -414,7 +414,7 @@
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('guest.share_group_order') }}</h3>
                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.share_group_desc') }}</p>
                     </div>
-                    <button wire:click="toggleGroupShare" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
+                    <button wire:click="toggleGroupShare" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -482,7 +482,7 @@
                         <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->translated('name') }}</h3>
                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.price') }}: <x-price :amount="$this->customizingProductPrice" :shop="$shop" /></p>
                     </div>
-                    <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2 text-ink-soft hover:border-ink hover:text-ink">
+                    <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -505,14 +505,20 @@
 
                             <div class="space-y-2">
                                 @foreach($group->options as $option)
+                                    @php
+                                        $isChecked = $group->max_selection == 1
+                                            ? (($selectedModifiers[$group->id] ?? null) == $option->id)
+                                            : in_array((string) $option->id, (array) ($selectedModifiers[$group->id] ?? []));
+                                    @endphp
                                     <label class="flex cursor-pointer items-center justify-between rounded-lg border border-line bg-panel px-3 py-3 transition-colors duration-200 hover:border-ink-soft has-[:checked]:border-crema has-[:checked]:bg-crema/5">
                                         <span class="flex items-center gap-3">
                                             <input
                                                 type="{{ $group->max_selection == 1 ? 'radio' : 'checkbox' }}"
                                                 value="{{ $option->id }}"
-                                                wire:model.live="selectedModifiers.{{ $group->id }}"
+                                                wire:click="selectModifier({{ $group->id }}, {{ $option->id }}, {{ $group->max_selection > 1 ? 'true' : 'false' }})"
                                                 name="group_{{ $group->id }}"
                                                 class="h-4 w-4 cursor-pointer border-line text-crema focus:ring-0"
+                                                @checked($isChecked)
                                             >
                                             <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->translated('name') }}</span>
                                         </span>
