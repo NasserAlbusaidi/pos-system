@@ -1,6 +1,25 @@
 <div class="space-y-6 fade-rise">
     <x-slot:header>{{ __('admin.audit_logs') }}</x-slot:header>
 
+    {{-- Category Tabs --}}
+    <div class="flex flex-wrap items-center gap-3">
+        <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.audit_category') }}</span>
+        @foreach(['all' => __('admin.audit_tab_all'), 'orders' => __('admin.audit_tab_orders'), 'products' => __('admin.audit_tab_products'), 'operations' => __('admin.audit_tab_operations'), 'auth' => __('admin.audit_tab_auth')] as $key => $label)
+            <button
+                wire:click="$set('logFilter', '{{ $key }}')"
+                @class([
+                    'tag cursor-pointer transition-colors',
+                    '!border-crema !bg-crema !text-panel' => $logFilter === $key,
+                ])
+            >
+                {{ $label }}
+                @if(isset($filterCounts[$key]) && $filterCounts[$key] > 0)
+                    <span class="ml-1 opacity-70">{{ $filterCounts[$key] }}</span>
+                @endif
+            </button>
+        @endforeach
+    </div>
+
     <div class="surface-card p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
             type="text"

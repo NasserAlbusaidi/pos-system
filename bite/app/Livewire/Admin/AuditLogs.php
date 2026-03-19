@@ -14,24 +14,67 @@ class AuditLogs extends Component
 
     public $userFilter = '';
 
+    public $logFilter = 'all';
+
+    private const FILTER_PREFIXES = [
+        'orders' => ['order.', 'orders.', 'payment.'],
+        'products' => ['product.', 'category.', 'modifier.'],
+        'operations' => ['cash_reconciliation', 'loyalty.'],
+        'auth' => ['login.', 'pin.', 'impersonation.'],
+    ];
+
     #[Layout('layouts.admin')]
     public function render()
     {
         $shopId = Auth::user()->shop_id;
 
-        $logs = AuditLog::where('shop_id', $shopId)
-            ->when($this->search, fn ($query) => $query->where('action', 'like', '%'.$this->search.'%'))
-            ->when($this->userFilter, fn ($query) => $query->where('user_id', $this->userFilter))
-            ->with('user')
+        $query = AuditLog::where('shop_id', $shopId)
+            ->when($this->search, fn ($q) => $q->where('action', 'like', '%'.$this->search.'%'))
+            ->when($this->userFilter, fn ($q) => $q->where('user_id', $this->userFilter));
+
+        if ($this->logFilter !== 'all' && isset(self::FILTER_PREFIXES[$this->logFilter])) {
+            $prefixes = self::FILTER_PREFIXES[$this->logFilter];
+            $query->where(function ($q) use ($prefixes) {
+                foreach ($prefixes as $prefix) {
+                    $q->orWhere('action', 'like', $prefix.'%');
+                }
+            });
+        }
+
+        $logs = $query->with('user')
             ->latest()
             ->limit(200)
             ->get();
 
         $users = User::where('shop_id', $shopId)->orderBy('name')->get();
 
+        $filterCounts = $this->getFilterCounts($shopId);
+
         return view('livewire.admin.audit-logs', [
             'logs' => $logs,
             'users' => $users,
+            'filterCounts' => $filterCounts,
         ]);
+    }
+
+    private function getFilterCounts(int $shopId): array
+    {
+        $allLogs = AuditLog::where('shop_id', $shopId)->pluck('action');
+
+        $counts = ['all' => $allLogs->count()];
+
+        foreach (self::FILTER_PREFIXES as $key => $prefixes) {
+            $counts[$key] = $allLogs->filter(function ($action) use ($prefixes) {
+                foreach ($prefixes as $prefix) {
+                    if (str_starts_with($action, $prefix)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })->count();
+        }
+
+        return $counts;
     }
 }

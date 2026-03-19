@@ -97,6 +97,12 @@ return [
     'audit_meta' => 'Meta',
     'audit_system' => 'System',
     'audit_no_events' => 'No audit events yet.',
+    'audit_category' => 'Category',
+    'audit_tab_all' => 'All',
+    'audit_tab_orders' => 'Orders',
+    'audit_tab_products' => 'Products',
+    'audit_tab_operations' => 'Operations',
+    'audit_tab_auth' => 'Auth',
 
     // Shift Report
     'shift_end_of_day' => 'End of Day',

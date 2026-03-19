@@ -97,6 +97,12 @@ return [
     'audit_meta' => 'البيانات',
     'audit_system' => 'النظام',
     'audit_no_events' => 'لا توجد أحداث مراجعة بعد.',
+    'audit_category' => 'الفئة',
+    'audit_tab_all' => 'الكل',
+    'audit_tab_orders' => 'الطلبات',
+    'audit_tab_products' => 'المنتجات',
+    'audit_tab_operations' => 'العمليات',
+    'audit_tab_auth' => 'المصادقة',
 
     // Shift Report
     'shift_end_of_day' => 'نهاية اليوم',
