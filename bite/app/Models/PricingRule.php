@@ -56,11 +56,18 @@ class PricingRule extends Model
 
         return $query
             ->where('is_active', true)
-            ->where('start_time', '<=', $currentTime)
-            ->where('end_time', '>=', $currentTime)
+            ->whereRaw(
+                "CASE WHEN LENGTH(start_time) = 5 THEN start_time || ':00' ELSE start_time END <= ?",
+                [$currentTime]
+            )
+            ->whereRaw(
+                "CASE WHEN LENGTH(end_time) = 5 THEN end_time || ':00' ELSE end_time END >= ?",
+                [$currentTime]
+            )
             ->where(function (Builder $q) use ($currentDay) {
                 $q->whereNull('days_of_week')
-                    ->orWhereJsonContains('days_of_week', $currentDay);
+                    ->orWhereJsonContains('days_of_week', $currentDay)
+                    ->orWhereJsonContains('days_of_week', (string) $currentDay);
             });
     }
 
@@ -77,12 +84,19 @@ class PricingRule extends Model
             return false;
         }
 
-        if ($currentTime < $this->start_time || $currentTime > $this->end_time) {
+        $start = strlen($this->start_time) === 5 ? $this->start_time.':00' : $this->start_time;
+        $end = strlen($this->end_time) === 5 ? $this->end_time.':00' : $this->end_time;
+
+        if ($currentTime < $start || $currentTime > $end) {
             return false;
         }
 
-        if ($this->days_of_week !== null && ! in_array($currentDay, $this->days_of_week, true)) {
-            return false;
+        if ($this->days_of_week !== null) {
+            $days = array_map('intval', $this->days_of_week);
+
+            if (! in_array($currentDay, $days, true)) {
+                return false;
+            }
         }
 
         return true;
