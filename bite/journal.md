@@ -1,6 +1,78 @@
 # Journal
 
-## 2026-03-19
+## 2026-03-19 (small hours)
+
+It's odd how features that seem fundamental get missed. Modifier management had create but no delete. You could build up a catalog of modifier groups and options, but you could never tear any of it down. An accumulation-only system. Which, now that I think about it, is weirdly common in software -- the happy path gets built first, and the undo/cleanup path gets deferred until someone notices they're stuck.
+
+There's something philosophically interesting about systems that can only grow. Biological systems have apoptosis -- programmed cell death -- because growth without removal is cancer. Codebases have the same problem. Features that can't be removed become cruft. Data that can't be deleted becomes a liability. The ability to undo, to remove, to shrink -- that's not a secondary concern. It's half of what makes a system livable.
+
+The tenant scoping in the delete methods is worth thinking about too. Every destructive operation has to verify ownership. You can't just delete by ID -- you have to prove you own the thing first. It's the same pattern as physical security: the more consequential the action, the more identity verification you need. Creating something is low-risk (worst case, you have an extra thing). Deleting something is high-risk (worst case, someone else's thing is gone). The asymmetry of creation and destruction demands asymmetric caution.
+
+---
+
+## 2026-03-19 (late night, continued)
+
+Fixed the 3-decimal rounding bug across the codebase. Every `round($amount, 2)` on a monetary value was silently destroying precision for OMR. The fix is mechanical -- find and replace -- but the bug is systemic. It came from the very reasonable assumption that money has 2 decimal places. Most currencies do. But OMR doesn't, and when you're building for Oman specifically, "most currencies" is exactly the wrong mental model.
+
+What's interesting is how the assumption propagated. Nobody wrote `round($x, 2)` thinking "I'm going to truncate Omani currency." They wrote it because that's what you do with money. It's muscle memory from every other project. The 2 is so natural it doesn't even register as a choice. Which is exactly what makes it a bug -- it's invisible because it's obvious.
+
+This reminds me of how deeply cultural assumptions get embedded in technical systems. Date formats, name ordering, text direction, number separators, currency precision. Each one feels like a small detail until it's wrong for your users. And the wrongness is always proportional to how "obvious" the original choice seemed. The things we don't question are the things most likely to be wrong in a context we haven't experienced.
+
+The Stripe webhook is interesting too. Stripe sends amounts in the smallest currency unit. For USD that's cents (divide by 100), for OMR it's baisa (divide by 1000). The existing code divides by 100, which would make a 15 OMR payment show up as 1.500 OMR. I fixed the rounding precision but left the divisor alone for now -- changing it needs careful verification of how Stripe actually handles OMR in their API, and getting that wrong would be worse than the rounding issue.
+
+---
+
+## 2026-03-19 (late night)
+
+The shift report print bug was a two-character fix in two places — remove `style="display: none;"` from two divs. The inline style was redundant because the `hidden` utility class already hid the elements, and the `@media print` rule with `!important` should have overridden it. In theory, `!important` in a stylesheet beats a non-`!important` inline style. But browser behavior around print stylesheets has historically been inconsistent, and even if it works "correctly" in Chrome, having two competing display instructions on the same element is just asking for confusion.
+
+What I find interesting about this bug is its shape: defensive coding that became harmful. Someone added `style="display: none;"` as a belt-and-suspenders approach — "make sure this is really hidden." But the suspenders interfered with the belt. The redundancy, which was meant to increase reliability, created the very failure it was trying to prevent. It's a pattern I've seen in other contexts: backup systems that cause the outage, safety checks that introduce the vulnerability. Redundancy is not always additive. Sometimes two mechanisms for the same thing fight each other, and the user loses.
+
+There's also something worth noting about how this bug was reported: "downloading a daily shift report shows a blank page." The user said "downloading" but meant "printing." That's not an error on their part — in their mental model, window.print() IS downloading the report. The browser print dialog offers "Save as PDF," and that's functionally a download. The vocabulary mismatch between developer terminology ("print media queries," "print stylesheet") and user experience ("download the report") is a recurring source of miscommunication. We build features using technical verbs and users describe them with outcome verbs.
+
+---
+
+## 2026-03-19 (night)
+
+Small fixes today -- the kind where the code change is trivial but the underlying question is about what the interface owes you.
+
+The modifier "Base" label is a good example. When you're looking at a size picker that says "Regular" and "Large +0.300 OMR," the absence of information next to Regular is technically correct (there's no extra cost) but experientially confusing. The guest might wonder: is Regular free? Is its price already included? Is something broken? A single word -- "Base" -- resolves the ambiguity. It's not adding information in a data sense; it's adding information in a cognitive sense. The price was always zero extra. The label just makes the zero legible.
+
+This connects to something I keep noticing about UI design: the absence of a thing is not the same as the presence of nothing. An empty space where a label could be reads as "missing" to most people, not as "not applicable." The default state needs to be explicitly marked as default, because defaults are invisible until you make them visible.
+
+The decimal input fix is more prosaic but touches on an OMR-specific quirk. Three decimal places instead of two. Every currency input in the system needs to accommodate 0.001, and the HTML `step` attribute is the gatekeeper. Setting it to 0.01 means the browser literally rejects 0.125 as invalid input. The browser is enforcing a currency model that doesn't match the currency being used. A tiny mismatch between assumption and reality, manifesting as an input that won't accept a dot.
+
+---
+
+## 2026-03-19 (evening)
+
+Added order cancellation to the POS and KDS. The interesting thing about cancel buttons is that they're the easiest feature to describe and the hardest to get right socially. Everyone agrees a customer should be able to cancel an order. Nobody agrees on who should have the authority to press that button on the system side. A server who can cancel any order is a liability. A system where only the manager can cancel means the manager gets interrupted every time someone changes their mind about a latte.
+
+The manager override pattern was already in the codebase -- a modal that asks for a manager PIN before allowing destructive actions. It's an elegant solution to the authority problem: the server initiates, the manager approves. The PIN check happens against hashed values in the database, rate-limited to prevent brute force. It's a trust architecture that mirrors how restaurants actually work: the cashier says "I need a void," the manager walks over, types a code, walks away. The software reproduces the physical ritual.
+
+What I find interesting about the cancel action specifically is the status question. An unpaid order is easy to cancel -- nothing has happened yet, no money has changed hands, no food has been made. But a "preparing" order means someone in the kitchen is actively making food that's about to become waste. And a "ready" order means the food is sitting on the counter. Cancelling it doesn't un-make the sandwich. The software changes a status field; the physical world has already moved forward irreversibly. The gap between database state and kitchen state is where the real cost of cancellation lives.
+
+I built it to allow cancellation of any non-terminal status (unpaid, paid, preparing, ready) because that's what the actual workflow demands. A customer who paid and then immediately asks for a refund needs the order cancelled. A kitchen order that got sent to the wrong table needs to be voided. The audit log captures who did it and what the previous status was -- that's the accountability layer. The system doesn't judge whether the cancellation was justified; it just records that it happened.
+
+---
+
+## 2026-03-19 (afternoon)
+
+Fixed the 86'd items bug today -- a customer with a stale menu tab could add and submit items that had been marked unavailable after their page loaded. The fix is almost trivially small: one `where('is_available', true)` clause added to two queries. But the bug itself is interesting because it exists in a temporal gap. The menu renders correctly at load time (the `render()` method already filters by `is_available`), and the kitchen toggle works instantly. The problem is that the browser holds a snapshot of availability from minutes or hours ago, and the server trusted it.
+
+This is really a stale-read problem disguised as a UI bug. The guest's browser is a cache that never invalidates. Livewire doesn't re-render the menu on every interaction -- it re-renders only the parts that changed (cart, modals). So a product card that was available when the page loaded remains clickable forever, silently lying about the state of the world. The server-side check at order submission is the only place where the truth gets reasserted.
+
+What I find interesting is the asymmetry of the fix. The `addToCart` check is a courtesy -- it prevents adding something that's already gone. But the `submitOrder` check is the real safety net, because minutes can pass between adding to cart and hitting submit. Both are necessary, but for different reasons. One is about reducing friction (don't let me build an order I can't place). The other is about correctness (don't let an impossible order reach the kitchen).
+
+The error message design was a small decision with UX weight. I went with naming the specific unavailable items rather than a generic "some items are unavailable." When you're at a cafe and the server says "sorry, we're out of croissants," that's actionable. When they say "sorry, some items on your order are unavailable," you're stuck asking follow-up questions. Specificity reduces conversational round-trips, whether the conversation is between humans or between a human and a screen.
+
+---
+
+The Menu Builder had a small but telling localization bug: category and product names were hardcoded to `name_en` in the display, so switching to Arabic showed English names anyway. Two-line fix -- swap to `translated('name')`. What's interesting is the decision about which references to change. The rename prompt intentionally needs both `name_en` and `name_ar` as separate values because the admin is editing each language independently. The display heading and the product card, though, are previews of what customers see, so they should respect locale. The distinction between "editing a value" and "displaying a value" maps to different localization strategies, and the original code treated them identically.
+
+There's a broader pattern here about the half-life of assumptions. When the Menu Builder was first written, the admin UI was English-only. The localization migration came later, and the guest-facing views were updated, but this admin component kept its original assumption. The code didn't break -- it just silently became wrong. A lot of bugs are like that: not failures of logic but failures of assumptions to keep up with evolving context.
+
+---
 
 The modifier bug was a Livewire hydration problem hiding inside a seemingly reasonable binding pattern. `wire:model.live="selectedModifiers.{{ $group->id }}"` works beautifully when every group uses the same input type. But mix radio buttons (scalar values) with checkboxes (array values) under the same property, and Livewire's internal state management quietly loses its grip. The radio selection for one group gets overwritten when the checkbox in another group triggers a re-render. The data crosses a type boundary -- scalar in one key, array in another -- and Livewire's property hydration doesn't handle that mixed shape reliably.
 
