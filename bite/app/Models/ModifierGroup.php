@@ -27,4 +27,9 @@ class ModifierGroup extends Model
     {
         return $this->hasMany(ModifierOption::class);
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_modifier_group');
+    }
 }

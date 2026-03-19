@@ -85,6 +85,32 @@ class ModifierManager extends Component
         $this->reset(['name_en', 'name_ar', 'min_selection', 'max_selection']);
     }
 
+    public function deleteGroup(int $groupId): void
+    {
+        $group = ModifierGroup::where('shop_id', Auth::user()->shop_id)
+            ->findOrFail($groupId);
+
+        // Detach from all products first
+        $group->products()->detach();
+
+        // Delete options then group
+        $group->options()->delete();
+        $group->delete();
+
+        if ($this->selectedGroupId == $groupId) {
+            $this->selectedGroupId = null;
+        }
+    }
+
+    public function deleteOption(int $optionId): void
+    {
+        $option = ModifierOption::whereHas('group', function ($q) {
+            $q->where('shop_id', Auth::user()->shop_id);
+        })->findOrFail($optionId);
+
+        $option->delete();
+    }
+
     #[Layout('layouts.admin')]
     public function render()
     {

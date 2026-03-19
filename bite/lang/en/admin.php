@@ -298,6 +298,9 @@ return [
     'modifier_rule' => 'Rule: Select :min-:max',
     'modifier_options_count' => ':count Options',
     'modifier_selected' => 'SELECTED',
+    'modifier_delete_group_confirm' => 'Delete this modifier group and all its options?',
+    'modifier_delete_option_confirm' => 'Delete this option?',
+    'delete' => 'Delete',
 
     // Onboarding Wizard
     'onboarding_step' => 'Step :step of :total',

@@ -96,6 +96,14 @@
                                     @if($selectedGroupId == $group->id)
                                         <span class="inline-flex items-center rounded-full border border-crema/40 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-crema">{{ __('admin.modifier_selected') }}</span>
                                     @endif
+                                    <button
+                                        wire:click.stop="deleteGroup({{ $group->id }})"
+                                        wire:confirm="{{ __('admin.modifier_delete_group_confirm') }}"
+                                        class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-alert hover:text-alert/80 transition-colors"
+                                        wire:loading.attr="disabled"
+                                    >
+                                        {{ __('admin.delete') }}
+                                    </button>
                                 </div>
                             </div>
 
@@ -104,7 +112,14 @@
                                     @foreach($group->options as $option)
                                         <div class="rounded-lg border border-line bg-panel px-3 py-2.5 flex justify-between items-center">
                                             <span class="text-[11px] font-semibold uppercase tracking-tight text-ink truncate">{{ $option->name_en }}</span>
-                                            <span class="font-mono text-[10px] font-semibold text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                            <span class="flex items-center">
+                                                <span class="font-mono text-[10px] font-semibold text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                                <button
+                                                    wire:click.stop="deleteOption({{ $option->id }})"
+                                                    wire:confirm="{{ __('admin.modifier_delete_option_confirm') }}"
+                                                    class="ml-2 font-mono text-[9px] font-semibold text-ink-soft hover:text-alert transition-colors"
+                                                >&times;</button>
+                                            </span>
                                         </div>
                                     @endforeach
                                 </div>
