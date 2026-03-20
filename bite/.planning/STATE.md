@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-demo-01 — Sourdough shop seeded with 33-item bilingual menu
-last_updated: "2026-03-20T19:38:31.604Z"
+stopped_at: "Checkpoint: Task 2 human-verify — SourdoughDemoTest 4 smoke tests pass, awaiting browser verification of order flow"
+last_updated: "2026-03-20T19:42:28.436Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -74,6 +74,7 @@ Recent decisions affecting current work:
 - [Phase 02-demo]: Explicit product->shop_id = shop->id assignment instead of forceCreate for guarded tenant field
 - [Phase 02-demo]: No image_url on Sourdough products — Phase 1 placeholder icons satisfy DEMO-02 photo requirement for pitch
 - [Phase 02-demo]: Sourdough shop status=active, trial_ends_at 10 years — demo shop never expires
+- [Phase 02-demo]: Test data created inline in setUp() not via SourdoughMenuSeeder — seeder targets MySQL, tests use SQLite in-memory
 
 ### Pending Todos
 
@@ -85,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T19:38:31.602Z
-Stopped at: Completed 02-demo-01 — Sourdough shop seeded with 33-item bilingual menu
+Last session: 2026-03-20T19:42:24.622Z
+Stopped at: Checkpoint: Task 2 human-verify — SourdoughDemoTest 4 smoke tests pass, awaiting browser verification of order flow
 Resume file: None
