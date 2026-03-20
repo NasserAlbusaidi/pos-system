@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-polish-02-PLAN.md
-last_updated: "2026-03-20T18:38:33.993Z"
+stopped_at: "Checkpoint reached: 01-03 Task 2 human-verify (visual verification of guest menu)"
+last_updated: "2026-03-20T18:42:17.233Z"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -48,6 +48,7 @@ Plan: 3 of 3
 *Updated after each plan completion*
 | Phase 01-polish P01 | 2 | 2 tasks | 3 files |
 | Phase 01-polish P02 | 8 | 1 tasks | 1 files |
+| Phase 01-polish P03 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,7 @@ Recent decisions affecting current work:
 - [Phase 01-polish]: Playfair Display Bold only (weight 700) self-hosted as WOFF2 — single weight per UI-SPEC, fonts.gstatic.com direct download
 - [Phase 01-polish]: Image shimmer uses absolute-positioned .skeleton div inside .menu-product-image-area controlled by Alpine loaded/broken state — no x-collapse plugin needed
 - [Phase 01-polish]: Accordion state scoped to each category section grid x-data wrapper — simpler than global store, no cross-category interference
+- [Phase 01-polish]: Use Livewire::test() for component-level assertions (image src), $this->get() for layout-level assertions (CSS variable tokens)
 
 ### Pending Todos
 
@@ -76,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:38:33.991Z
-Stopped at: Completed 01-polish-02-PLAN.md
+Last session: 2026-03-20T18:42:17.231Z
+Stopped at: Checkpoint reached: 01-03 Task 2 human-verify (visual verification of guest menu)
 Resume file: None

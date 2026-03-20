@@ -26,7 +26,7 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
 Plans:
 - [x] 01-01-PLAN.md — Branding cascade + Playfair Display font + menu CSS classes
 - [x] 01-02-PLAN.md — Guest menu Blade template rewrite (compact card grid)
-- [ ] 01-03-PLAN.md — Feature tests (image URL + branding) + visual verification
+- [x] 01-03-PLAN.md — Feature tests (image URL + branding) + visual verification
 
 ### Phase 2: Demo
 **Goal**: Sourdough Oman's full menu exists in Bite-POS, branded correctly, and the complete order flow works
