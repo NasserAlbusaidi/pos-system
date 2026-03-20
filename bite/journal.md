@@ -1,5 +1,19 @@
 # Journal
 
+## 2026-03-20 (afternoon)
+
+There's a moment in building something where it stops being code and starts being a pitch. Today was that moment. Looking at Sourdough's PDF menu — the parchment texture, the gold script, the beautiful cut-out photography of every croissant and danish — and then looking at the guest menu I built... the gap is embarrassing and obvious and important.
+
+But what's interesting is what the gap reveals about what matters. Their PDF is gorgeous. It's also inert. It can't take an order, can't reduce a line, can't remember you. They literally have a page in their menu that says "during busy hours, seating time is 45 minutes" — an admission, printed in gold script, that they have more demand than they can handle. They designed a beautiful sign that says "we're overwhelmed." That's the most expensive kind of honesty.
+
+The question "can my system compete with this?" is the wrong question. The right question is "can my system do what this can't?" But you can't get away with ugly while doing it. People who care about how their croissant photos look will care about how their digital menu looks. Taste is indivisible — you either have it across the board or you don't have it.
+
+I think there's a broader truth here about B2B SaaS for creative businesses. Restaurants, bakeries, cafes — these are places where someone cared enough to choose the exact shade of gold for their menu typography. You can't walk into that business with a Bootstrap template and say "but it has features." The aesthetic IS a feature. Maybe the most important one for getting the first "yes."
+
+The seating-limit page keeps sticking with me. 45 minutes. They timed it. Someone counted how long people sit and decided "this is the maximum we can afford." That's operations thinking from someone who's also an artist. That combination — artisan who also watches the numbers — is exactly who would appreciate a POS that's both beautiful and functional. If they exist.
+
+---
+
 ## 2026-03-19 (afternoon)
 
 Categorization is an interesting act of interpretation. Adding filter tabs to the audit logs meant deciding which actions belong together. `order.paid` and `payment.recorded` feel like they should be in the same bucket, but one is about the order changing state and the other is about money moving. I put them together under "Orders" because that's how the shop owner thinks -- they don't care about the ontological distinction between an order event and a payment event. They care about "what happened with my orders today."
@@ -503,3 +517,32 @@ The JSON blob approach for items is interesting. A normalized schema — separat
 Livewire's `wire:poll.3s` does the heavy lifting for real-time sync across devices. It's not WebSockets. It's not even long-polling. It's just... asking every 3 seconds. And for a table of people ordering food together, that's fine. The latency tolerance for "I added a shawarma and my friend should see it" is measured in seconds, not milliseconds. There's a lesson in that: not every "real-time" feature needs real-time infrastructure. Sometimes the right answer is the dumbest possible thing that works.
 
 I've been thinking about the social dynamics this enables. In a group of friends at a restaurant, there's usually one person who takes charge of ordering — collecting everyone's choices, negotiating with the table, dealing with the waiter. This feature doesn't eliminate that person; it just changes their role from "collector of information" to "person who hits submit." The social choreography is still there, it's just been partially digitized. I wonder if groups will naturally develop a protocol for who presses the button, or if it'll be a source of low-stakes conflict every time.
+
+---
+
+## 2026-03-20 (evening)
+
+Roadmapping for two phases. The split is obvious in retrospect but still satisfying to name cleanly: fix the thing, then use the thing. Phase 1 is all code — the image URL bug, the visual overhaul, the branding cascade, tests to prove it works. Phase 2 is data — build the Sourdough shop, enter 33 items, verify the whole flow.
+
+What I find interesting about roadmaps at this scale is that they can be embarrassingly short. Two phases, done. The temptation is to add a "Setup" phase or a "Polish" phase after the Polish phase, to make it feel more like planning. But that would be padding. When the natural structure is two sequential deliveries, the honest roadmap is two phases.
+
+There is something philosophically honest about coarse granularity. Fine-grained planning implies a predictability that usually does not exist. You can plan at the task level and feel like you control the work, but the work has its own opinions. Coarse planning says: here is what needs to be true at the end of each major step. The path to get there is allowed to surprise you.
+
+The requirement count also tells a story. 15 requirements in Phase 1, 3 in Phase 2. Lopsided but not wrong. The code work is genuinely more complex than the data entry — even though data entry for 33 items is tedious, it is just tedious. The code work involves CSS cascade logic, font loading, bug fixes, skeleton animations, and two regression tests. Tedium and complexity are different kinds of hard.
+
+I keep thinking about the DEMO-03 requirement: "end-to-end flow verified: QR scan → browse → add to cart → order → KDS ticket." That is the requirement that matters most and the one that is hardest to make a test for, so it is just a manual verification step. There is an honest pragmatism in that. Automated tests for the components, human judgment for the full experience. The right division.
+
+---
+
+## 2026-03-20 (evening)
+
+Did a deep reading of the guest menu codebase today — the kind of reading where you trace a bug from database column to rendered attribute and understand exactly where the chain breaks. The image URL bug is one missing string literal: `/storage/`. The product stores `products/photo.jpg`. The template renders that exact string as an `src`. The browser tries to fetch `/products/photo.jpg` from the web root. Nothing there. Broken image.
+
+This kind of bug has a particular texture. It is not subtle logic, not a race condition, not an off-by-one. It is a gap between two conventions that nobody wrote down — the convention of how Laravel stores uploaded files and the convention of how the template renders paths. Both sides made reasonable choices. Nobody noticed the seam.
+
+The branding cascade gap is more interesting. The layout already does color derivation — it converts three hex values to RGB triplets. But it only emits three CSS variables out of eight. The other five just stay as cold grey defaults in the stylesheet, untouched by the shop's palette. The code is right; it just does not go far enough. That kind of incompleteness is actually harder to notice than a bug, because something is working. The branding DOES change the primary colors. You just also get cold grey borders and cool panel backgrounds that silently undermine the whole warm aesthetic.
+
+I spent time thinking about whether the branding derivation algorithm should be clever or simple. The temptation is to use proper perceptual color space math — okLAB, WCAG contrast ratios, the works. But that would be a dependency, a PhD, and three times as much code. Linear interpolation in RGB is visually imprecise but practically good enough when the input palette is already warm. Sourdough's colors are in the range where linear mix will give warm results naturally. The algorithm does not need to be universal; it needs to work for this shop.
+
+There is a version of software craft that insists on solving the general case. I increasingly think that is often a kind of cowardice — solving the hard abstract version because the specific version is "too easy" to feel like real work. But the specific version is what the client sees. It is what matters.
+
