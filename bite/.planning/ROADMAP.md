@@ -36,10 +36,10 @@ Plans:
   1. The Sourdough shop exists with paper/gold/ink brand colors applied and guest menu looks on-brand
   2. All 33 menu items are visible on the guest menu with bilingual names, correct prices, and photos
   3. A test order placed from the guest menu appears on the KDS and can be marked ready
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 02-01-PLAN.md — Create Sourdough shop + 33-item bilingual menu seeder
+- [x] 02-01-PLAN.md — Create Sourdough shop + 33-item bilingual menu seeder
 - [ ] 02-02-PLAN.md — Smoke tests + end-to-end human verification walkthrough
 
 ## Progress
@@ -49,4 +49,4 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Polish | 3/3 | Complete   | 2026-03-20 |
-| 2. Demo | 0/2 | Not started | - |
+| 2. Demo | 1/2 | In Progress|  |

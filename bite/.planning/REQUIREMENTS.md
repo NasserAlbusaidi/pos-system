@@ -31,8 +31,8 @@
 
 ### Demo Prep
 
-- [ ] **DEMO-01**: Sourdough shop created with branding colors (paper: #F5F0E8, accent: #C4975A, ink: #2C2520)
-- [ ] **DEMO-02**: All 33 menu items entered with bilingual names (EN/AR), prices, and photos (placeholders acceptable for demo)
+- [x] **DEMO-01**: Sourdough shop created with branding colors (paper: #F5F0E8, accent: #C4975A, ink: #2C2520)
+- [x] **DEMO-02**: All 33 menu items entered with bilingual names (EN/AR), prices, and photos (placeholders acceptable for demo)
 - [ ] **DEMO-03**: End-to-end flow verified: QR scan → browse → add to cart → order → KDS ticket
 
 ## v2 Requirements
@@ -80,8 +80,8 @@
 | BRND-03 | Phase 1 | Complete |
 | TEST-01 | Phase 1 | Complete |
 | TEST-02 | Phase 1 | Complete |
-| DEMO-01 | Phase 2 | Pending |
-| DEMO-02 | Phase 2 | Pending |
+| DEMO-01 | Phase 2 | Complete |
+| DEMO-02 | Phase 2 | Complete |
 | DEMO-03 | Phase 2 | Pending |
 
 **Coverage:**

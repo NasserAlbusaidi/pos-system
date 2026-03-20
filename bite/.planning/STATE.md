@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-polish-03 — Phase 01 complete, all 3 plans done, visual verification approved
-last_updated: "2026-03-20T18:58:00.143Z"
+stopped_at: Completed 02-demo-01 — Sourdough shop seeded with 33-item bilingual menu
+last_updated: "2026-03-20T19:38:31.604Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 5
+  completed_plans: 4
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 01 — polish
+**Current focus:** Phase 02 — demo
 
 ## Current Position
 
-Phase: 01 (polish) — EXECUTING
-Plan: 3 of 3
+Phase: 02 (demo) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: 3 of 3
 | Phase 01-polish P02 | 8 | 1 tasks | 1 files |
 | Phase 01-polish P03 | 3 | 1 tasks | 2 files |
 | Phase 01-polish P03 | 20 | 2 tasks | 4 files |
+| Phase 02-demo P01 | 4 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,9 @@ Recent decisions affecting current work:
 - [Phase 01-polish]: Use Livewire::test() for component-level assertions (image src), $this->get() for layout-level assertions (CSS variable tokens)
 - [Phase 01-polish]: Use Livewire::test() for component-level assertions (image src), $this->get() for layout-level assertions (CSS variable tokens in app.blade.php layout)
 - [Phase 01-polish]: assertSee with false as second argument disables HTML escaping for CSS variables — required because colons get escaped to &#58; by default
+- [Phase 02-demo]: Explicit product->shop_id = shop->id assignment instead of forceCreate for guarded tenant field
+- [Phase 02-demo]: No image_url on Sourdough products — Phase 1 placeholder icons satisfy DEMO-02 photo requirement for pitch
+- [Phase 02-demo]: Sourdough shop status=active, trial_ends_at 10 years — demo shop never expires
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:58:00.141Z
-Stopped at: Completed 01-polish-03 — Phase 01 complete, all 3 plans done, visual verification approved
+Last session: 2026-03-20T19:38:31.602Z
+Stopped at: Completed 02-demo-01 — Sourdough shop seeded with 33-item bilingual menu
 Resume file: None
