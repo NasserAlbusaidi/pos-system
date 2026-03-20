@@ -54,16 +54,15 @@ class PricingRule extends Model
         $currentTime = $now->format('H:i:s');
         $currentDay = (int) $now->dayOfWeek; // 0=Sunday through 6=Saturday
 
+        $driver = \Illuminate\Support\Facades\DB::getDriverName();
+        $pad = $driver === 'sqlite'
+            ? fn (string $col) => "CASE WHEN LENGTH({$col}) = 5 THEN {$col} || ':00' ELSE {$col} END"
+            : fn (string $col) => "CASE WHEN LENGTH({$col}) = 5 THEN CONCAT({$col}, ':00') ELSE {$col} END";
+
         return $query
             ->where('is_active', true)
-            ->whereRaw(
-                "CASE WHEN LENGTH(start_time) = 5 THEN start_time || ':00' ELSE start_time END <= ?",
-                [$currentTime]
-            )
-            ->whereRaw(
-                "CASE WHEN LENGTH(end_time) = 5 THEN end_time || ':00' ELSE end_time END >= ?",
-                [$currentTime]
-            )
+            ->whereRaw("{$pad('start_time')} <= ?", [$currentTime])
+            ->whereRaw("{$pad('end_time')} >= ?", [$currentTime])
             ->where(function (Builder $q) use ($currentDay) {
                 $q->whereNull('days_of_week')
                     ->orWhereJsonContains('days_of_week', $currentDay)

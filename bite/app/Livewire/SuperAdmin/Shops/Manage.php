@@ -83,7 +83,7 @@ class Manage extends Component
                 'shop_id' => $shop->id,
                 'name' => $this->ownerName,
                 'email' => $this->ownerEmail,
-                'password' => bcrypt($this->ownerPassword),
+                'password' => \Illuminate\Support\Facades\Hash::make($this->ownerPassword),
                 'role' => 'admin',
             ]);
         }

@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Trust Cloud Run / load balancer proxies so request()->ip() returns the real client IP.
-        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR);
+        // In production, restrict to GCP load balancer CIDRs for security.
+        $proxies = env('TRUSTED_PROXIES', '*');
+        $middleware->trustProxies(at: $proxies, headers: Request::HEADER_X_FORWARDED_FOR);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 

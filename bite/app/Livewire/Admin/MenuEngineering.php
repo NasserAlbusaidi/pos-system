@@ -23,7 +23,7 @@ class MenuEngineering extends Component
 
     public function updatedRangeDays(): void
     {
-        // Livewire re-renders automatically when a public property changes.
+        $this->rangeDays = max(1, min(365, (int) $this->rangeDays));
     }
 
     #[Layout('layouts.admin')]

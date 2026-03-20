@@ -59,20 +59,16 @@ class AuditLogs extends Component
 
     private function getFilterCounts(int $shopId): array
     {
-        $allLogs = AuditLog::where('shop_id', $shopId)->pluck('action');
-
-        $counts = ['all' => $allLogs->count()];
+        $counts = ['all' => AuditLog::where('shop_id', $shopId)->count()];
 
         foreach (self::FILTER_PREFIXES as $key => $prefixes) {
-            $counts[$key] = $allLogs->filter(function ($action) use ($prefixes) {
-                foreach ($prefixes as $prefix) {
-                    if (str_starts_with($action, $prefix)) {
-                        return true;
+            $query = AuditLog::where('shop_id', $shopId)
+                ->where(function ($q) use ($prefixes) {
+                    foreach ($prefixes as $prefix) {
+                        $q->orWhere('action', 'like', $prefix.'%');
                     }
-                }
-
-                return false;
-            })->count();
+                });
+            $counts[$key] = $query->count();
         }
 
         return $counts;

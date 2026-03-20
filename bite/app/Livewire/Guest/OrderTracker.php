@@ -27,6 +27,10 @@ class OrderTracker extends Component
 
     public function submitFeedback(): void
     {
+        if ($this->order->customer_rating !== null) {
+            return;
+        }
+
         if ($this->rating < 1 || $this->rating > 5) {
             return;
         }

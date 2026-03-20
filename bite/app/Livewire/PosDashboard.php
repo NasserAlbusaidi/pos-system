@@ -359,13 +359,20 @@ class PosDashboard extends Component
             $method = 'cash';
         }
 
-        $order = Order::where('shop_id', Auth::user()->shop_id)
-            ->where('id', $orderId)
-            ->firstOrFail();
+        DB::transaction(function () use ($orderId, $method) {
+            $order = Order::where('shop_id', Auth::user()->shop_id)
+                ->where('id', $orderId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $this->recordPaymentsForOrder($order, [
-            ['amount' => $order->balance_due, 'method' => $method],
-        ]);
+            if ($order->balance_due <= 0) {
+                return;
+            }
+
+            $this->recordPaymentsForOrder($order, [
+                ['amount' => $order->balance_due, 'method' => $method],
+            ]);
+        });
     }
 
     protected function recordPaymentsForOrder(Order $order, array $rows): void
@@ -705,10 +712,6 @@ class PosDashboard extends Component
             return;
         }
 
-        $order = Order::where('shop_id', Auth::user()->shop_id)
-            ->with('payments')
-            ->findOrFail($this->paymentOrderId);
-
         $rows = collect($this->paymentRows)->map(function ($row) {
             return [
                 'amount' => round((float) ($row['amount'] ?? 0), 3),
@@ -722,15 +725,30 @@ class PosDashboard extends Component
             return;
         }
 
-        $sum = round(collect($rows)->sum('amount'), 3);
-        if ($sum > $order->balance_due + 0.01) {
-            $this->paymentError = 'Payments cannot exceed the remaining balance.';
+        $result = DB::transaction(function () use ($rows) {
+            $order = Order::where('shop_id', Auth::user()->shop_id)
+                ->where('id', $this->paymentOrderId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $sum = round(collect($rows)->sum('amount'), 3);
+            if ($sum > $order->balance_due + 0.01) {
+                return ['error' => 'Payments cannot exceed the remaining balance.'];
+            }
+
+            $this->recordPaymentsForOrder($order, $rows);
+            $order->refresh();
+
+            return ['error' => null, 'paid' => $order->balance_due <= 0];
+        });
+
+        if ($result['error']) {
+            $this->paymentError = $result['error'];
 
             return;
         }
 
-        $this->recordPaymentsForOrder($order, $rows);
-        session()->flash('message', $order->balance_due <= 0 ? 'Order paid.' : 'Partial payment recorded.');
+        session()->flash('message', $result['paid'] ? 'Order paid.' : 'Partial payment recorded.');
         $this->closePayment();
     }
 

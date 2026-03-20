@@ -21,6 +21,11 @@ class ReportsDashboard extends Component
         $this->shop = Auth::user()->shop;
     }
 
+    public function updatedRangeDays(): void
+    {
+        $this->rangeDays = max(1, min(365, (int) $this->rangeDays));
+    }
+
     #[Layout('layouts.admin')]
     public function render()
     {

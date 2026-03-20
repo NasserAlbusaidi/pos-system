@@ -26,7 +26,7 @@ class StripeWebhookSecurityTest extends TestCase
             'tax_amount' => 0,
         ]);
 
-        $payload = $this->paymentIntentSucceededPayload($order, 'evt_accepted_once', 1500);
+        $payload = $this->paymentIntentSucceededPayload($order, 'evt_accepted_once', 15000);
         $signature = $this->signature($payload, $secret);
 
         $response = $this->call(
@@ -84,7 +84,7 @@ class StripeWebhookSecurityTest extends TestCase
             'tax_amount' => 0,
         ]);
 
-        $payload = $this->paymentIntentSucceededPayload($order, 'evt_invalid_sig', 1500);
+        $payload = $this->paymentIntentSucceededPayload($order, 'evt_invalid_sig', 15000);
 
         $response = $this->call(
             'POST',
@@ -122,7 +122,7 @@ class StripeWebhookSecurityTest extends TestCase
             'tax_amount' => 0,
         ]);
 
-        $payload = $this->paymentIntentSucceededPayload($order, 'evt_duplicate', 2000);
+        $payload = $this->paymentIntentSucceededPayload($order, 'evt_duplicate', 20000);
         $signature = $this->signature($payload, $secret);
 
         $this->call(
@@ -164,6 +164,7 @@ class StripeWebhookSecurityTest extends TestCase
                 'object' => [
                     'id' => 'pi_'.$eventId,
                     'amount_received' => $amountReceived,
+                    'currency' => 'omr',
                     'metadata' => [
                         'order_id' => (string) $order->id,
                     ],

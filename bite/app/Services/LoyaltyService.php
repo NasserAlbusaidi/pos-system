@@ -22,14 +22,12 @@ class LoyaltyService
             return;
         }
 
-        $customer = LoyaltyCustomer::firstOrNew([
+        $customer = LoyaltyCustomer::firstOrCreate([
             'shop_id' => $order->shop_id,
             'phone' => $phone,
         ]);
 
-        $customer->points = (int) ($customer->points ?? 0) + $points;
-        $customer->save();
-
+        $customer->increment('points', $points);
         $customer->recordVisit();
 
         AuditLog::record('loyalty.awarded', $order, [

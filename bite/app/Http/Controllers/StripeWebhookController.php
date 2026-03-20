@@ -92,7 +92,11 @@ class StripeWebhookController extends Controller
                     return;
                 }
 
-                $amount = round(((float) ($data->amount_received ?? 0)) / 100, 3);
+                // OMR uses 3 decimal places (baisa), so Stripe amounts are in 1/1000.
+                // Standard 2-decimal currencies (USD, EUR) use 1/100.
+                $currency = strtolower((string) ($data->currency ?? 'omr'));
+                $divisor = in_array($currency, ['omr', 'bhd', 'kwd'], true) ? 1000 : 100;
+                $amount = round(((float) ($data->amount_received ?? 0)) / $divisor, 3);
                 if ($amount <= 0) {
                     $this->markWebhookProcessed($eventId);
 

@@ -43,10 +43,10 @@ class Product extends Model
         }
 
         if ($this->discount_type === 'percentage') {
-            return (float) ($this->price - ($this->price * ($this->discount_value / 100)));
+            return round((float) ($this->price - ($this->price * ($this->discount_value / 100))), 3);
         }
 
-        return (float) ($this->price - $this->discount_value);
+        return round((float) ($this->price - $this->discount_value), 3);
     }
 
     public function shop()
