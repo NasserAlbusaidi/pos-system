@@ -1,4 +1,4 @@
-<div class="relative flex min-h-full flex-col overflow-x-hidden bg-transparent"
+<div class="guest-menu-bg relative flex min-h-full flex-col overflow-x-hidden"
      @if($this->isGroupMode) wire:poll.3s @endif>
     <header class="sticky top-0 z-50 border-b border-line/80 bg-panel/85 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
@@ -86,25 +86,15 @@
         <div wire:loading wire:target="switchLanguage" class="space-y-10">
             @for($s = 0; $s < 2; $s++)
                 <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="skeleton h-6 w-40">&nbsp;</div>
-                        <div class="h-px flex-1 bg-line"></div>
-                    </div>
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="skeleton h-5 w-32">&nbsp;</div>
+                    <div class="menu-product-grid">
                         @for($i = 0; $i < 4; $i++)
-                            <article class="surface-card flex flex-col justify-between p-5">
-                                <div>
-                                    <div class="skeleton mb-4 h-40 w-full rounded-xl">&nbsp;</div>
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div class="min-w-0 flex-1">
-                                            <div class="skeleton h-5 w-3/4">&nbsp;</div>
-                                            <div class="skeleton mt-2 h-3 w-full">&nbsp;</div>
-                                            <div class="skeleton mt-1 h-3 w-2/3">&nbsp;</div>
-                                        </div>
-                                        <div class="skeleton h-7 w-20">&nbsp;</div>
-                                    </div>
+                            <article class="surface-card menu-product-card">
+                                <div class="menu-product-image-area skeleton">&nbsp;</div>
+                                <div class="menu-product-body">
+                                    <div class="skeleton h-4 w-3/4">&nbsp;</div>
+                                    <div class="skeleton h-3 w-1/2">&nbsp;</div>
                                 </div>
-                                <div class="skeleton mt-5 h-11 w-full rounded-xl">&nbsp;</div>
                             </article>
                         @endfor
                     </div>
@@ -115,63 +105,92 @@
         {{-- Actual menu content hidden during language switch --}}
         <div wire:loading.remove wire:target="switchLanguage">
             @forelse($categories as $category)
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $category->translated('name') }}</h3>
-                        <div class="h-px flex-1 bg-line"></div>
-                    </div>
+                <section>
+                    <h3 class="menu-category-header">{{ $category->translated('name') }}</h3>
 
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div x-data="{ expanded: null }" class="menu-product-grid">
                         @foreach($category->products as $product)
                             @php
                                 $timePricedAmount = $pricingRules->isNotEmpty()
                                     ? $product->getTimePriced($pricingRules)
                                     : null;
                                 $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
+                                $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
                             @endphp
-                            <article class="surface-card flex flex-col justify-between p-5">
+                            <article
+                                class="surface-card menu-product-card"
+                                x-data="{ loaded: {{ $product->image_url ? 'false' : 'true' }}, broken: false }"
+                                @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
+                                wire:key="product-{{ $product->id }}"
+                            >
+                                {{-- Sale/Discount badge --}}
                                 @if($product->is_on_sale)
-                                    <div class="absolute {{ $locale === 'ar' ? 'left-4' : 'right-4' }} top-4 rounded-full border border-crema/50 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
+                                    <div class="absolute {{ $locale === 'ar' ? 'left-2' : 'right-2' }} top-2 z-10 rounded-full border border-crema/50 bg-crema/10 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-crema">
                                         {{ __('guest.flash_sale') }}
                                     </div>
                                 @elseif($hasTimeDiscount)
-                                    <div class="absolute {{ $locale === 'ar' ? 'left-4' : 'right-4' }} top-4 rounded-full border border-crema/50 bg-crema/10 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
+                                    <div class="absolute {{ $locale === 'ar' ? 'left-2' : 'right-2' }} top-2 z-10 rounded-full border border-crema/50 bg-crema/10 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-crema">
                                         {{ __('guest.limited_offer') }}
                                     </div>
                                 @endif
 
-                                <div>
+                                {{-- Image area: fixed 120px height, shimmer while loading --}}
+                                <div class="menu-product-image-area">
+                                    {{-- Shimmer skeleton (shown while image loads) --}}
+                                    <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
+
                                     @if($product->image_url)
-                                        <img src="{{ $product->image_url }}" alt="{{ $product->translated('name') }}" class="mb-4 h-40 w-full rounded-xl object-cover">
+                                        <img
+                                            src="/storage/{{ $product->image_url }}"
+                                            alt="{{ $product->translated('name') }}"
+                                            class="menu-product-img"
+                                            x-show="loaded && !broken"
+                                            x-on:load="loaded = true"
+                                            x-on:error="broken = true"
+                                            x-bind:style="(loaded && !broken) ? '' : 'display: none'"
+                                        >
                                     @endif
 
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div class="min-w-0">
-                                            <h4 class="text-xl font-bold uppercase tracking-tight text-ink">{{ $product->translated('name') }}</h4>
-                                            <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $product->translated('description') }}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            @if($hasTimeDiscount)
-                                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through"><x-price :amount="$product->final_price" :shop="$shop" /></p>
-                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema"><x-price :amount="$timePricedAmount" :shop="$shop" /></p>
-                                            @elseif($product->is_on_sale)
-                                                <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft line-through"><x-price :amount="$product->price" :shop="$shop" /></p>
-                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-crema"><x-price :amount="$product->final_price" :shop="$shop" /></p>
-                                            @else
-                                                <p class="font-display text-lg font-extrabold leading-none sm:text-2xl text-ink"><x-price :amount="$product->price" :shop="$shop" /></p>
-                                            @endif
-                                        </div>
+                                    {{-- Placeholder icon (shown when broken or no image) --}}
+                                    <div class="menu-product-placeholder"
+                                         x-show="broken || {{ $product->image_url ? 'false' : 'true' }}"
+                                         x-cloak>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                            <path d="M7 2v20"/>
+                                            <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                        </svg>
                                     </div>
                                 </div>
 
-                                <button wire:click="addToCart({{ $product->id }})"
-                                        wire:loading.attr="disabled"
-                                        wire:loading.class="opacity-50 cursor-wait"
-                                        wire:target="addToCart({{ $product->id }})"
-                                        class="btn-primary mt-5 w-full justify-center">
-                                    <span wire:loading.remove wire:target="addToCart({{ $product->id }})">{{ __('guest.add_to_order') }}</span>
-                                    <span wire:loading wire:target="addToCart({{ $product->id }})" class="loading-spinner"></span>
-                                </button>
+                                {{-- Name + price + quick-add --}}
+                                <div class="menu-product-body">
+                                    <p class="menu-product-name">{{ $product->translated('name') }}</p>
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+                                        <span class="menu-product-price">
+                                            @if($hasTimeDiscount || $product->is_on_sale)
+                                                <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                            @endif
+                                            <x-price :amount="$displayPrice" :shop="$shop" />
+                                        </span>
+                                        <button
+                                            wire:click.stop="addToCart({{ $product->id }})"
+                                            class="menu-product-add"
+                                            type="button"
+                                            aria-label="Add {{ $product->translated('name') }} to order"
+                                        >+</button>
+                                    </div>
+                                </div>
+
+                                {{-- Expandable description (accordion — one at a time) --}}
+                                @if($product->translated('description'))
+                                    <div
+                                        class="menu-product-description"
+                                        x-bind:data-expanded="expanded === {{ $product->id }} ? 'true' : 'false'"
+                                    >
+                                        <p>{{ $product->translated('description') }}</p>
+                                    </div>
+                                @endif
                             </article>
                         @endforeach
                     </div>
@@ -179,6 +198,7 @@
             @empty
                 <section class="surface-card border-dashed p-14 text-center">
                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{{ __('guest.no_items_available') }}</p>
+                    <p class="mt-2 text-sm text-ink-soft">Check back soon -- the menu is being updated.</p>
                 </section>
             @endforelse
         </div>
