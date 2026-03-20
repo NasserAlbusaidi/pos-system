@@ -181,4 +181,22 @@ class GuestMenuTest extends TestCase
             ->call('addToCart', $product->id)
             ->assertSet('cart', []);
     }
+
+    public function test_product_image_url_includes_storage_prefix(): void
+    {
+        $shop = Shop::create(['name' => 'Sourdough', 'slug' => 'sourdough']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Bread']);
+        Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Sourdough Loaf',
+            'price' => 2.500,
+            'image_url' => 'products/sourdough.jpg',
+            'is_available' => true,
+            'is_visible' => true,
+        ]);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->assertSeeHtml('/storage/products/sourdough.jpg');
+    }
 }
