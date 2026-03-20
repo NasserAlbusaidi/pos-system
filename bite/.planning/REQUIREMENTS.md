@@ -12,7 +12,7 @@
 - [ ] **GMVIZ-03**: Product names display in sentence case (not forced uppercase)
 - [ ] **GMVIZ-04**: Guest menu uses 2-column compact card grid on all screen sizes
 - [ ] **GMVIZ-05**: Compact cards show photo + name + price (description hidden, reveals on interaction)
-- [ ] **GMVIZ-06**: Category headers use Playfair Display serif font (self-hosted)
+- [x] **GMVIZ-06**: Category headers use Playfair Display serif font (self-hosted)
 - [ ] **GMVIZ-07**: Image containers show skeleton shimmer while photos download
 - [ ] **GMVIZ-08**: Broken/missing images hide gracefully via onerror fallback
 - [ ] **GMVIZ-09**: Empty categories (zero visible products) are hidden from guest menu
@@ -20,9 +20,9 @@
 
 ### Branding
 
-- [ ] **BRND-01**: All CSS tokens (--canvas, --panel, --panel-muted, --line, --ink-soft) derived from 3 brand colors
-- [ ] **BRND-02**: Background gradient uses derived tokens instead of hardcoded/default values
-- [ ] **BRND-03**: Card surfaces and borders reflect shop's warm palette end-to-end
+- [x] **BRND-01**: All CSS tokens (--canvas, --panel, --panel-muted, --line, --ink-soft) derived from 3 brand colors
+- [x] **BRND-02**: Background gradient uses derived tokens instead of hardcoded/default values
+- [x] **BRND-03**: Card surfaces and borders reflect shop's warm palette end-to-end
 
 ### Testing
 
@@ -70,14 +70,14 @@
 | GMVIZ-03 | Phase 1 | Pending |
 | GMVIZ-04 | Phase 1 | Pending |
 | GMVIZ-05 | Phase 1 | Pending |
-| GMVIZ-06 | Phase 1 | Pending |
+| GMVIZ-06 | Phase 1 | Complete |
 | GMVIZ-07 | Phase 1 | Pending |
 | GMVIZ-08 | Phase 1 | Pending |
 | GMVIZ-09 | Phase 1 | Pending |
 | GMVIZ-10 | Phase 1 | Pending |
-| BRND-01 | Phase 1 | Pending |
-| BRND-02 | Phase 1 | Pending |
-| BRND-03 | Phase 1 | Pending |
+| BRND-01 | Phase 1 | Complete |
+| BRND-02 | Phase 1 | Complete |
+| BRND-03 | Phase 1 | Complete |
 | TEST-01 | Phase 1 | Pending |
 | TEST-02 | Phase 1 | Pending |
 | DEMO-01 | Phase 2 | Pending |
