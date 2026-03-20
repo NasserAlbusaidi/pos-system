@@ -33,12 +33,48 @@
                     [$r, $g, $b] = sscanf($hex, '%02x%02x%02x');
                     return "{$r} {$g} {$b}";
                 };
+
+                $parseHexToArr = function ($hex) {
+                    $hex = ltrim((string) $hex, '#');
+                    if (strlen($hex) === 3) {
+                        $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+                    }
+                    if (strlen($hex) !== 6) {
+                        return [0, 0, 0];
+                    }
+                    return array_values(sscanf($hex, '%02x%02x%02x'));
+                };
+
+                $mix = function (array $a, array $b, float $t): array {
+                    return [
+                        (int) round($a[0] + ($b[0] - $a[0]) * $t),
+                        (int) round($a[1] + ($b[1] - $a[1]) * $t),
+                        (int) round($a[2] + ($b[2] - $a[2]) * $t),
+                    ];
+                };
+
+                $toRgbStr = fn(array $c): string => "{$c[0]} {$c[1]} {$c[2]}";
+
+                $paper = $parseHexToArr($paperHex);
+                $ink   = $parseHexToArr($inkHex);
+
+                // Derived tokens — linear RGB interpolation
+                $canvas     = $mix($paper, $ink, 0.06);           // barely darker than paper
+                $panel      = $mix($paper, [255, 255, 255], 0.30); // slightly lighter than paper
+                $panelMuted = $mix($paper, $ink, 0.12);           // skeleton shimmer bg
+                $line       = $mix($paper, $ink, 0.18);           // warm border color
+                $inkSoft    = $mix($ink, $paper, 0.55);           // secondary text
             @endphp
             <style>
                 :root {
                     --paper: {{ $toRgb($paperHex) }};
                     --ink: {{ $toRgb($inkHex) }};
                     --crema: {{ $toRgb($cremaHex) }};
+                    --canvas: {{ $toRgbStr($canvas) }};
+                    --panel: {{ $toRgbStr($panel) }};
+                    --panel-muted: {{ $toRgbStr($panelMuted) }};
+                    --line: {{ $toRgbStr($line) }};
+                    --ink-soft: {{ $toRgbStr($inkSoft) }};
                 }
             </style>
         @endif
