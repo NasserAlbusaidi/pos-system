@@ -123,7 +123,7 @@ These classes must be added to `resources/css/app.css` under `@layer components`
 | `.menu-product-name` | `<p>` | `font-size: 14px`; `font-weight: 600`; `line-height: 1.3`; `color: rgb(var(--ink))`; `overflow: hidden`; `display: -webkit-box`; `-webkit-line-clamp: 2`; `-webkit-box-orient: vertical` |
 | `.menu-product-price` | `<span>` | `font-size: 12px`; `font-weight: 600`; `font-family: var(--font-mono, 'JetBrains Mono')`; `color: rgb(var(--ink))` |
 | `.menu-product-add` | `<button>` (+) | `width: 28px`; `height: 28px`; `min-width: 44px`; `min-height: 44px`; `border-radius: 50%`; `background-color: rgb(var(--crema))`; `color: rgb(var(--panel))`; `font-size: 18px`; `font-weight: 700`; `display: flex`; `align-items: center`; `justify-content: center`; negative margin compensation: `margin: -8px` to keep visual size 28px with 44px tap target |
-| `.menu-product-description` | `<div>` expandable | `padding: 0 10px 10px`; `font-size: 14px`; `line-height: 1.5`; `color: rgb(var(--ink-soft))` |
+| `.menu-product-description` | `<div>` expandable | `padding: 0 8px 8px`; `font-size: 14px`; `line-height: 1.5`; `color: rgb(var(--ink-soft))` |
 | `.menu-category-header` | `<h3>` | `font-family: 'Playfair Display', serif`; `font-size: 20px`; `font-weight: 700`; `line-height: 1.2`; `color: rgb(var(--ink))`; `padding: 24px 0 12px`; decorative: thin bottom border `1px solid rgb(var(--line))` with left-side accent dash (see below) |
 | `.menu-product-grid` | `<div>` containing articles | `display: grid`; `grid-template-columns: repeat(2, 1fr)`; `gap: 8px` |
 
