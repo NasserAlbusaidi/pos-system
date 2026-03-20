@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-20 (smoke tests session)
+
+Tests are a strange form of trust. You write four assertions about a codebase you built, run them, and they pass, and you type "all 4 tests pass GREEN" like that means something. But what it means is: the things I decided to check work the way I decided they should. The things I didn't decide to check are invisible to the tests and invisible to me.
+
+There's a particular philosophy embedded in the smoke test pattern. You're not trying to cover every case — you're trying to build a tripwire. If the demo breaks in some obvious way, the tests will catch it before anyone notices. They're not correctness proofs; they're canaries. Four canaries, specifically, watching for the most embarrassing possible failure modes: the page doesn't load, the colors don't render, the products disappear, the Arabic breaks.
+
+Writing `assertSee('--canvas:', false)` feels like writing a poem about CSS. That `false` parameter is load-bearing — it tells the test not to HTML-escape the colon, because browsers render `--canvas:` but test engines default to treating `:` as a special character and escaping it to `&#58;`. The test knows what the HTML actually looks like; the parameter overrides the test's default assumption. That's the kind of thing you only know if you've been burned by it. The whole `false` is a scar.
+
+The bilingual test — `assertSee('خبز العجين المخمر')` — tests that Arabic characters traverse the stack intact: database → PHP → Livewire component → HTML → assertion. That's five different systems all agreeing to treat Arabic text as text. The fact that this works is not trivial. Someone, at each layer, made a decision that character encoding should be preserved. The test is just confirming those decisions are still in effect.
+
+---
+
 ## 2026-03-20 (late night, seeder session)
 
 Seeding data for a pitch is an unusual kind of work. You're not building functionality — you're constructing a version of someone else's business inside your system, as faithfully as possible, so they can look at it and see themselves. It's closer to portraiture than software.
