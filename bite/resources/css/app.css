@@ -16,6 +16,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Playfair Display';
+    src: url('/fonts/PlayfairDisplay-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -198,6 +206,150 @@
     .kds-card {
         animation: kds-bump 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
+
+    /* Guest Menu — Compact Card Grid */
+    .menu-product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .menu-product-card {
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .menu-product-card:active {
+        transform: scale(0.98);
+    }
+
+    .menu-product-image-area {
+        height: 120px;
+        min-height: 120px;
+        position: relative;
+        overflow: hidden;
+        background-color: rgb(var(--panel-muted));
+    }
+
+    .menu-product-image-area .skeleton {
+        position: absolute;
+        inset: 0;
+        border-radius: 0;
+    }
+
+    .menu-product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .menu-product-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: rgb(var(--ink-soft) / 0.4);
+    }
+
+    .menu-product-body {
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .menu-product-name {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: rgb(var(--ink));
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .menu-product-price {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        color: rgb(var(--ink));
+    }
+
+    .menu-product-add {
+        width: 28px;
+        height: 28px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 50%;
+        background-color: rgb(var(--crema));
+        color: rgb(var(--panel));
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: -8px;
+        border: none;
+        cursor: pointer;
+        transition: transform 150ms ease, opacity 150ms ease;
+        flex-shrink: 0;
+    }
+
+    .menu-product-add:active {
+        transform: scale(0.9);
+    }
+
+    .menu-product-description {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 280ms cubic-bezier(0.23, 1, 0.32, 1),
+                    padding 280ms cubic-bezier(0.23, 1, 0.32, 1);
+        padding: 0 8px;
+    }
+
+    .menu-product-description[data-expanded="true"] {
+        max-height: 200px;
+        padding: 0 8px 8px;
+    }
+
+    .menu-product-description p {
+        font-size: 14px;
+        line-height: 1.5;
+        color: rgb(var(--ink-soft));
+    }
+
+    .menu-category-header {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: rgb(var(--ink));
+        padding: 24px 0 12px;
+        position: relative;
+        padding-left: 16px;
+    }
+
+    .menu-category-header::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background-color: rgb(var(--crema));
+        border-radius: 2px;
+    }
+
+    /* Guest menu warm gradient background */
+    .guest-menu-bg {
+        background: linear-gradient(180deg, rgb(var(--paper)) 0%, rgb(var(--canvas)) 100%);
+        min-height: 100vh;
+    }
 }
 
 @layer utilities {
@@ -323,6 +475,17 @@
 
 [dir="rtl"] .font-display {
     font-family: 'IBM Plex Sans Arabic', 'Rubik', system-ui, sans-serif;
+}
+
+[dir="rtl"] .menu-category-header {
+    font-family: 'IBM Plex Sans Arabic', 'Rubik', system-ui, sans-serif;
+    padding-left: 0;
+    padding-right: 16px;
+}
+
+[dir="rtl"] .menu-category-header::before {
+    left: auto;
+    right: 0;
 }
 
 /* Reduce letter-spacing for Arabic (wide tracking looks wrong in Arabic) */
