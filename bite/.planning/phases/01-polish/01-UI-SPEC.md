@@ -36,8 +36,8 @@ Declared values (multiples of 4):
 | Token | Value | Usage in This Phase |
 |-------|-------|---------------------|
 | xs | 4px | Icon gaps, inline padding within card name/price row |
-| sm | 8px | Gap between cards in the 2-column grid |
-| md | 16px | Card body padding (name + price area); section horizontal padding |
+| sm | 8px | Gap between cards in the 2-column grid; card body padding (horizontal) |
+| md | 16px | Section horizontal padding; category header left padding (accent bar clearance) |
 | lg | 24px | Category header vertical padding above/below |
 | xl | 32px | Bottom bar internal padding; section bottom margin |
 | 2xl | 48px | Page bottom clearance (so bottom bar does not obscure last card) |
@@ -58,7 +58,7 @@ Declared values (multiples of 4):
 | Product Name | Rubik | 14px | 600 (semibold) | 1.3 | Compact card product name — sentence case, not uppercase |
 | Category Header | Playfair Display | 20px | 700 (bold) | 1.2 | Category section headings — serif, warm artisan feel |
 
-**Weight constraint:** Exactly 2 weights in use — 400 (regular) and 600 (semibold). Category header uses Playfair Display 700 as a separate font, not counted against the Rubik weight budget.
+**Weight constraint:** Exactly 2 Rubik weights in use — 400 (regular) and 600 (semibold). Category headers use Playfair Display 700, which is a separate display-only font and is NOT counted against the Rubik weight budget. Effective palette: Rubik 400, Rubik 600, Playfair Display 700.
 
 **Sentence case rule (D-12):** Product names must NOT use CSS `text-transform: uppercase`. Remove the existing `uppercase` Tailwind class from the `<h4>`. Names render as-stored from the database.
 
@@ -96,6 +96,8 @@ All derived tokens are computed in `layouts/app.blade.php` using linear RGB inte
 
 **Accent constraint (D-19):** Accent gold is NOT used on card backgrounds, card borders, category headers, or description text. Cards stay neutral paper/panel tones. Accent appears only on action-triggering elements.
 
+**Primary visual anchor:** The `+` quick-add button is the primary visual anchor on each card. The accent gold circle (`--crema` background) against the neutral `--panel` card surface draws the eye directly to the primary action. No other element on the card uses accent color, ensuring the `+` button reads as the singular call to action at a glance.
+
 ### Semantic Colors
 
 | Role | Value | Usage |
@@ -117,7 +119,7 @@ These classes must be added to `resources/css/app.css` under `@layer components`
 | `.menu-product-image-area` | `<div>` inside card | `height: 120px`; `min-height: 120px`; `position: relative`; `overflow: hidden`; `background-color: rgb(var(--panel-muted))` |
 | `.menu-product-img` | `<img>` | `width: 100%`; `height: 100%`; `object-fit: contain`; `object-position: center` |
 | `.menu-product-placeholder` | `<div>` fallback | `display: flex`; `align-items: center`; `justify-content: center`; `height: 100%`; `color: rgb(var(--ink-soft) / 0.4)` |
-| `.menu-product-body` | `<div>` name+price | `padding: 8px 10px`; `display: flex`; `flex-direction: column`; `gap: 4px` |
+| `.menu-product-body` | `<div>` name+price | `padding: 8px 8px`; `display: flex`; `flex-direction: column`; `gap: 4px` |
 | `.menu-product-name` | `<p>` | `font-size: 14px`; `font-weight: 600`; `line-height: 1.3`; `color: rgb(var(--ink))`; `overflow: hidden`; `display: -webkit-box`; `-webkit-line-clamp: 2`; `-webkit-box-orient: vertical` |
 | `.menu-product-price` | `<span>` | `font-size: 12px`; `font-weight: 600`; `font-family: var(--font-mono, 'JetBrains Mono')`; `color: rgb(var(--ink))` |
 | `.menu-product-add` | `<button>` (+) | `width: 28px`; `height: 28px`; `min-width: 44px`; `min-height: 44px`; `border-radius: 50%`; `background-color: rgb(var(--crema))`; `color: rgb(var(--panel))`; `font-size: 18px`; `font-weight: 700`; `display: flex`; `align-items: center`; `justify-content: center`; negative margin compensation: `margin: -8px` to keep visual size 28px with 44px tap target |
@@ -130,7 +132,7 @@ These classes must be added to `resources/css/app.css` under `@layer components`
 ```css
 .menu-category-header {
     position: relative;
-    padding-left: 14px;
+    padding-left: 16px;
 }
 .menu-category-header::before {
     content: '';
@@ -145,7 +147,7 @@ These classes must be added to `resources/css/app.css` under `@layer components`
 }
 ```
 
-Effect: warm gold accent bar on the left of each category name. Subtle, artisan-coded.
+Effect: warm gold accent bar on the left of each category name. The 16px left padding (standard `md` token) provides clearance for the 3px decorative bar with comfortable visual breathing room. Subtle, artisan-coded.
 
 ### Shimmer Skeleton (D-10 — Claude's discretion, now specified)
 
