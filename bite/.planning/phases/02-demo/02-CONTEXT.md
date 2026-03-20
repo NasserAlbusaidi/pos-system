@@ -14,14 +14,14 @@ Create the Sourdough Oman shop in Bite-POS with full 33-item menu, correct brand
 ## Implementation Decisions
 
 ### Shop creation
-- **D-01:** Create the Sourdough shop manually via the admin panel (not a seeder or migration)
+- **D-01:** ~~Create the Sourdough shop manually via the admin panel~~ → **UNLOCKED:** Use a database seeder (`SourdoughMenuSeeder`) to create the shop and all menu items programmatically. Rationale: Snap-to-Menu not built, executor agents can't use admin panel, seeder is automatable and reproducible.
 - **D-02:** Brand colors: paper #F5F0E8, accent #C4975A, ink #2C2520 (locked from Phase 1)
 - **D-03:** Shop slug: `sourdough` (or similar — for the QR code URL `/menu/sourdough`)
 
 ### Menu data entry
-- **D-04:** Use Snap-to-Menu AI feature to extract menu items (names EN/AR, prices, categories) from the Sourdough PDF menu
-- **D-05:** User will provide the PDF file path for Snap-to-Menu extraction
-- **D-06:** Manual entry via admin panel after extraction — review and adjust any items Snap-to-Menu missed or got wrong
+- **D-04:** ~~Use Snap-to-Menu AI feature~~ → **UNLOCKED:** Snap-to-Menu does not exist in codebase. Menu items hardcoded in seeder from the Sourdough PDF menu data.
+- **D-05:** ~~User will provide the PDF file path~~ → N/A (seeder approach)
+- **D-06:** ~~Manual entry via admin panel after extraction~~ → Review seeder output in guest menu after running
 - **D-07:** 33 items total across multiple categories with bilingual names (EN/AR) and OMR prices (3 decimal places)
 
 ### Photos
@@ -99,7 +99,7 @@ Create the Sourdough Oman shop in Bite-POS with full 33-item menu, correct brand
 ## Deferred Ideas
 
 - Extract photos from PDF programmatically — do later when Sourdough provides files or extract manually
-- Database seeder for Sourdough data — could be useful for CI/demo resets but not needed now
+- ~~Database seeder for Sourdough data~~ → PROMOTED to active (D-01 unlocked)
 - QR code generation for the Sourdough shop — out of scope, use direct URL for demo
 
 </deferred>
