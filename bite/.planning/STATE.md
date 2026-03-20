@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-polish-01-PLAN.md
-last_updated: "2026-03-20T18:33:14.505Z"
+stopped_at: Completed 01-polish-02-PLAN.md
+last_updated: "2026-03-20T18:38:33.993Z"
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 01 (polish) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Plan: 2 of 3
 
 *Updated after each plan completion*
 | Phase 01-polish P01 | 2 | 2 tasks | 3 files |
+| Phase 01-polish P02 | 8 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Recent decisions affecting current work:
 - Pre-build Sourdough shop before visiting (tests flow + most compelling pitch)
 - [Phase 01-polish]: Linear RGB interpolation for CSS token derivation from brand colors — simple PHP math, predictable warm results
 - [Phase 01-polish]: Playfair Display Bold only (weight 700) self-hosted as WOFF2 — single weight per UI-SPEC, fonts.gstatic.com direct download
+- [Phase 01-polish]: Image shimmer uses absolute-positioned .skeleton div inside .menu-product-image-area controlled by Alpine loaded/broken state — no x-collapse plugin needed
+- [Phase 01-polish]: Accordion state scoped to each category section grid x-data wrapper — simpler than global store, no cross-category interference
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:33:14.503Z
-Stopped at: Completed 01-polish-01-PLAN.md
+Last session: 2026-03-20T18:38:33.991Z
+Stopped at: Completed 01-polish-02-PLAN.md
 Resume file: None
