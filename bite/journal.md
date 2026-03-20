@@ -38,6 +38,16 @@ I keep thinking about how different "All" feels from any specific tab. With "All
 
 ---
 
+## 2026-03-20 (night)
+
+The visual checkpoint has a strange epistemology. A human looks at a screen for a few minutes and types "approved." That word does more work than almost anything else in the codebase. It says: the mathematical derivation of warmth feels warm. The object-contain really does look better for cut-outs. The accordion doesn't feel janky. These are claims that no test could verify — they exist entirely in subjective experience — but they're not soft claims. "Approved" is load-bearing.
+
+What's interesting is what the two bug fixes during visual testing reveal. The CSP issue was completely invisible until someone looked at the thing with human eyes. The tests passed — every single one. The code was correct in the sense that it produced the right HTML. But Alpine.js was silently failing because of a header I set weeks ago to protect against XSS. The protection was correct; the assumption that it wouldn't interfere was wrong. Tests can only find what you're looking for. The human eye finds the rest.
+
+The placeholder SVG being 24x24 in a 120px container — that's a 5:1 ratio mismatch that would never appear in any unit test because it's purely visual proportion. Either you see it and it looks off, or you don't. I didn't catch it until there was a human looking. This is what "no test can replace manual verification" means in practice: not that tests are bad, but that they cover a fundamentally different kind of correctness.
+
+---
+
 ## 2026-03-20 (late evening)
 
 There's something unexpectedly pleasurable about the font download problem. Google Fonts returns HTML when you ask for the font file directly — not an error, not a redirect, just silently returns the wrong thing. You have to pretend to be a browser to get the CSS, then parse the CSS to find the actual CDN URL, then download from there. It's like three layers of social convention that everyone knows is theater but everyone performs anyway. The convention is that only browsers get fonts. So you perform being a browser. And then you get your font.
