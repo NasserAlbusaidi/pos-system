@@ -65,30 +65,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GMVIZ-01 | — | Pending |
-| GMVIZ-02 | — | Pending |
-| GMVIZ-03 | — | Pending |
-| GMVIZ-04 | — | Pending |
-| GMVIZ-05 | — | Pending |
-| GMVIZ-06 | — | Pending |
-| GMVIZ-07 | — | Pending |
-| GMVIZ-08 | — | Pending |
-| GMVIZ-09 | — | Pending |
-| GMVIZ-10 | — | Pending |
-| BRND-01 | — | Pending |
-| BRND-02 | — | Pending |
-| BRND-03 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| DEMO-01 | — | Pending |
-| DEMO-02 | — | Pending |
-| DEMO-03 | — | Pending |
+| GMVIZ-01 | Phase 1 | Pending |
+| GMVIZ-02 | Phase 1 | Pending |
+| GMVIZ-03 | Phase 1 | Pending |
+| GMVIZ-04 | Phase 1 | Pending |
+| GMVIZ-05 | Phase 1 | Pending |
+| GMVIZ-06 | Phase 1 | Pending |
+| GMVIZ-07 | Phase 1 | Pending |
+| GMVIZ-08 | Phase 1 | Pending |
+| GMVIZ-09 | Phase 1 | Pending |
+| GMVIZ-10 | Phase 1 | Pending |
+| BRND-01 | Phase 1 | Pending |
+| BRND-02 | Phase 1 | Pending |
+| BRND-03 | Phase 1 | Pending |
+| TEST-01 | Phase 1 | Pending |
+| TEST-02 | Phase 1 | Pending |
+| DEMO-01 | Phase 2 | Pending |
+| DEMO-02 | Phase 2 | Pending |
+| DEMO-03 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16 ⚠️
+- v1 requirements: 18 total
+- Mapped to phases: 18
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after initial definition*
+*Last updated: 2026-03-20 after roadmap creation*
