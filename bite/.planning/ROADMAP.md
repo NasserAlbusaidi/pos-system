@@ -6,7 +6,7 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
 
 ## Phases
 
-- [ ] **Phase 1: Polish** - Fix image bug, overhaul guest menu visuals, derive branding cascade, add regression tests
+- [x] **Phase 1: Polish** - Fix image bug, overhaul guest menu visuals, derive branding cascade, add regression tests (completed 2026-03-20)
 - [ ] **Phase 2: Demo** - Create Sourdough shop, enter all menu data, verify end-to-end flow
 
 ## Phase Details
@@ -21,7 +21,7 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
   3. Category headers render in Playfair Display and empty categories are not shown
   4. Entering Sourdough's 3 brand colors cascades warmth across canvas, panel, and border tokens
   5. Two feature tests pass: image URL prefix and branding CSS variable derivation
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md — Branding cascade + Playfair Display font + menu CSS classes
@@ -44,5 +44,5 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Polish | 2/3 | In Progress|  |
+| 1. Polish | 3/3 | Complete   | 2026-03-20 |
 | 2. Demo | 0/TBD | Not started | - |

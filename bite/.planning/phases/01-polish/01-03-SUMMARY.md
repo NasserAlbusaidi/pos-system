@@ -46,11 +46,11 @@ completed: 2026-03-20
 
 ## Performance
 
-- **Duration:** 3 min
+- **Duration:** ~20 min (including visual verification)
 - **Started:** 2026-03-20T18:38:33Z
-- **Completed:** 2026-03-20T18:41:19Z
-- **Tasks:** 1 of 2 (Task 2 at checkpoint: human-verify)
-- **Files modified:** 2
+- **Completed:** 2026-03-20T18:55:00Z
+- **Tasks:** 2 of 2 (complete)
+- **Files modified:** 4
 
 ## Accomplishments
 
@@ -58,19 +58,23 @@ completed: 2026-03-20
 - TEST-02: `test_shop_branding_renders_derived_css_variables` proves all 5 derived tokens (--canvas, --panel, --panel-muted, --line, --ink-soft) appear in HTTP response
 - TEST-02b: `test_shop_without_branding_does_not_emit_derived_tokens` verifies page loads without crash when no branding set
 - All 16 GuestMenu tests pass (no regressions introduced)
+- Human visual verification approved: 2-column grid, Playfair Display category headers, warm gradient, accordion, shimmer loading, OMR prices, gold accent on + button and cart bar only
 
 ## Task Commits
 
 Each task was committed atomically:
 
 1. **Task 1: Write feature tests for image URL prefix and branding cascade** - `3b05fa2` (test)
+2. **Task 2: Visual verification of guest menu overhaul** - user approved at checkpoint (no code commit — human verification gate)
 
-**Plan metadata:** (pending visual verification checkpoint)
+**Plan metadata:** `3333017` (docs: complete regression tests plan)
 
 ## Files Created/Modified
 
 - `tests/Feature/Livewire/GuestMenuTest.php` - Added `test_product_image_url_includes_storage_prefix` (TEST-01)
 - `tests/Feature/GuestMenuBrandingTest.php` - Created new file with TEST-02 and TEST-02b
+- `app/Http/Middleware/SecurityHeaders.php` - Added 'unsafe-eval' to CSP script-src (deviation fix during visual testing)
+- `resources/views/livewire/guest-menu.blade.php` - Scaled placeholder SVG from 24x24 to 48x48 (deviation fix during visual testing)
 
 ## Decisions Made
 
@@ -80,7 +84,28 @@ Each task was committed atomically:
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+Two auto-fixes applied during visual verification (Task 2):
+
+### Auto-fixed Issues
+
+**1. [Rule 3 - Blocking] CSP 'unsafe-eval' needed for Livewire/Alpine.js**
+- **Found during:** Task 2 (visual verification — guest menu wouldn't render Alpine reactive state)
+- **Issue:** Content-Security-Policy script-src directive was missing 'unsafe-eval', which Alpine.js requires for reactive bindings. The menu loaded but Alpine directives silently failed (accordion, shimmer, + button).
+- **Fix:** Added 'unsafe-eval' to the script-src directive in `app/Http/Middleware/SecurityHeaders.php`
+- **Files modified:** `app/Http/Middleware/SecurityHeaders.php`
+- **Verification:** Alpine accordion and + button worked correctly after fix
+
+**2. [Rule 1 - Bug] Placeholder SVG too small at 24x24 in 120px container**
+- **Found during:** Task 2 (visual verification — placeholder looked like a tiny dot)
+- **Issue:** The placeholder icon SVG was 24x24px but rendered inside a 120px image container, making it barely visible
+- **Fix:** Scaled the SVG viewBox and rendered size from 24x24 to 48x48
+- **Files modified:** `resources/views/livewire/guest-menu.blade.php`
+- **Verification:** Placeholder is now clearly visible at correct size in image area
+
+---
+
+**Total deviations:** 2 auto-fixed (1 blocking, 1 bug)
+**Impact on plan:** Both fixes were required for the visual verification to pass. No scope creep.
 
 ## Issues Encountered
 
@@ -93,8 +118,17 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 - TEST-01 and TEST-02 requirements are complete
-- Awaiting human visual verification of guest menu at http://localhost:8000/menu/demo (Task 2 checkpoint)
-- Once visual verification is approved, Phase 01 (polish) is complete and Phase 02 (demo) can begin
+- Human visual verification approved — guest menu aesthetic confirmed correct
+- Phase 01 (polish) is fully complete: branding cascade, Playfair Display, compact grid, regression tests, and visual sign-off
+- Phase 02 (demo) can begin: create the Sourdough Oman shop with demo data to support the first client pitch
+
+## Self-Check: PASSED
+
+- FOUND: .planning/phases/01-polish/01-03-SUMMARY.md
+- FOUND: tests/Feature/Livewire/GuestMenuTest.php
+- FOUND: tests/Feature/GuestMenuBrandingTest.php
+- FOUND: commit 3b05fa2 (test(01-03): add TEST-01 and TEST-02 regression tests)
+- FOUND: commit 3333017 (docs(01-03): complete regression tests plan)
 
 ---
 *Phase: 01-polish*

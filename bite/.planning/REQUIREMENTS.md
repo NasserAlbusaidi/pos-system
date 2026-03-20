@@ -7,16 +7,16 @@
 
 ### Guest Menu Visual
 
-- [ ] **GMVIZ-01**: Guest menu displays product photos with correct `/storage/` URL prefix
-- [ ] **GMVIZ-02**: Product photos use `object-contain` to preserve cut-out shapes without cropping
-- [ ] **GMVIZ-03**: Product names display in sentence case (not forced uppercase)
-- [ ] **GMVIZ-04**: Guest menu uses 2-column compact card grid on all screen sizes
-- [ ] **GMVIZ-05**: Compact cards show photo + name + price (description hidden, reveals on interaction)
+- [x] **GMVIZ-01**: Guest menu displays product photos with correct `/storage/` URL prefix
+- [x] **GMVIZ-02**: Product photos use `object-contain` to preserve cut-out shapes without cropping
+- [x] **GMVIZ-03**: Product names display in sentence case (not forced uppercase)
+- [x] **GMVIZ-04**: Guest menu uses 2-column compact card grid on all screen sizes
+- [x] **GMVIZ-05**: Compact cards show photo + name + price (description hidden, reveals on interaction)
 - [x] **GMVIZ-06**: Category headers use Playfair Display serif font (self-hosted)
-- [ ] **GMVIZ-07**: Image containers show skeleton shimmer while photos download
-- [ ] **GMVIZ-08**: Broken/missing images hide gracefully via onerror fallback
-- [ ] **GMVIZ-09**: Empty categories (zero visible products) are hidden from guest menu
-- [ ] **GMVIZ-10**: Product cards have consistent height regardless of image presence (min-height)
+- [x] **GMVIZ-07**: Image containers show skeleton shimmer while photos download
+- [x] **GMVIZ-08**: Broken/missing images hide gracefully via onerror fallback
+- [x] **GMVIZ-09**: Empty categories (zero visible products) are hidden from guest menu
+- [x] **GMVIZ-10**: Product cards have consistent height regardless of image presence (min-height)
 
 ### Branding
 
@@ -26,8 +26,8 @@
 
 ### Testing
 
-- [ ] **TEST-01**: Feature test: product with image_url renders `<img>` with `/storage/` prefix
-- [ ] **TEST-02**: Feature test: shop with custom branding renders derived CSS variables
+- [x] **TEST-01**: Feature test: product with image_url renders `<img>` with `/storage/` prefix
+- [x] **TEST-02**: Feature test: shop with custom branding renders derived CSS variables
 
 ### Demo Prep
 
@@ -65,21 +65,21 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GMVIZ-01 | Phase 1 | Pending |
-| GMVIZ-02 | Phase 1 | Pending |
-| GMVIZ-03 | Phase 1 | Pending |
-| GMVIZ-04 | Phase 1 | Pending |
-| GMVIZ-05 | Phase 1 | Pending |
+| GMVIZ-01 | Phase 1 | Complete |
+| GMVIZ-02 | Phase 1 | Complete |
+| GMVIZ-03 | Phase 1 | Complete |
+| GMVIZ-04 | Phase 1 | Complete |
+| GMVIZ-05 | Phase 1 | Complete |
 | GMVIZ-06 | Phase 1 | Complete |
-| GMVIZ-07 | Phase 1 | Pending |
-| GMVIZ-08 | Phase 1 | Pending |
-| GMVIZ-09 | Phase 1 | Pending |
-| GMVIZ-10 | Phase 1 | Pending |
+| GMVIZ-07 | Phase 1 | Complete |
+| GMVIZ-08 | Phase 1 | Complete |
+| GMVIZ-09 | Phase 1 | Complete |
+| GMVIZ-10 | Phase 1 | Complete |
 | BRND-01 | Phase 1 | Complete |
 | BRND-02 | Phase 1 | Complete |
 | BRND-03 | Phase 1 | Complete |
-| TEST-01 | Phase 1 | Pending |
-| TEST-02 | Phase 1 | Pending |
+| TEST-01 | Phase 1 | Complete |
+| TEST-02 | Phase 1 | Complete |
 | DEMO-01 | Phase 2 | Pending |
 | DEMO-02 | Phase 2 | Pending |
 | DEMO-03 | Phase 2 | Pending |
