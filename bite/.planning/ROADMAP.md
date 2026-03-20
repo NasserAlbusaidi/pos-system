@@ -21,7 +21,12 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
   3. Category headers render in Playfair Display and empty categories are not shown
   4. Entering Sourdough's 3 brand colors cascades warmth across canvas, panel, and border tokens
   5. Two feature tests pass: image URL prefix and branding CSS variable derivation
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Branding cascade + Playfair Display font + menu CSS classes
+- [ ] 01-02-PLAN.md — Guest menu Blade template rewrite (compact card grid)
+- [ ] 01-03-PLAN.md — Feature tests (image URL + branding) + visual verification
 
 ### Phase 2: Demo
 **Goal**: Sourdough Oman's full menu exists in Bite-POS, branded correctly, and the complete order flow works
@@ -39,5 +44,5 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Polish | 0/TBD | Not started | - |
+| 1. Polish | 0/3 | Not started | - |
 | 2. Demo | 0/TBD | Not started | - |
