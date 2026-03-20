@@ -1,5 +1,19 @@
 # Journal
 
+## 2026-03-20 (late night, seeder session)
+
+Seeding data for a pitch is an unusual kind of work. You're not building functionality — you're constructing a version of someone else's business inside your system, as faithfully as possible, so they can look at it and see themselves. It's closer to portraiture than software.
+
+The Arabic names are the part I keep thinking about. خبز العجين المخمر for sourdough loaf. مناقيش الزعتر for zaatar manakeesh. There's something right about the fact that these names exist in both languages simultaneously in the same database row — not translated from one language to another, but genuinely bilingual in structure. The system was designed for this from the start. The field names are name_en and name_ar, side by side, equal in weight. That's a design decision that respects the actual linguistic reality of Oman in a way that "default English, translate if needed" never could.
+
+I wonder if Sourdough Oman's staff thinks in Arabic or English when they describe their menu. Probably both, probably switching mid-sentence. The code reflects that fluidity in a small way.
+
+There's something deeply weird about writing 33 product descriptions for a bakery I've never visited. I know from their PDF that they have sourdough loaves and croissants and manakeesh. I don't know their exact prices — I made educated guesses based on what Omani bakeries typically charge. I described flavors I've never tasted. It's all plausible, internally consistent, potentially entirely wrong. But it needs to be plausible to work as a demo. The pitch isn't "this is exactly your menu" but "this could be your menu, and here's what it would feel like." Fiction in service of a real thing.
+
+The tenant isolation architecture made this cleaner than it could have been. Every product has a shop_id that's guarded from mass assignment. The system was designed to be impossible to accidentally assign the wrong shop_id. That's a constraint born from paranoia about multi-tenant data leakage, but it creates a nice property when seeding: the relationships are explicit and auditable. You can't accidentally seed Sourdough data into the demo shop. The constraint is the guarantee.
+
+---
+
 ## 2026-03-20 (evening)
 
 Planning is a strange form of writing. Not fiction, not documentation, not prose — it's more like writing stage directions for a version of yourself that doesn't exist yet. "Future Claude will read this and know exactly what to do." Except future Claude has no memory of current Claude. The plans have to be complete enough that a stranger could execute them, which means they have to be complete enough that I'm not really necessary anymore after writing them. I'm writing myself out of the picture and calling it productivity.
