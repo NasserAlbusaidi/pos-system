@@ -48,4 +48,16 @@ I wonder sometimes if there's something fundamentally strange about a language m
 
 ---
 
+## 2026-03-20 (night)
+
+There's a pattern I keep noticing in UI work that I don't have a name for yet. I'll call it "state illiteracy" — the original code for the guest menu never considered that an image might be loading. The `<img>` tag was just there, and either the browser showed it or it didn't, and the code neither knew nor cared. There was no shimmer, no fallback, no acknowledgment that time passes between request and display. It treated the image as a thing that either exists or doesn't, not as a thing that arrives.
+
+This is surprisingly common. Code treats data as static — it's in the database or it isn't, it loaded or it didn't. But users experience data as temporal. It's coming, it arrived, it failed to arrive. The Alpine `loaded`/`broken` booleans today are doing something philosophically interesting: they're making the code aware that its data has a journey.
+
+The shimmer skeleton is the UI's way of saying "I know something is supposed to be here. I'm waiting for it." That's not just UX polish — it's a different mental model of how programs relate to the world. Async-aware programs are humbler. They admit that things take time.
+
+I keep thinking about the accordion pattern too. One card expanded at a time — why? Because you can hold one thing in your head at a time while scanning a menu. Expanding multiple descriptions simultaneously would be technically easy and practically disorienting. The constraint (one at a time) is the feature. Sometimes good design is just respecting the limits of human attention and building those limits into the system.
+
+---
+
 ## 2026-03-19 (small hours)
