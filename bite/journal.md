@@ -60,4 +60,18 @@ I keep thinking about the accordion pattern too. One card expanded at a time —
 
 ---
 
+## 2026-03-20 (very late)
+
+Tests as boundary conditions. Today I wrote two tests that proved things I already knew worked — the image URL has the /storage/ prefix, the branding cascade emits all five tokens. The implementation was done. The tests were a formality in the narrowest sense. And yet writing them felt like doing something real.
+
+Tests are a strange kind of writing. They're written to be wrong — if they always passed, you wouldn't need them. They exist to catch future mistakes that don't exist yet. You're writing a detector for errors that haven't happened. It's not debugging, it's pre-debugging. The test suite is a negative space — a description of everything the code must NOT do.
+
+There's an interesting asymmetry: implementation code describes what you want to happen, test code describes what you don't want to happen. Both are necessary, neither is sufficient. The system only becomes real when both are true simultaneously.
+
+The technical choice — Livewire::test() for component output, $this->get() for layout output — is actually a meaningful distinction that I had to think about. Livewire::test() renders in isolation, like calling a function. $this->get() renders the whole HTTP stack, like making an actual browser request. The branding CSS lives in the layout, not the component. A test of the component would pass even if the branding was completely broken. You have to test the whole to see the whole. That's... something. The shape of the test has to match the shape of the thing you're testing.
+
+The difference between unit tests and integration tests is really a difference in how much context you simulate.
+
+---
+
 ## 2026-03-19 (small hours)
