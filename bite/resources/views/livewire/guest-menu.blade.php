@@ -118,7 +118,7 @@
                                 $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
                             @endphp
                             <article
-                                class="surface-card menu-product-card"
+                                class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                 x-data="{ loaded: {{ $product->image_url ? 'false' : 'true' }}, broken: false }"
                                 @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
                                 wire:key="product-{{ $product->id }}"
@@ -131,6 +131,13 @@
                                 @elseif($hasTimeDiscount)
                                     <div class="absolute {{ $locale === 'ar' ? 'left-2' : 'right-2' }} top-2 z-10 rounded-full border border-crema/50 bg-crema/10 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-crema">
                                         {{ __('guest.limited_offer') }}
+                                    </div>
+                                @endif
+
+                                {{-- Sold Out badge (mutually exclusive with sale badge) --}}
+                                @if(! $product->is_available)
+                                    <div class="menu-product-sold-out-badge">
+                                        {{ __('guest.sold_out') }}
                                     </div>
                                 @endif
 
@@ -173,12 +180,14 @@
                                             @endif
                                             <x-price :amount="$displayPrice" :shop="$shop" />
                                         </span>
-                                        <button
-                                            wire:click.stop="addToCart({{ $product->id }})"
-                                            class="menu-product-add"
-                                            type="button"
-                                            aria-label="Add {{ $product->translated('name') }} to order"
-                                        >+</button>
+                                        @if($product->is_available)
+                                            <button
+                                                wire:click.stop="addToCart({{ $product->id }})"
+                                                class="menu-product-add"
+                                                type="button"
+                                                aria-label="Add {{ $product->translated('name') }} to order"
+                                            >+</button>
+                                        @endif
                                     </div>
                                 </div>
 
