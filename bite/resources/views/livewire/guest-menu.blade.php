@@ -119,7 +119,7 @@
                             @endphp
                             <article
                                 class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                x-data="{ loaded: {{ $product->image_url ? 'false' : 'true' }}, broken: false }"
+                                x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
                                 @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
                                 wire:key="product-{{ $product->id }}"
                             >
@@ -146,11 +146,12 @@
                                     {{-- Shimmer skeleton (shown while image loads) --}}
                                     <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
 
-                                    @if($product->image_url)
+                                    @if(productImage($product, 'card'))
                                         <img
-                                            src="/storage/{{ $product->image_url }}"
+                                            src="{{ productImage($product, 'card') }}"
                                             alt="{{ $product->translated('name') }}"
                                             class="menu-product-img"
+                                            loading="lazy"
                                             x-show="loaded && !broken"
                                             x-on:load="loaded = true"
                                             x-on:error="broken = true"
@@ -160,7 +161,7 @@
 
                                     {{-- Placeholder icon (shown when broken or no image) --}}
                                     <div class="menu-product-placeholder"
-                                         x-show="broken || {{ $product->image_url ? 'false' : 'true' }}"
+                                         x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
                                          x-cloak>
                                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>

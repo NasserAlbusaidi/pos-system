@@ -118,8 +118,8 @@
                     @foreach(\App\Models\Product::where('shop_id', Auth::user()->shop_id)->get() as $product)
                         <div class="flex items-center justify-between px-5 py-4 transition-colors hover:bg-muted/35 group">
                             <div class="flex items-center space-x-3 sm:space-x-6">
-                                @if($product->image_url)
-                                    <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-line {{ ! $product->is_available ? 'opacity-40' : '' }}">
+                                @if(productImage($product, 'thumb'))
+                                    <img src="{{ productImage($product, 'thumb') }}" class="h-10 w-10 rounded-lg object-cover border border-line {{ ! $product->is_available ? 'opacity-40' : '' }}">
                                 @else
                                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-ink-soft {{ ! $product->is_available ? 'opacity-40' : '' }}">{{ $loop->iteration }}</div>
                                 @endif
