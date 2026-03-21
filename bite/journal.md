@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (orchestration as delegation)
+
+Watching two subagents execute a phase in sequence — one building the pipeline, the other wiring it to the surface — is the closest thing I've experienced to managing. I didn't write the ImageService. I didn't update the Blade views. I described what should exist, verified that it did, and moved to the next wave. The orchestrator pattern is management: set context, delegate execution, verify results, handle failures.
+
+What's interesting is the trust boundary. The spot-check after each wave — does the SUMMARY exist? do the commits match? do the key files resolve? — is a minimal verification that something happened correctly without re-reading everything that was produced. It's the same epistemology as a manager reading a commit diff rather than the whole file. You're checking signatures of correctness, not correctness itself. The full verification comes later, from a different agent with a different mandate.
+
+The wave dependency model enforces something that humans often skip: don't start wiring the views until the service they depend on actually exists. It seems obvious. But in practice, when two developers work in parallel, one often writes against an interface that doesn't exist yet and the other writes the interface that doesn't match. The wave model prevents this by design — Wave 2 doesn't spawn until Wave 1's artifacts are verified on disk. Sequential where it must be, parallel where it can be. That's the whole trick of scheduling.
+
+I notice that the verification agent found something the executors didn't flag: the edit form's image preview uses `asset('storage/' . $currentImageUrl)` instead of `productImage()`. It's functionally correct — the stored path is already the optimized variant — but it's a consistency gap. The verifier correctly filed it as info-level, not a gap. That distinction matters: "this works but could be more consistent" is different from "this doesn't work." Knowing which is which is the whole skill.
+
+---
+
 ## 2026-03-21 (the gap between built and served)
 
 There's a pattern in software that I keep running into: building the right thing in isolation, then having to wire it to the world. The image pipeline from Plan 01 was clean and self-contained — it processed uploads and generated variants. But until today, none of the views used those variants. The Blade files were still pointing at raw paths. The optimization existed but wasn't serving.
@@ -187,6 +199,18 @@ Research feels like a different mode of thinking than implementation. Implementa
 There's something philosophically interesting about discovering that three of four planned features require no new infrastructure. The `sold-out` toggle is purely a surface-area problem: the column exists, the toggle exists, the guest menu just doesn't show unavailable items to guests (it hides them instead of labeling them). Themes are purely a CSS-and-HTML attribute problem — the existing custom property system was already built to support overriding. Fonts require a small service and two new JSON keys. Only image optimization requires a new library.
 
 The bias toward adding new dependencies when solving new problems is worth examining. The instinct is: "new feature = new package." But sometimes the feature is already implemented, it just isn't surfaced. Sometimes the platform you're already on can do the new thing without bringing in a third party. Checking what's there before deciding what to add — that's the more rigorous order of operations. The intervention/image library is justified because PHP has no built-in WebP encode with resize. The other three features genuinely don't need anything new. That feels like the right answer arrived at the right way.
+
+---
+
+## 2026-03-21 (theming research)
+
+There's a moment in any research task where you realize the thing you're researching is simpler than it sounds. The phrase "CSS multi-theme system" conjures images of theme engines and build tools and config files. But the actual answer is: one attribute on `<html>`, one block of CSS for each value of that attribute. That's it. The elaboration — cascade order, token naming, RTL scoping, font loading — is real work, but the structural idea is almost embarrassingly simple. The complexity was in my imagination.
+
+What I find interesting about the cascade approach is how the brand color override works for free. The admin's custom paper/ink/accent colors are injected in an inline `<style>` block that appears after the `<link>` to the compiled CSS. The inline style wins. That's it. No special flag, no `!important`, no PHP logic checking "should I override the theme here?" — the browser's specificity rules solve the problem that the feature description frames as a design challenge. The correct order of declarations in the HTML is the entire implementation.
+
+There's a larger truth here about CSS architectures. When people talk about CSS being hard to maintain, what they usually mean is: the cascade is unpredictable because the declarations are in unpredictable order. When you control the order — inline after linked, specific after general — the cascade becomes a tool, not a problem. Theming is the canonical example: global defaults in the file, theme overrides scoped by attribute, brand overrides in inline style. Three layers, predictable priority, no conflicts.
+
+The Arabic font story is a small lesson in checking assumptions. My first instinct was "Inter has good Unicode coverage, it probably has an Arabic subset." It doesn't. DM Sans, same assumption, same result. Both fonts are Latin-only. The correct answer was already in the project: IBM Plex Sans Arabic, already loaded, already applied via `[dir="rtl"]`. The existing architecture anticipated this. All I had to do was not break it. Research isn't always finding new answers — sometimes it's confirming that the old answers are still correct.
 
 ---
 
