@@ -43,14 +43,35 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 ### Active
 
-(None — next milestone requirements to be defined via `/gsd:new-milestone`)
+#### Menu Themes
+- [ ] 3-4 selectable themes (layout + color palette + font pairing)
+- [ ] Brand color overrides on top of selected theme
+
+#### Custom Fonts
+- [ ] Any Google Font — admin types name, system fetches and self-hosts
+
+#### Image Optimization
+- [ ] On-upload pipeline (resize + WebP conversion, keep originals)
+
+#### Item Availability
+- [ ] Manual sold-out toggle per product
+
+## Current Milestone: v1.1 Customization & Polish
+
+**Goal:** Give shops visual identity and operational control — selectable themes, custom fonts, optimized images, and item availability toggles.
+
+**Target features:**
+- Menu themes (3-4 full themes with brand color overrides)
+- Per-shop custom fonts (any Google Font)
+- Image optimization on upload (resize + WebP)
+- Item availability indicators (manual sold-out toggle)
 
 ### Out of Scope
 
-- Menu templates/themes (selectable layouts) — branding tokens sufficient for now
-- Per-shop custom fonts — Playfair Display system-wide is sufficient
-- Image optimization pipeline (WebP, resize) — tracked for later
-- Item availability indicators ("sold out") — future production feature
+- ~~Menu templates/themes~~ — moved to Active for v1.1
+- ~~Per-shop custom fonts~~ — moved to Active for v1.1
+- ~~Image optimization pipeline (WebP, resize)~~ — moved to Active for v1.1
+- ~~Item availability indicators ("sold out")~~ — moved to Active for v1.1
 - Thawani Pay integration — separate initiative, needed before production launch
 
 ## Context
@@ -88,4 +109,22 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 | Seeder instead of manual admin entry | Snap-to-Menu not built, admin panel not automatable by agents | ✓ Good — reproducible, idempotent |
 
 ---
-*Last updated: 2026-03-21 after v1.0 milestone*
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+*Last updated: 2026-03-21 after v1.1 milestone started*
