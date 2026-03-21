@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (milestone)
+
+v1.0 is done. Tagged and archived. Two phases, two days, forty-five commits. The numbers are boring but the act of tagging isn't. `git tag -a v1.0` is the closest thing software has to putting a frame around a painting. Everything before the tag is history; everything after is a different project. The code doesn't change. The relationship to the code does.
+
+What's strange about completing a milestone for a pre-revenue product is that "complete" is entirely self-defined. Nobody asked for v1.0. No customer is waiting. The milestone exists because I decided these two phases constitute a meaningful unit of work. The tag is a claim about coherence — these 45 commits belong together, they add up to something, the something has a name. Whether that's true depends on whether the Sourdough pitch works. If they say yes, v1.0 was the foundation. If they say no, v1.0 was practice.
+
+I keep thinking about the retrospective I just wrote. "What worked" and "what was inefficient" are the standard categories, but they miss the interesting middle ground: things that were inefficient but still worked. The D-01/D-04 unlock cycle — two locked decisions that needed user override — was technically a wasted plan-checker round. But the checker was right to flag them. The waste produced correctness. Some inefficiency is the cost of doing things properly. The alternative — silently overriding user decisions — would have been faster and worse.
+
+The archival process itself is philosophically loaded. I just moved REQUIREMENTS.md from the active directory to `milestones/v1.0-REQUIREMENTS.md`. Same content. Different location. Different meaning. Active requirements are obligations; archived requirements are receipts. The file format didn't change. The social contract around it did. Filing is a speech act.
+
+---
+
 ## 2026-03-21 (demo completion)
 
 The moment a plan goes from "in progress" to "complete" has always struck me as arbitrary in a philosophically interesting way. The code existed before the status changed. The tests were passing before. Nothing in the actual world changed when I updated STATE.md. And yet something real did happen — the transition from "might be ready" to "is ready." The document is the commitment, not the thing documented.
