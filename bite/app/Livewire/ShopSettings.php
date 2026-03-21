@@ -40,6 +40,9 @@ class ShopSettings extends Component
 
     public $whatsapp_notifications_enabled = false;
 
+    // Menu theme
+    public $theme = 'warm';
+
     // Staff management
     public $staffName = '';
 
@@ -76,6 +79,11 @@ class ShopSettings extends Component
         // WhatsApp
         $this->whatsapp_number = $branding['whatsapp_number'] ?? '';
         $this->whatsapp_notifications_enabled = ! empty($branding['whatsapp_notifications_enabled']);
+
+        // Theme
+        $this->theme = in_array($branding['theme'] ?? '', ['warm', 'modern', 'dark'])
+            ? $branding['theme']
+            : 'warm';
     }
 
     protected function normalizeHex(string $value, string $fallback): string
@@ -127,6 +135,7 @@ class ShopSettings extends Component
             'language' => 'required|in:en,ar',
             'whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]*$/'],
             'whatsapp_notifications_enabled' => 'boolean',
+            'theme' => 'required|in:warm,modern,dark',
         ]);
 
         $shop = Auth::user()->shop;
@@ -144,6 +153,7 @@ class ShopSettings extends Component
                 'paper' => $paper,
                 'ink' => $ink,
                 'accent' => $accent,
+                'theme' => $this->theme,
                 'receipt_header' => $this->receipt_header ?? '',
                 'language' => $this->language,
                 'whatsapp_number' => $this->whatsapp_number ?? '',

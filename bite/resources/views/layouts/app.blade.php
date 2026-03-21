@@ -1,5 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ $currentLocale ?? app()->getLocale() }}" dir="{{ $direction ?? 'ltr' }}">
+@php
+    $theme = 'warm';
+    if (isset($shop)) {
+        $branding = $shop->branding ?? [];
+        $theme = in_array($branding['theme'] ?? '', ['warm', 'modern', 'dark'])
+            ? $branding['theme']
+            : 'warm';
+    }
+@endphp
+<html lang="{{ $currentLocale ?? app()->getLocale() }}" dir="{{ $direction ?? 'ltr' }}" data-theme="{{ $theme }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">

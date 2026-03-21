@@ -1068,6 +1068,10 @@ class GuestMenu extends Component
 
         $pricingRules = $this->loadActivePricingRules();
 
+        $theme = in_array($this->shop->branding['theme'] ?? '', ['warm', 'modern', 'dark'])
+            ? $this->shop->branding['theme']
+            : 'warm';
+
         return view('livewire.guest-menu', [
             'categories' => $categories,
             'locale' => $this->locale,
@@ -1075,6 +1079,7 @@ class GuestMenu extends Component
             'groupCartItems' => $groupCartItems,
             'participantColors' => $participantColors,
             'pricingRules' => $pricingRules,
+            'theme' => $theme,
         ])->layout('layouts.app', ['shop' => $this->shop]);
     }
 }
