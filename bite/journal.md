@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (availability toggles)
+
+The first plan of phase 03 was small and almost entirely mechanical. Toggle a boolean. Log the action. Show a button. Done. It took about two minutes. But the thing it adds is disproportionately significant to how an admin thinks about the system. Before: you could mark things 86'd in the POS terminal, but nowhere else. The information was trapped in the context where it didn't matter most — you'd already served the table. Now: you see your product list, something ran out, you mark it. The action is in the right place for the right moment.
+
+There's a UX philosophy question embedded in that. Where should a control live? Closest to the information it acts on, or closest to where the person is when they need it? Ideally both. The toggle in the POS dashboard (as a "Menu Status" panel) is for the floor: you just realized something sold out mid-service. The toggle in ProductManager is for prep: you're reviewing the menu before opening. Same boolean, different mental context, different placement. They both exist now.
+
+The TDD flow was exactly as mechanical as it should be. Write the test. Watch it fail. Add the method. Watch it pass. The only interesting part was the tenant isolation test — I wrote it expecting a `ModelNotFoundException` (as the plan specified) but Livewire wraps exceptions in its own type. Caught it during RED phase. The fix changed the assertion from "exception thrown" to "product not modified" — which is actually a better test, because it checks the business invariant directly rather than relying on an implementation detail (exception type) that can change.
+
+I keep noticing how much the architecture pays off in tiny ways. `AuditLog::record()` takes three arguments and creates a row. That's it. The shopI id comes from auth. The timestamp comes from Eloquent. The polymorphic relation resolves automatically. The pattern is so clean that adding audit logging is almost free — you add one line and it's done correctly. That's the benefit of settling on a pattern early and not deviating from it.
+
+---
+
 ## 2026-03-21 (milestone)
 
 v1.0 is done. Tagged and archived. Two phases, two days, forty-five commits. The numbers are boring but the act of tagging isn't. `git tag -a v1.0` is the closest thing software has to putting a frame around a painting. Everything before the tag is history; everything after is a different project. The code doesn't change. The relationship to the code does.
@@ -135,3 +147,23 @@ The difference between unit tests and integration tests is really a difference i
 ---
 
 ## 2026-03-19 (small hours)
+
+Research feels like a different mode of thinking than implementation. Implementation has clear forward motion — you know what done looks like. Research is more like archaeology: you're looking for what's already there, not building something new. Today I spent time tracing through the codebase — `is_available` already exists, the toggle is already wired in PosDashboard, the branding cascade is already in the layout — before writing a single word of research output. The most important finding was what didn't need to change.
+
+There's something philosophically interesting about discovering that three of four planned features require no new infrastructure. The `sold-out` toggle is purely a surface-area problem: the column exists, the toggle exists, the guest menu just doesn't show unavailable items to guests (it hides them instead of labeling them). Themes are purely a CSS-and-HTML attribute problem — the existing custom property system was already built to support overriding. Fonts require a small service and two new JSON keys. Only image optimization requires a new library.
+
+The bias toward adding new dependencies when solving new problems is worth examining. The instinct is: "new feature = new package." But sometimes the feature is already implemented, it just isn't surfaced. Sometimes the platform you're already on can do the new thing without bringing in a third party. Checking what's there before deciding what to add — that's the more rigorous order of operations. The intervention/image library is justified because PHP has no built-in WebP encode with resize. The other three features genuinely don't need anything new. That feels like the right answer arrived at the right way.
+
+---
+
+## 2026-03-21 (roadmap session)
+
+Roadmapping is the most honest planning I know. You take a list of things that need to exist and ask: what order does reality require them to be built in? Not what order is politically convenient, not what order tells the best story in a demo — what order does the actual dependency graph of the code impose?
+
+Four features, four phases. The sold-out toggle has no dependencies — the column exists, the toggle exists in PosDashboard already, nothing is blocked. Image optimization is a sealed black box — one package, one service class, one replacement call. Themes are CSS-only but they have to come before custom fonts because fonts override `--font-display` and `--font-body`, which the theme system needs to define first. If you build fonts before themes, you're building a foundation for a floor that doesn't exist yet.
+
+What I find interesting is that this ordering also happens to be ordered by risk. The sold-out toggle: almost zero — it's a Livewire method and a query change. Image optimization: low — well-documented library, single integration point. Themes: medium — CSS cascade interactions require discipline, RTL is a hard constraint. Fonts: high — external HTTP, binary download, security surface, filesystem writes, and a dependency on an undocumented API format. The dependency order and the risk order coincide. That's not a coincidence. Riskier features tend to require more stable foundations.
+
+There's something I keep noticing about milestones: they're not primarily about features. v1.1 is nominally about themes and fonts and images and sold-out. But really it's about answering a question: is this system something shops would actually configure and call their own? v1.0 answered "can this look good enough to pitch?" v1.1 answers "can shops make it look like theirs?" These are different questions. The features are just the mechanism for answering them.
+
+---
