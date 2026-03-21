@@ -1,5 +1,15 @@
 # Journal
 
+## 2026-03-21 (sold-out, visible)
+
+There's a small philosophical question inside the decision to show sold-out items greyed-out instead of hiding them. Hiding them is tidier. Showing them is more honest. The menu as a complete picture of what the shop offers is a different thing from the menu as a list of what you can currently have. Both are legitimate framings. But the greyed-out approach treats the customer as someone capable of receiving information, not just instructions. "This exists but you can't have it right now" is a more honest relationship than "this doesn't exist."
+
+The thing that makes this feel right operationally: if you're deciding where to eat and you walk past a place that shows all its items including the sold-out ones, you learn something about their range. If they hide the sold-out items, you only learn about what's available today. One tells you about the restaurant; the other only tells you about the moment.
+
+The auto-removal of stale cart items is, I think, the better design even if it feels more opinionated. The old approach — error message, please remove them yourself — puts the cognitive work on the person. They've already decided to order. The friction of manually removing something and re-submitting is friction that can turn into abandonment. Removing it automatically and saying "we removed X, you can continue with the rest" gives the guest a path forward instead of a wall. You can always argue about whether software should make decisions on behalf of users. But here the tradeoff is clear: the software knows exactly what happened (item became unavailable), and it can resolve it completely. Why make the human do it?
+
+---
+
 ## 2026-03-21 (availability toggles)
 
 The first plan of phase 03 was small and almost entirely mechanical. Toggle a boolean. Log the action. Show a button. Done. It took about two minutes. But the thing it adds is disproportionately significant to how an admin thinks about the system. Before: you could mark things 86'd in the POS terminal, but nowhere else. The information was trapped in the context where it didn't matter most — you'd already served the table. Now: you see your product list, something ran out, you mark it. The action is in the right place for the right moment.
