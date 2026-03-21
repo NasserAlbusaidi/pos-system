@@ -647,6 +647,153 @@
         margin-top: 16px;
         padding: 16px;
     }
+
+    /* Theme card needs position:relative for checkmark absolute positioning */
+    .theme-card {
+        position: relative;
+    }
+
+    /* Sale/Discount badge — base (Warm default) */
+    .menu-badge-sale {
+        position: absolute;
+        top: 8px;
+        z-index: 10;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background-color: rgb(var(--crema) / 0.1);
+        color: rgb(var(--crema));
+        border: 1px solid rgb(var(--crema) / 0.5);
+    }
+
+    [dir="ltr"] .menu-badge-sale {
+        right: 8px;
+    }
+
+    [dir="rtl"] .menu-badge-sale {
+        left: 8px;
+        letter-spacing: 0;
+    }
+
+    /* Modern — sale badge (compact, top-right of card) */
+    [data-theme="modern"] .menu-badge-sale {
+        position: absolute;
+        top: 4px;
+        z-index: 10;
+        padding: 2px 6px;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background-color: rgb(var(--crema) / 0.15);
+        color: rgb(var(--crema));
+        border: 1px solid rgb(var(--crema) / 0.5);
+    }
+
+    [dir="ltr"] [data-theme="modern"] .menu-badge-sale {
+        right: 4px;
+    }
+
+    [dir="rtl"] [data-theme="modern"] .menu-badge-sale {
+        left: 4px;
+    }
+
+    /* Dark — sale badge */
+    [data-theme="dark"] .menu-badge-sale {
+        position: absolute;
+        top: 8px;
+        z-index: 10;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background-color: rgb(var(--crema) / 0.2);
+        color: rgb(var(--crema));
+        border: 1px solid rgb(var(--crema) / 0.4);
+        backdrop-filter: blur(4px);
+    }
+
+    [dir="ltr"] [data-theme="dark"] .menu-badge-sale {
+        right: 8px;
+    }
+
+    [dir="rtl"] [data-theme="dark"] .menu-badge-sale {
+        left: 8px;
+    }
+
+    /* Modern theme — horizontal card layout */
+    .menu-card-modern-inner {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    [dir="rtl"] .menu-card-modern-inner {
+        flex-direction: row-reverse;
+    }
+
+    .menu-card-modern-image {
+        width: 80px;
+        min-width: 80px;
+        height: 80px;
+        position: relative;
+        overflow: hidden;
+        background-color: rgb(var(--panel-muted));
+        flex-shrink: 0;
+    }
+
+    .menu-card-modern-content {
+        flex: 1;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .menu-card-modern-desc {
+        font-size: 12px;
+        line-height: 1.4;
+        color: rgb(var(--ink-soft));
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+    }
+
+    .menu-card-modern-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    /* Dark theme — hero card overlay */
+    .menu-card-dark-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px;
+        z-index: 2;
+    }
+
+    .menu-card-dark-desc {
+        font-size: 13px;
+        line-height: 1.4;
+        color: rgb(var(--ink-soft));
+    }
 }
 
 /* Theme RTL overrides */

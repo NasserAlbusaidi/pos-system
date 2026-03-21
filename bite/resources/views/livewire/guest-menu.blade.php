@@ -117,91 +117,218 @@
                                 $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
                                 $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
                             @endphp
-                            <article
-                                class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
-                                @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
-                                wire:key="product-{{ $product->id }}"
-                            >
-                                {{-- Sale/Discount badge --}}
-                                @if($product->is_on_sale)
-                                    <div class="absolute {{ $locale === 'ar' ? 'left-2' : 'right-2' }} top-2 z-10 rounded-full border border-crema/50 bg-crema/10 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-crema">
-                                        {{ __('guest.flash_sale') }}
-                                    </div>
-                                @elseif($hasTimeDiscount)
-                                    <div class="absolute {{ $locale === 'ar' ? 'left-2' : 'right-2' }} top-2 z-10 rounded-full border border-crema/50 bg-crema/10 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-crema">
-                                        {{ __('guest.limited_offer') }}
-                                    </div>
-                                @endif
 
-                                {{-- Sold Out badge (mutually exclusive with sale badge) --}}
-                                @if(! $product->is_available)
-                                    <div class="menu-product-sold-out-badge">
-                                        {{ __('guest.sold_out') }}
-                                    </div>
-                                @endif
-
-                                {{-- Image area: fixed 120px height, shimmer while loading --}}
-                                <div class="menu-product-image-area">
-                                    {{-- Shimmer skeleton (shown while image loads) --}}
-                                    <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
-
-                                    @if(productImage($product, 'card'))
-                                        <img
-                                            src="{{ productImage($product, 'card') }}"
-                                            alt="{{ $product->translated('name') }}"
-                                            class="menu-product-img"
-                                            loading="lazy"
-                                            x-show="loaded && !broken"
-                                            x-on:load="loaded = true"
-                                            x-on:error="broken = true"
-                                            x-bind:style="(loaded && !broken) ? '' : 'display: none'"
-                                        >
+                            @if($theme === 'modern')
+                                {{-- Modern theme: horizontal card (image left, text right) --}}
+                                <article
+                                    class="surface-card menu-product-card menu-card-modern {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
+                                    wire:key="product-{{ $product->id }}"
+                                >
+                                    {{-- Sold Out badge --}}
+                                    @if(! $product->is_available)
+                                        <div class="menu-product-sold-out-badge">{{ __('guest.sold_out') }}</div>
                                     @endif
 
-                                    {{-- Placeholder icon (shown when broken or no image) --}}
-                                    <div class="menu-product-placeholder"
-                                         x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
-                                         x-cloak>
-                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-                                            <path d="M7 2v20"/>
-                                            <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                                        </svg>
-                                    </div>
-                                </div>
+                                    {{-- Sale/Discount badge --}}
+                                    @if($product->is_on_sale)
+                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
+                                    @elseif($hasTimeDiscount)
+                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
+                                    @endif
 
-                                {{-- Name + price + quick-add --}}
-                                <div class="menu-product-body">
-                                    <p class="menu-product-name">{{ $product->translated('name') }}</p>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-                                        <span class="menu-product-price">
-                                            @if($hasTimeDiscount || $product->is_on_sale)
-                                                <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                    {{-- Horizontal layout: image left, content right --}}
+                                    <div class="menu-card-modern-inner">
+                                        <div class="menu-card-modern-image"
+                                             x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }">
+                                            @if(productImage($product, 'card'))
+                                                <img src="{{ productImage($product, 'card') }}"
+                                                     alt="{{ $product->translated('name') }}"
+                                                     class="menu-product-img"
+                                                     loading="lazy"
+                                                     x-show="loaded && !broken"
+                                                     x-on:load="loaded = true"
+                                                     x-on:error="broken = true"
+                                                     x-bind:style="(loaded && !broken) ? '' : 'display: none'">
                                             @endif
-                                            <x-price :amount="$displayPrice" :shop="$shop" />
-                                        </span>
-                                        @if($product->is_available)
-                                            <button
-                                                wire:click.stop="addToCart({{ $product->id }})"
-                                                class="menu-product-add"
-                                                type="button"
-                                                aria-label="Add {{ $product->translated('name') }} to order"
-                                            >+</button>
-                                        @endif
+                                            <div class="menu-product-placeholder"
+                                                 x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
+                                                 x-cloak>
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                                    <path d="M7 2v20"/>
+                                                    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="menu-card-modern-content">
+                                            <p class="menu-product-name">{{ $product->translated('name') }}</p>
+                                            @if($product->translated('description'))
+                                                <p class="menu-card-modern-desc">{{ Str::limit($product->translated('description'), 60) }}</p>
+                                            @endif
+                                            <div class="menu-card-modern-footer">
+                                                <span class="menu-product-price">
+                                                    @if($hasTimeDiscount || $product->is_on_sale)
+                                                        <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                                    @endif
+                                                    <x-price :amount="$displayPrice" :shop="$shop" />
+                                                </span>
+                                                @if($product->is_available)
+                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="Add {{ $product->translated('name') }} to order">+</button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </article>
 
-                                {{-- Expandable description (accordion — one at a time) --}}
-                                @if($product->translated('description'))
-                                    <div
-                                        class="menu-product-description"
-                                        x-bind:data-expanded="expanded === {{ $product->id }} ? 'true' : 'false'"
-                                    >
-                                        <p>{{ $product->translated('description') }}</p>
+                            @elseif($theme === 'dark')
+                                {{-- Dark theme: hero card with overlay text on image --}}
+                                <article
+                                    class="surface-card menu-product-card menu-card-dark {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
+                                    x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
+                                    wire:key="product-{{ $product->id }}"
+                                >
+                                    {{-- Sold Out badge --}}
+                                    @if(! $product->is_available)
+                                        <div class="menu-product-sold-out-badge">{{ __('guest.sold_out') }}</div>
+                                    @endif
+
+                                    {{-- Sale/Discount badge --}}
+                                    @if($product->is_on_sale)
+                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
+                                    @elseif($hasTimeDiscount)
+                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
+                                    @endif
+
+                                    {{-- Hero image with overlay --}}
+                                    <div class="menu-product-image-area">
+                                        <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
+                                        @if(productImage($product, 'card'))
+                                            <img src="{{ productImage($product, 'card') }}"
+                                                 alt="{{ $product->translated('name') }}"
+                                                 class="menu-product-img"
+                                                 loading="lazy"
+                                                 x-show="loaded && !broken"
+                                                 x-on:load="loaded = true"
+                                                 x-on:error="broken = true"
+                                                 x-bind:style="(loaded && !broken) ? '' : 'display: none'">
+                                        @endif
+                                        <div class="menu-product-placeholder" x-show="broken || {{ productImage($product) ? 'false' : 'true' }}" x-cloak>
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                                <path d="M7 2v20"/>
+                                                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                            </svg>
+                                        </div>
+
+                                        {{-- Overlay text on image --}}
+                                        <div class="menu-card-dark-overlay">
+                                            <p class="menu-product-name" style="color: rgb(var(--ink));">{{ $product->translated('name') }}</p>
+                                            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+                                                <span class="menu-product-price" style="color: rgb(var(--ink));">
+                                                    @if($hasTimeDiscount || $product->is_on_sale)
+                                                        <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                                    @endif
+                                                    <x-price :amount="$displayPrice" :shop="$shop" />
+                                                </span>
+                                                @if($product->is_available)
+                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="Add {{ $product->translated('name') }} to order">+</button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                @endif
-                            </article>
+
+                                    {{-- Description below image --}}
+                                    @if($product->translated('description'))
+                                        <div class="menu-product-body">
+                                            <p class="menu-card-dark-desc">{{ Str::limit($product->translated('description'), 80) }}</p>
+                                        </div>
+                                    @endif
+                                </article>
+
+                            @else
+                                {{-- Warm theme (default): vertical card, 2-column grid --}}
+                                <article
+                                    class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
+                                    x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
+                                    @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
+                                    wire:key="product-{{ $product->id }}"
+                                >
+                                    {{-- Sale/Discount badge --}}
+                                    @if($product->is_on_sale)
+                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
+                                    @elseif($hasTimeDiscount)
+                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
+                                    @endif
+
+                                    {{-- Sold Out badge (mutually exclusive with sale badge) --}}
+                                    @if(! $product->is_available)
+                                        <div class="menu-product-sold-out-badge">
+                                            {{ __('guest.sold_out') }}
+                                        </div>
+                                    @endif
+
+                                    {{-- Image area: fixed height, shimmer while loading --}}
+                                    <div class="menu-product-image-area">
+                                        {{-- Shimmer skeleton (shown while image loads) --}}
+                                        <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
+
+                                        @if(productImage($product, 'card'))
+                                            <img
+                                                src="{{ productImage($product, 'card') }}"
+                                                alt="{{ $product->translated('name') }}"
+                                                class="menu-product-img"
+                                                loading="lazy"
+                                                x-show="loaded && !broken"
+                                                x-on:load="loaded = true"
+                                                x-on:error="broken = true"
+                                                x-bind:style="(loaded && !broken) ? '' : 'display: none'"
+                                            >
+                                        @endif
+
+                                        {{-- Placeholder icon (shown when broken or no image) --}}
+                                        <div class="menu-product-placeholder"
+                                             x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
+                                             x-cloak>
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                                <path d="M7 2v20"/>
+                                                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    {{-- Name + price + quick-add --}}
+                                    <div class="menu-product-body">
+                                        <p class="menu-product-name">{{ $product->translated('name') }}</p>
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+                                            <span class="menu-product-price">
+                                                @if($hasTimeDiscount || $product->is_on_sale)
+                                                    <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                                @endif
+                                                <x-price :amount="$displayPrice" :shop="$shop" />
+                                            </span>
+                                            @if($product->is_available)
+                                                <button
+                                                    wire:click.stop="addToCart({{ $product->id }})"
+                                                    class="menu-product-add"
+                                                    type="button"
+                                                    aria-label="Add {{ $product->translated('name') }} to order"
+                                                >+</button>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Expandable description (accordion — one at a time) --}}
+                                    @if($product->translated('description'))
+                                        <div
+                                            class="menu-product-description"
+                                            x-bind:data-expanded="expanded === {{ $product->id }} ? 'true' : 'false'"
+                                        >
+                                            <p>{{ $product->translated('description') }}</p>
+                                        </div>
+                                    @endif
+                                </article>
+                            @endif
                         @endforeach
                     </div>
                 </section>
