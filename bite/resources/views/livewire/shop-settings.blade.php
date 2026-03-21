@@ -30,7 +30,8 @@
                                 x-on:click="previewTheme = 'warm'; $wire.set('theme', 'warm')"
                                 :class="previewTheme === 'warm' ? 'theme-card--selected' : ''"
                                 class="theme-card">
-                                <div class="theme-mockup" style="background: rgb(245 240 230); padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                                <span x-show="previewTheme === 'warm'" x-cloak class="theme-card-check">&#10003;</span>
+                                <div class="theme-mockup" style="background: rgb(245 240 230); padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start;">
                                     <div style="background: rgb(255 255 252); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px -3px rgb(0 0 0 / 0.12);">
                                         <div style="height: 50px; background: rgb(228 227 220);"></div>
                                         <div style="padding: 6px;">
@@ -46,11 +47,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
+                                <div class="theme-card-info">
                                     <p class="theme-card-name">Warm</p>
                                     <p class="theme-card-description">Earthy and inviting. Perfect for cafes and bakeries.</p>
                                 </div>
-                                <span x-show="previewTheme === 'warm'" x-cloak style="position:absolute;top:8px;right:8px;color:rgb(var(--crema));font-size:18px;">&#10003;</span>
                             </button>
 
                             {{-- Modern Theme Card --}}
@@ -58,27 +58,27 @@
                                 x-on:click="previewTheme = 'modern'; $wire.set('theme', 'modern')"
                                 :class="previewTheme === 'modern' ? 'theme-card--selected' : ''"
                                 class="theme-card">
-                                <div class="theme-mockup" style="background: rgb(255 255 255); padding: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                <span x-show="previewTheme === 'modern'" x-cloak class="theme-card-check">&#10003;</span>
+                                <div class="theme-mockup" style="background: rgb(255 255 255); padding: 12px; display: flex; flex-direction: column; gap: 4px; justify-content: center;">
                                     <div style="display: flex; border: 1px solid rgb(195 199 203); overflow: hidden;">
-                                        <div style="width: 50px; min-width: 50px; height: 50px; background: rgb(228 227 220);"></div>
+                                        <div style="width: 44px; min-width: 44px; height: 44px; background: rgb(228 227 220);"></div>
                                         <div style="padding: 6px; flex: 1;">
                                             <div style="font-size: 9px; font-weight: 600; color: rgb(15 15 15); font-family: 'Inter', sans-serif;">Croissant</div>
                                             <div style="font-size: 8px; color: rgb(15 15 15); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0.800</div>
                                         </div>
                                     </div>
                                     <div style="display: flex; border: 1px solid rgb(195 199 203); overflow: hidden;">
-                                        <div style="width: 50px; min-width: 50px; height: 50px; background: rgb(228 227 220);"></div>
+                                        <div style="width: 44px; min-width: 44px; height: 44px; background: rgb(228 227 220);"></div>
                                         <div style="padding: 6px; flex: 1;">
                                             <div style="font-size: 9px; font-weight: 600; color: rgb(15 15 15); font-family: 'Inter', sans-serif;">Cappuccino</div>
                                             <div style="font-size: 8px; color: rgb(15 15 15); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">1.200</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div>
+                                <div class="theme-card-info">
                                     <p class="theme-card-name">Modern</p>
                                     <p class="theme-card-description">Clean and minimal. Ideal for fast-casual and health food.</p>
                                 </div>
-                                <span x-show="previewTheme === 'modern'" x-cloak style="position:absolute;top:8px;right:8px;color:rgb(var(--crema));font-size:18px;">&#10003;</span>
                             </button>
 
                             {{-- Dark Theme Card --}}
@@ -86,48 +86,48 @@
                                 x-on:click="previewTheme = 'dark'; $wire.set('theme', 'dark')"
                                 :class="previewTheme === 'dark' ? 'theme-card--selected' : ''"
                                 class="theme-card">
-                                <div class="theme-mockup" style="background: rgb(14 14 18); padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+                                <span x-show="previewTheme === 'dark'" x-cloak class="theme-card-check">&#10003;</span>
+                                <div class="theme-mockup" style="background: rgb(14 14 18); padding: 12px; display: flex; flex-direction: column; gap: 6px; justify-content: center;">
                                     <div style="border-radius: 6px; overflow: hidden; position: relative; box-shadow: 0 0 12px -4px rgb(200 160 80 / 0.2);">
-                                        <div style="height: 60px; background: rgb(30 30 36);"></div>
+                                        <div style="height: 55px; background: rgb(30 30 36);"></div>
                                         <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 6px; background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.6));">
                                             <div style="font-size: 9px; font-weight: 600; color: rgb(240 238 234); font-family: 'DM Sans', sans-serif;">Croissant</div>
                                             <div style="font-size: 8px; color: rgb(240 238 234); font-family: 'JetBrains Mono', monospace;">0.800</div>
                                         </div>
                                     </div>
                                     <div style="border-radius: 6px; overflow: hidden; position: relative; box-shadow: 0 0 12px -4px rgb(200 160 80 / 0.2);">
-                                        <div style="height: 60px; background: rgb(30 30 36);"></div>
+                                        <div style="height: 55px; background: rgb(30 30 36);"></div>
                                         <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 6px; background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.6));">
                                             <div style="font-size: 9px; font-weight: 600; color: rgb(240 238 234); font-family: 'DM Sans', sans-serif;">Cappuccino</div>
                                             <div style="font-size: 8px; color: rgb(240 238 234); font-family: 'JetBrains Mono', monospace;">1.200</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div>
+                                <div class="theme-card-info">
                                     <p class="theme-card-name">Dark</p>
                                     <p class="theme-card-description">Moody and premium. Built for bars and fine dining.</p>
                                 </div>
-                                <span x-show="previewTheme === 'dark'" x-cloak style="position:absolute;top:8px;right:8px;color:rgb(var(--crema));font-size:18px;">&#10003;</span>
                             </button>
                         </div>
 
                         {{-- Live Preview --}}
                         <div class="theme-live-preview" :data-theme="previewTheme">
-                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft" style="margin-bottom: 8px;">Preview</p>
-                            <div style="padding: 8px; border-radius: 8px; background: rgb(var(--paper));">
-                                <p style="font-family: var(--theme-display-font); font-size: 16px; font-weight: 600; color: rgb(var(--ink)); margin-bottom: 8px;">Beverages</p>
-                                <div style="display: grid; grid-template-columns: var(--theme-grid-cols, repeat(2, 1fr)); gap: var(--theme-grid-gap, 8px);">
-                                    <div style="border-radius: var(--theme-card-radius, 12px); overflow: hidden; box-shadow: var(--theme-card-shadow, none); border: var(--theme-card-border, none); background: rgb(var(--panel, 255 255 252));">
-                                        <div style="height: 40px; background: rgb(var(--panel-muted, 228 227 220));"></div>
+                            <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" style="margin-bottom: 10px; color: rgb(var(--ink-soft));">Preview</p>
+                            <div style="padding: 12px; border-radius: 10px; background: rgb(var(--paper)); transition: background-color 300ms ease;">
+                                <p style="font-family: var(--theme-display-font); font-size: 15px; font-weight: 600; color: rgb(var(--ink)); margin-bottom: 10px; transition: color 300ms ease;">Beverages</p>
+                                <div style="display: grid; grid-template-columns: var(--theme-grid-cols, repeat(2, 1fr)); gap: var(--theme-grid-gap, 10px);">
+                                    <div style="border-radius: var(--theme-card-radius, 12px); overflow: hidden; box-shadow: var(--theme-card-shadow, none); border: var(--theme-card-border, none); background: rgb(var(--panel, 255 255 252)); transition: all 300ms ease;">
+                                        <div style="height: 44px; background: rgb(var(--panel-muted, 228 227 220)); transition: background-color 300ms ease;"></div>
                                         <div style="padding: var(--theme-card-padding, 8px);">
-                                            <div style="font-family: var(--theme-body-font); font-size: 11px; font-weight: 600; color: rgb(var(--ink));">Latte</div>
-                                            <div style="font-size: 9px; color: rgb(var(--ink)); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">1.500</div>
+                                            <div style="font-family: var(--theme-body-font); font-size: 11px; font-weight: 600; color: rgb(var(--ink)); transition: color 300ms ease;">Latte</div>
+                                            <div style="font-size: 9px; color: rgb(var(--ink)); font-family: 'JetBrains Mono', monospace; margin-top: 2px; transition: color 300ms ease;">1.500</div>
                                         </div>
                                     </div>
-                                    <div style="border-radius: var(--theme-card-radius, 12px); overflow: hidden; box-shadow: var(--theme-card-shadow, none); border: var(--theme-card-border, none); background: rgb(var(--panel, 255 255 252));">
-                                        <div style="height: 40px; background: rgb(var(--panel-muted, 228 227 220));"></div>
+                                    <div style="border-radius: var(--theme-card-radius, 12px); overflow: hidden; box-shadow: var(--theme-card-shadow, none); border: var(--theme-card-border, none); background: rgb(var(--panel, 255 255 252)); transition: all 300ms ease;">
+                                        <div style="height: 44px; background: rgb(var(--panel-muted, 228 227 220)); transition: background-color 300ms ease;"></div>
                                         <div style="padding: var(--theme-card-padding, 8px);">
-                                            <div style="font-family: var(--theme-body-font); font-size: 11px; font-weight: 600; color: rgb(var(--ink));">Espresso</div>
-                                            <div style="font-size: 9px; color: rgb(var(--ink)); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0.900</div>
+                                            <div style="font-family: var(--theme-body-font); font-size: 11px; font-weight: 600; color: rgb(var(--ink)); transition: color 300ms ease;">Espresso</div>
+                                            <div style="font-size: 9px; color: rgb(var(--ink)); font-family: 'JetBrains Mono', monospace; margin-top: 2px; transition: color 300ms ease;">0.900</div>
                                         </div>
                                     </div>
                                 </div>

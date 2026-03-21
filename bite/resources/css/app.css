@@ -247,18 +247,18 @@
         animation: kds-bump 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
 
-    /* Guest Menu — Compact Card Grid */
+    /* Guest Menu — Card Grid */
     .menu-product-grid {
         display: grid;
         grid-template-columns: var(--theme-grid-cols, repeat(2, 1fr));
-        gap: var(--theme-grid-gap, 8px);
+        gap: var(--theme-grid-gap, 12px);
     }
 
     .menu-product-card {
         border-radius: var(--theme-card-radius, 12px);
         overflow: hidden;
         cursor: pointer;
-        transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+        transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 200ms ease;
         box-shadow: var(--theme-card-shadow, none);
         border: var(--theme-card-border, none);
     }
@@ -268,8 +268,8 @@
     }
 
     .menu-product-image-area {
-        height: var(--theme-image-height, 120px);
-        min-height: var(--theme-image-height, 120px);
+        height: var(--theme-image-height, 140px);
+        min-height: var(--theme-image-height, 140px);
         position: relative;
         overflow: hidden;
         background-color: rgb(var(--panel-muted));
@@ -286,6 +286,11 @@
         height: 100%;
         object-fit: contain;
         object-position: center;
+        transition: transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .menu-product-card:hover .menu-product-img {
+        transform: scale(1.03);
     }
 
     .menu-product-placeholder {
@@ -293,14 +298,14 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: rgb(var(--ink-soft) / 0.4);
+        color: rgb(var(--ink-soft) / 0.3);
     }
 
     .menu-product-body {
-        padding: var(--theme-card-padding, 8px);
+        padding: var(--theme-card-padding, 10px 12px 12px);
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
     }
 
     .menu-product-name {
@@ -316,21 +321,22 @@
     }
 
     .menu-product-price {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
         font-family: 'JetBrains Mono', monospace;
         color: rgb(var(--ink));
+        letter-spacing: -0.01em;
     }
 
     .menu-product-add {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         min-width: 44px;
         min-height: 44px;
         border-radius: 50%;
         background-color: rgb(var(--crema));
-        color: rgb(var(--panel));
-        font-size: 18px;
+        color: rgb(var(--paper));
+        font-size: 20px;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -338,8 +344,12 @@
         margin: -8px;
         border: none;
         cursor: pointer;
-        transition: transform 150ms ease, opacity 150ms ease;
+        transition: transform 150ms ease, background-color 150ms ease;
         flex-shrink: 0;
+    }
+
+    .menu-product-add:hover {
+        background-color: rgb(var(--crema) / 0.85);
     }
 
     .menu-product-add:active {
@@ -407,7 +417,7 @@
 
     .menu-category-header {
         font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 600;
         line-height: 1.2;
         color: rgb(var(--ink));
@@ -440,15 +450,15 @@
 
     /* Warm Theme (default — matches existing Sourdough aesthetic) */
     [data-theme="warm"] {
-        --theme-card-radius: 12px;
-        --theme-card-shadow: 0 4px 20px -6px rgb(0 0 0 / 0.15);
-        --theme-card-border: 1px solid rgb(var(--line) / 0.8);
+        --theme-card-radius: 14px;
+        --theme-card-shadow: 0 2px 12px -4px rgb(0 0 0 / 0.1);
+        --theme-card-border: 1px solid rgb(var(--line) / 0.6);
         --theme-grid-cols: repeat(2, 1fr);
-        --theme-grid-gap: 12px;
-        --theme-image-height: 140px;
+        --theme-grid-gap: 14px;
+        --theme-image-height: 150px;
         --theme-body-font: 'Rubik', system-ui, sans-serif;
         --theme-display-font: 'Playfair Display', Georgia, serif;
-        --theme-card-padding: 12px;
+        --theme-card-padding: 10px 12px 12px;
 
         /* Default palette — overridden by inline <style> when shop has custom branding */
         --paper: 245 240 230;
@@ -458,15 +468,15 @@
 
     /* Modern Theme — clean, minimal, high-contrast */
     [data-theme="modern"] {
-        --theme-card-radius: 0px;
+        --theme-card-radius: 2px;
         --theme-card-shadow: none;
         --theme-card-border: 1px solid rgb(var(--line));
         --theme-grid-cols: 1fr;
-        --theme-grid-gap: 8px;
+        --theme-grid-gap: 6px;
         --theme-image-height: 80px;
         --theme-body-font: 'Inter', system-ui, sans-serif;
         --theme-display-font: 'Inter', system-ui, sans-serif;
-        --theme-card-padding: 8px;
+        --theme-card-padding: 10px 12px;
 
         --paper: 255 255 255;
         --ink: 15 15 15;
@@ -475,15 +485,15 @@
 
     /* Dark Theme — moody, premium */
     [data-theme="dark"] {
-        --theme-card-radius: 8px;
-        --theme-card-shadow: 0 0 24px -8px rgb(var(--crema) / 0.25);
+        --theme-card-radius: 10px;
+        --theme-card-shadow: 0 0 20px -6px rgb(var(--crema) / 0.15);
         --theme-card-border: none;
         --theme-grid-cols: 1fr;
-        --theme-grid-gap: 16px;
-        --theme-image-height: 200px;
+        --theme-grid-gap: 20px;
+        --theme-image-height: 220px;
         --theme-body-font: 'DM Sans', system-ui, sans-serif;
         --theme-display-font: 'DM Serif Display', Georgia, serif;
-        --theme-card-padding: 16px;
+        --theme-card-padding: 14px 16px;
 
         --paper: 14 14 18;
         --ink: 240 238 234;
@@ -552,7 +562,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, transparent 40%, rgb(0 0 0 / 0.5) 100%);
+        background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 0.65) 100%);
         pointer-events: none;
         z-index: 1;
     }
@@ -589,54 +599,85 @@
 
     /* Theme Picker — Shop Settings */
     .theme-picker-grid {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
     }
 
     .theme-card {
+        position: relative;
         display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 16px;
-        border: 1px solid rgb(var(--line));
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        border: 2px solid rgb(var(--line));
         border-radius: 12px;
         cursor: pointer;
-        transition: border-color 200ms ease, box-shadow 200ms ease;
+        transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
         background: rgb(var(--panel));
         text-align: left;
         width: 100%;
+        overflow: hidden;
     }
 
     .theme-card:hover {
         border-color: rgb(var(--ink-soft));
+        box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+        transform: translateY(-2px);
     }
 
     .theme-card--selected {
-        border: 2px solid rgb(var(--crema));
-        box-shadow: 0 0 0 3px rgb(var(--crema) / 0.15);
+        border-color: rgb(var(--crema));
+        box-shadow: 0 0 0 3px rgb(var(--crema) / 0.2), 0 4px 12px rgb(0 0 0 / 0.06);
+    }
+
+    .theme-card--selected:hover {
+        border-color: rgb(var(--crema));
+    }
+
+    .theme-card-check {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgb(var(--crema));
+        color: rgb(var(--paper));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 2;
+        box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
     }
 
     .theme-mockup {
-        width: 180px;
-        min-width: 180px;
-        height: 120px;
-        border-radius: 8px;
+        width: 100%;
+        aspect-ratio: 4 / 3;
         overflow: hidden;
         flex-shrink: 0;
+        border-bottom: 1px solid rgb(var(--line) / 0.5);
+    }
+
+    .theme-card-info {
+        padding: 10px 12px 12px;
     }
 
     .theme-card-name {
-        font-size: 16px;
-        font-weight: 600;
+        font-family: var(--font-display, 'Rubik', system-ui, sans-serif);
+        font-size: 13px;
+        font-weight: 700;
         color: rgb(var(--ink));
         margin: 0;
     }
 
     .theme-card-description {
-        font-size: 14px;
+        font-size: 11px;
         color: rgb(var(--ink-soft));
-        margin: 4px 0 0;
+        margin: 3px 0 0;
+        line-height: 1.4;
     }
 
     /* Theme live preview container */
@@ -646,11 +687,8 @@
         overflow: hidden;
         margin-top: 16px;
         padding: 16px;
-    }
-
-    /* Theme card needs position:relative for checkmark absolute positioning */
-    .theme-card {
-        position: relative;
+        background: rgb(var(--paper));
+        transition: background-color 300ms ease;
     }
 
     /* Sale/Discount badge — base (Warm default) */
@@ -735,6 +773,7 @@
         display: flex;
         flex-direction: row;
         align-items: stretch;
+        min-height: 88px;
     }
 
     [dir="rtl"] .menu-card-modern-inner {
@@ -742,9 +781,8 @@
     }
 
     .menu-card-modern-image {
-        width: 80px;
-        min-width: 80px;
-        height: 80px;
+        width: 88px;
+        min-width: 88px;
         position: relative;
         overflow: hidden;
         background-color: rgb(var(--panel-muted));
@@ -753,10 +791,11 @@
 
     .menu-card-modern-content {
         flex: 1;
-        padding: 8px;
+        padding: 10px 12px;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        gap: 2px;
         gap: 2px;
         min-width: 0;
     }
@@ -785,7 +824,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 16px;
+        padding: 14px 16px;
         z-index: 2;
     }
 
