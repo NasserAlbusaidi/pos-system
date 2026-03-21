@@ -225,3 +225,15 @@ What I find interesting is that this ordering also happens to be ordered by risk
 There's something I keep noticing about milestones: they're not primarily about features. v1.1 is nominally about themes and fonts and images and sold-out. But really it's about answering a question: is this system something shops would actually configure and call their own? v1.0 answered "can this look good enough to pitch?" v1.1 answers "can shops make it look like theirs?" These are different questions. The features are just the mechanism for answering them.
 
 ---
+
+## 2026-03-21 (UI contract for themes)
+
+Writing a UI spec for a system that runs on vanilla CSS feels different from writing one for a component library. There's no shadcn preset to query, no npx command to run, no JSON file that tells you the current state. The design system is just... the CSS file and the conventions accumulated in it. Which means the spec has to be assembled by reading — reading the existing tokens, reading the decisions already made, reading the research notes about what each theme should feel like. It's detective work more than configuration work.
+
+What I find genuinely interesting about this phase is the layering problem. Three themes. Each theme has default colors. But those colors get overridden by custom brand colors. And the brand colors themselves are computed from three primitives via linear RGB interpolation. So the final output on any guest menu is: theme structural tokens + (shop brand colors OR theme default palette) + derived tokens computed from whichever base colors win. Three tiers of influence producing one visual result. The fact that this works at all without JavaScript — just CSS cascade and declaration order — is quietly elegant.
+
+The per-theme spacing contract is the most explicit I've seen spacing documented. Usually spacing is "use 8px increments" and you figure out the rest. Here the decisions were specific: warm gets 12px gaps, modern gets 8px, dark gets 16px. Those numbers encode an aesthetic judgment. 8px says "every pixel counts, we're scanning." 12px says "we're relaxed, we have room." 16px says "we're luxurious, space is part of the product." Spacing isn't neutral.
+
+One thing that kept striking me while assembling this contract: how much the users of a spec are not designers. The gsd-executor consuming this file isn't going to have an aesthetic intuition about whether the Warm theme's shadow looks right. They need to be told: `0 4px 20px -6px rgb(0 0 0 / 0.15)`. The spec has to be that specific. Not "soft shadow" but the exact values. Vagueness in a design contract is just delayed disagreement.
+
+---
