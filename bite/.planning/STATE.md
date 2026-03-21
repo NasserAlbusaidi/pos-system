@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Checkpoint: Task 2 human-verify — SourdoughDemoTest 4 smoke tests pass, awaiting browser verification of order flow"
-last_updated: "2026-03-20T19:42:28.436Z"
+stopped_at: Completed 02-demo/02-02-PLAN.md — Phase 02 complete, Sourdough demo pitch-ready
+last_updated: "2026-03-21T04:23:24.806Z"
 progress:
   total_phases: 2
   completed_phases: 2
@@ -51,6 +51,7 @@ Plan: 2 of 2
 | Phase 01-polish P03 | 3 | 1 tasks | 2 files |
 | Phase 01-polish P03 | 20 | 2 tasks | 4 files |
 | Phase 02-demo P01 | 4 | 2 tasks | 1 files |
+| Phase 02-demo P02 | 25 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 02-demo]: No image_url on Sourdough products — Phase 1 placeholder icons satisfy DEMO-02 photo requirement for pitch
 - [Phase 02-demo]: Sourdough shop status=active, trial_ends_at 10 years — demo shop never expires
 - [Phase 02-demo]: Test data created inline in setUp() not via SourdoughMenuSeeder — seeder targets MySQL, tests use SQLite in-memory
+- [Phase 02-demo]: Human verification confirmed: placeholder icons satisfy DEMO-02 for pitch without real photos
+- [Phase 02-demo]: Test data created inline in setUp() not via SourdoughMenuSeeder — seeder targets MySQL, tests use SQLite in-memory
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T19:42:24.622Z
-Stopped at: Checkpoint: Task 2 human-verify — SourdoughDemoTest 4 smoke tests pass, awaiting browser verification of order flow
+Last session: 2026-03-21T04:23:24.804Z
+Stopped at: Completed 02-demo/02-02-PLAN.md — Phase 02 complete, Sourdough demo pitch-ready
 Resume file: None

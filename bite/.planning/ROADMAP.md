@@ -7,7 +7,7 @@ Two phases: first fix the guest menu so it looks good enough to demo, then build
 ## Phases
 
 - [x] **Phase 1: Polish** - Fix image bug, overhaul guest menu visuals, derive branding cascade, add regression tests (completed 2026-03-20)
-- [ ] **Phase 2: Demo** - Create Sourdough shop, enter all menu data, verify end-to-end flow
+- [x] **Phase 2: Demo** - Create Sourdough shop, enter all menu data, verify end-to-end flow (completed 2026-03-21)
 
 ## Phase Details
 
@@ -36,11 +36,11 @@ Plans:
   1. The Sourdough shop exists with paper/gold/ink brand colors applied and guest menu looks on-brand
   2. All 33 menu items are visible on the guest menu with bilingual names, correct prices, and photos
   3. A test order placed from the guest menu appears on the KDS and can be marked ready
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md — Create Sourdough shop + 33-item bilingual menu seeder
-- [ ] 02-02-PLAN.md — Smoke tests + end-to-end human verification walkthrough
+- [x] 02-02-PLAN.md — Smoke tests + end-to-end human verification walkthrough
 
 ## Progress
 
@@ -49,4 +49,4 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Polish | 3/3 | Complete   | 2026-03-20 |
-| 2. Demo | 1/2 | In Progress|  |
+| 2. Demo | 2/2 | Complete   | 2026-03-21 |
