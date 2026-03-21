@@ -16,7 +16,7 @@ Requirements for v1.1 Customization & Polish. Each maps to roadmap phases.
 ### Image Optimization
 
 - [ ] **IMG-01**: Product images are automatically resized on upload (max 800px longest edge)
-- [ ] **IMG-02**: Product images are automatically converted to WebP on upload with originals preserved
+- [ ] **IMG-02**: Product images are automatically converted to WebP on upload, originals deleted after variants confirmed
 - [ ] **IMG-03**: Multiple image size variants are generated on upload (thumbnail 200px, card 400px, full 800px)
 - [ ] **IMG-04**: Guest menu uses optimized image variants with lazy loading
 
