@@ -22,11 +22,11 @@ Requirements for v1.1 Customization & Polish. Each maps to roadmap phases.
 
 ### Menu Themes
 
-- [ ] **THEME-01**: Shop can select from 3 preset themes, each defining layout style, color palette, and font pairing
-- [ ] **THEME-02**: Theme picker is available in shop settings with visual preview of each theme
-- [ ] **THEME-03**: Shop can override brand colors (paper/ink/accent) on top of the selected theme
-- [ ] **THEME-04**: All 3 themes render correctly in RTL (Arabic) layout
-- [ ] **THEME-05**: Theme picker shows a live preview before saving
+- [x] **THEME-01**: Shop can select from 3 preset themes, each defining layout style, color palette, and font pairing
+- [x] **THEME-02**: Theme picker is available in shop settings with visual preview of each theme
+- [x] **THEME-03**: Shop can override brand colors (paper/ink/accent) on top of the selected theme
+- [x] **THEME-04**: All 3 themes render correctly in RTL (Arabic) layout
+- [x] **THEME-05**: Theme picker shows a live preview before saving
 
 ### Custom Fonts
 
@@ -73,11 +73,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | IMG-02 | Phase 4 | Complete |
 | IMG-03 | Phase 4 | Complete |
 | IMG-04 | Phase 4 | Complete |
-| THEME-01 | Phase 5 | Pending |
-| THEME-02 | Phase 5 | Pending |
-| THEME-03 | Phase 5 | Pending |
-| THEME-04 | Phase 5 | Pending |
-| THEME-05 | Phase 5 | Pending |
+| THEME-01 | Phase 5 | Complete |
+| THEME-02 | Phase 5 | Complete |
+| THEME-03 | Phase 5 | Complete |
+| THEME-04 | Phase 5 | Complete |
+| THEME-05 | Phase 5 | Complete |
 | FONT-01 | Phase 6 | Pending |
 | FONT-02 | Phase 6 | Pending |
 | FONT-03 | Phase 6 | Pending |

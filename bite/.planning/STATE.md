@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: "Checkpoint:human-verify in 05-02-PLAN.md (Task 2)"
-last_updated: "2026-03-21T08:13:37.837Z"
+stopped_at: Completed 05-02-PLAN.md (Phase 05 Menu Themes complete)
+last_updated: "2026-03-21T13:26:22.263Z"
 progress:
   total_phases: 4
   completed_phases: 3
@@ -47,6 +47,7 @@ Plan: 2 of 2
 | Phase 04-image-optimization P01 | 297 | 2 tasks | 7 files |
 | Phase 04-image-optimization P02 | 157 | 2 tasks | 4 files |
 | Phase 05-menu-themes P01 | 6m | 2 tasks | 12 files |
+| Phase 05-menu-themes P02 | 7200 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 05-02]: Modern card uses dedicated .menu-card-modern-image div (80x80) separate from .menu-product-image-area to avoid height conflict with dark hero card (200px)
 - [Phase 05-02]: .menu-badge-sale class replaces per-card inline Tailwind strings — shared across all 3 theme card templates
 - [Phase 05-02]: Warm card wrapped in @else (not @elseif) to act as safe fallback for any invalid theme value
+- [Phase 05-menu-themes]: Live preview in settings uses Alpine inline :style bindings with hardcoded palette values — CSS custom property cascade doesn't work reliably when [data-theme] is absent from the admin html element
+- [Phase 05-menu-themes]: Theme CSS token blocks moved outside @layer components — @layer has lower specificity than un-layered CSS, causing theme tokens to lose against the inline branding style block
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:13:32.007Z
-Stopped at: Checkpoint:human-verify in 05-02-PLAN.md (Task 2)
+Last session: 2026-03-21T13:26:22.261Z
+Stopped at: Completed 05-02-PLAN.md (Phase 05 Menu Themes complete)
 Resume file: None
