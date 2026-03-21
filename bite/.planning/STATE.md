@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-21T05:45:08.875Z"
+stopped_at: Completed 03-item-availability-02-PLAN.md
+last_updated: "2026-03-21T05:46:02.192Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -43,6 +43,7 @@ Plan: 2 of 2
 
 *Updated after each plan completion*
 | Phase 03-item-availability P01 | 132s | 2 tasks | 5 files |
+| Phase 03-item-availability P02 | 2 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -57,6 +58,8 @@ Recent decisions affecting current work:
 - [v1.1 research]: Theme tokens must not overwrite --paper/--ink/--crema (branding cascade owns those)
 - [v1.1 research]: Font name validation: ^[A-Za-z0-9 ]+$ before any processing; SSRF allowlist to fonts.googleapis.com and fonts.gstatic.com only
 - [Phase 03-01]: Available/Sold Out language in ProductManager (not 86'd) — 86'd stays POS-only per D-06
+- [Phase 03-item-availability]: Guest menu shows unavailable products greyed-out (not hidden) — render() filter removed; addToCart guard preserved
+- [Phase 03-item-availability]: submitOrder auto-removes stale cart items instead of just erroring — better UX for guest cart recovery
 
 ### Pending Todos
 
@@ -70,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T05:45:08.873Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-21T05:46:02.190Z
+Stopped at: Completed 03-item-availability-02-PLAN.md
 Resume file: None

@@ -21,7 +21,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details
 
 **Milestone Goal:** Give shops visual identity and operational control — selectable themes, custom fonts, optimized images, and item availability toggles.
 
-- [ ] **Phase 3: Item Availability** - Admin toggles products sold-out; guest menu shows greyed badge instead of hiding
+- [x] **Phase 3: Item Availability** - Admin toggles products sold-out; guest menu shows greyed badge instead of hiding (completed 2026-03-21)
 - [ ] **Phase 4: Image Optimization** - Uploaded images auto-resize and convert to WebP with size variants
 - [ ] **Phase 5: Menu Themes** - Three preset themes selectable per shop with brand color overrides
 - [ ] **Phase 6: Custom Fonts** - Admin types a Google Font name; system fetches and self-hosts it
@@ -36,10 +36,10 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details
   1. Admin or manager can toggle a product's availability on/off from the menu builder without leaving the page
   2. Guest menu shows unavailable products with a greyed-out card and a visible "Sold Out" badge — items are not hidden
   3. A guest who added an item to the cart before it was marked sold out sees a clear error at checkout and cannot complete the order with that item
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 03-01-PLAN.md — Admin availability toggle in ProductManager (inline list + edit form)
-- [ ] 03-02-PLAN.md — Guest menu sold-out display and cart error recovery
+- [x] 03-02-PLAN.md — Guest menu sold-out display and cart error recovery
 
 ### Phase 4: Image Optimization
 **Goal**: All newly uploaded product images are automatically optimized for fast mobile loading
@@ -81,7 +81,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1. Polish | v1.0 | 3/3 | Complete | 2026-03-20 |
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
-| 3. Item Availability | v1.1 | 1/2 | In Progress|  |
+| 3. Item Availability | v1.1 | 2/2 | Complete   | 2026-03-21 |
 | 4. Image Optimization | v1.1 | 0/TBD | Not started | - |
 | 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |

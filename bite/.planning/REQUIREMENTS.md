@@ -10,8 +10,8 @@ Requirements for v1.1 Customization & Polish. Each maps to roadmap phases.
 ### Item Availability
 
 - [x] **AVAIL-01**: Admin/manager can toggle a product's availability on/off from the menu builder
-- [ ] **AVAIL-02**: Guest menu shows unavailable products greyed out with a "Sold Out" badge instead of hiding them
-- [ ] **AVAIL-03**: Guest cart validates item availability at checkout and surfaces a clear error if a stale item is in the cart
+- [x] **AVAIL-02**: Guest menu shows unavailable products greyed out with a "Sold Out" badge instead of hiding them
+- [x] **AVAIL-03**: Guest cart validates item availability at checkout and surfaces a clear error if a stale item is in the cart
 
 ### Image Optimization
 
@@ -67,8 +67,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AVAIL-01 | Phase 3 | Complete |
-| AVAIL-02 | Phase 3 | Pending |
-| AVAIL-03 | Phase 3 | Pending |
+| AVAIL-02 | Phase 3 | Complete |
+| AVAIL-03 | Phase 3 | Complete |
 | IMG-01 | Phase 4 | Pending |
 | IMG-02 | Phase 4 | Pending |
 | IMG-03 | Phase 4 | Pending |
