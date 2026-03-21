@@ -7,6 +7,7 @@ use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ImageService;
 use App\Services\MenuExtractionService;
 use Database\Seeders\DemoMenuSeeder;
 use Illuminate\Support\Facades\Auth;
@@ -346,7 +347,7 @@ class OnboardingWizard extends Component
                     continue;
                 }
 
-                Product::forceCreate([
+                $product = Product::forceCreate([
                     'shop_id' => $shop->id,
                     'category_id' => $category->id,
                     'name_en' => $nameEn,
@@ -356,6 +357,18 @@ class OnboardingWizard extends Component
                     'price' => max(0.0, (float) ($item['price'] ?? 0)),
                     'sort_order' => ++$productSortOrder,
                 ]);
+
+                // Image optimization hook (D-05): process product image if set
+                // Currently OnboardingWizard creates products without images,
+                // but this hook ensures ImageService is called if image upload is added later.
+                if ($product->image_url) {
+                    try {
+                        $imageService = app(ImageService::class);
+                        $product->update(['image_url' => $imageService->processUpload($product->image_url)]);
+                    } catch (\Throwable $e) {
+                        report($e);
+                    }
+                }
             }
         }
 
@@ -402,13 +415,25 @@ class OnboardingWizard extends Component
                 continue;
             }
 
-            Product::forceCreate([
+            $product = Product::forceCreate([
                 'shop_id' => $shop->id,
                 'category_id' => $category->id,
                 'name_en' => $name,
                 'price' => $price,
                 'sort_order' => ++$order,
             ]);
+
+            // Image optimization hook (D-05): process product image if set
+            // Currently OnboardingWizard creates products without images,
+            // but this hook ensures ImageService is called if image upload is added later.
+            if ($product->image_url) {
+                try {
+                    $imageService = app(ImageService::class);
+                    $product->update(['image_url' => $imageService->processUpload($product->image_url)]);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
         }
 
         $this->dispatch('toast', message: 'Menu items saved.', variant: 'success');

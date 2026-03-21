@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Services\BillingService;
+use App\Services\ImageService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -64,7 +65,7 @@ class ProductManager extends Component
                 'required',
                 Rule::exists('categories', 'id')->where('shop_id', $shopId),
             ],
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:1024', // 1MB Max
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB Max, JPEG/PNG only
             'selectedModifierGroups' => 'nullable|array',
             'selectedModifierGroups.*' => Rule::exists('modifier_groups', 'id')->where('shop_id', $shopId),
         ];
@@ -116,9 +117,20 @@ class ProductManager extends Component
             $product = Product::where('shop_id', Auth::user()->shop_id)
                 ->findOrFail($this->editingProductId);
 
+            $oldImageUrl = $product->image_url;
             $imageUrl = $product->image_url;
             if ($this->image) {
-                $imageUrl = $this->image->store('products', 'public');
+                $rawPath = $this->image->store('products', 'public');
+                try {
+                    $imageService = app(ImageService::class);
+                    $imageUrl = $imageService->processUpload($rawPath);
+                    if ($oldImageUrl) {
+                        $imageService->deleteVariants($oldImageUrl);
+                    }
+                } catch (\Throwable $e) {
+                    report($e);
+                    $imageUrl = $rawPath;
+                }
             }
 
             $product->update([
@@ -142,7 +154,14 @@ class ProductManager extends Component
 
         $imageUrl = null;
         if ($this->image) {
-            $imageUrl = $this->image->store('products', 'public');
+            $rawPath = $this->image->store('products', 'public');
+            try {
+                $imageService = app(ImageService::class);
+                $imageUrl = $imageService->processUpload($rawPath);
+            } catch (\Throwable $e) {
+                report($e);
+                $imageUrl = $rawPath;
+            }
         }
 
         $product = Product::forceCreate([
