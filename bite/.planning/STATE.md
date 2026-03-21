@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: Completed 03-item-availability-02-PLAN.md
-last_updated: "2026-03-21T05:49:55.885Z"
+stopped_at: Completed 04-image-optimization-01-PLAN.md
+last_updated: "2026-03-21T06:40:35.085Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 03 — item-availability
+**Current focus:** Phase 04 — image-optimization
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
+Phase: 04 (image-optimization) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Plan: Not started
 *Updated after each plan completion*
 | Phase 03-item-availability P01 | 132s | 2 tasks | 5 files |
 | Phase 03-item-availability P02 | 2 | 2 tasks | 7 files |
+| Phase 04-image-optimization P01 | 297 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: Available/Sold Out language in ProductManager (not 86'd) — 86'd stays POS-only per D-06
 - [Phase 03-item-availability]: Guest menu shows unavailable products greyed-out (not hidden) — render() filter removed; addToCart guard preserved
 - [Phase 03-item-availability]: submitOrder auto-removes stale cart items instead of just erroring — better UX for guest cart recovery
+- [Phase 04-01]: WebP quality at 80 and JPEG fallback at 85 for food photo balance
+- [Phase 04-01]: saveVariant() protected method enables test subclass overriding without Mockery
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T05:46:02.190Z
-Stopped at: Completed 03-item-availability-02-PLAN.md
+Last session: 2026-03-21T06:40:35.083Z
+Stopped at: Completed 04-image-optimization-01-PLAN.md
 Resume file: None

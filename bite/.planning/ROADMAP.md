@@ -50,9 +50,9 @@ Plans:
   2. The guest menu loads product images using the card-size WebP variant with lazy loading — not the original upload
   3. A product save does not fail or stall visibly when a photo up to 5MB is uploaded
   4. If the server's GD driver does not support WebP, the system falls back to JPEG without silent failure
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 04-01-PLAN.md — ImageService + ProductManager integration (resize, WebP convert, variant generation)
+- [x] 04-01-PLAN.md — ImageService + ProductManager integration (resize, WebP convert, variant generation)
 - [ ] 04-02-PLAN.md — Blade view updates (productImage helper) + backfill artisan command
 
 ### Phase 5: Menu Themes
@@ -85,6 +85,6 @@ Plans:
 | 1. Polish | v1.0 | 3/3 | Complete | 2026-03-20 |
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 3. Item Availability | v1.1 | 2/2 | Complete   | 2026-03-21 |
-| 4. Image Optimization | v1.1 | 0/2 | Planned | - |
+| 4. Image Optimization | v1.1 | 1/2 | In Progress|  |
 | 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |
