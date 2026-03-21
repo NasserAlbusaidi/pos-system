@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
-status: defining_requirements
-stopped_at: null
+status: ready_to_plan
+stopped_at: phase_3
 last_updated: "2026-03-21"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,20 +19,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** v1.1 Customization & Polish — defining requirements
+**Current focus:** Phase 3 — Item Availability
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-21 — Milestone v1.1 started
+Phase: 3 of 6 (Item Availability — first v1.1 phase)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-21 — v1.1 roadmap created; 4 phases mapped across 17 requirements
+
+Progress: [██░░░░░░░░] 20% (phases 1-2 complete from v1.0)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 5 (v1.0 only)
 - Average duration: —
 - Total execution time: —
 
@@ -40,7 +42,8 @@ Last activity: 2026-03-21 — Milestone v1.1 started
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Polish (v1.0) | 3 | - | - |
+| 2. Demo (v1.0) | 2 | - | - |
 
 *Updated after each plan completion*
 
@@ -49,13 +52,13 @@ Last activity: 2026-03-21 — Milestone v1.1 started
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Carried from v1.0:
+Recent decisions affecting current work:
 
-- object-contain for product photos (Sourdough cut-outs must not be cropped)
-- Playfair Display for category headers (artisan aesthetic, pairs with Rubik)
-- 2-column compact grid on all screens (33-item menu, Talabat UX parity)
-- Derive all CSS tokens from 3 brand colors (cold defaults not overridden previously)
-- Linear RGB interpolation for CSS token derivation from brand colors
+- [v1.0]: object-contain for product photos — Sourdough cut-outs must not be cropped
+- [v1.0]: Derive all CSS tokens from 3 brand colors — PHP linear RGB interpolation
+- [v1.1 research]: intervention/image v3 only — v4 blocked (requires PHP 8.3+)
+- [v1.1 research]: Theme tokens must not overwrite --paper/--ink/--crema (branding cascade owns those)
+- [v1.1 research]: Font name validation: ^[A-Za-z0-9 ]+$ before any processing; SSRF allowlist to fonts.googleapis.com and fonts.gstatic.com only
 
 ### Pending Todos
 
@@ -63,10 +66,12 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- [Phase 4]: GD WebP support unverified on production server — create startup health check before shipping image pipeline
+- [Phase 5]: RTL Arabic compatibility is a hard requirement for all 3 themes — letter-spacing must be scoped to [dir="ltr"]; screenshot required before merge
+- [Phase 6]: Google Fonts CSS2 woff2 URL format is stable but not contractually versioned — test regex against live API responses during implementation
 
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Milestone v1.1 initialization
+Stopped at: v1.1 roadmap created — Phase 3 ready to plan
 Resume file: None

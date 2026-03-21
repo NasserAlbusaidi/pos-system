@@ -66,29 +66,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AVAIL-01 | — | Pending |
-| AVAIL-02 | — | Pending |
-| AVAIL-03 | — | Pending |
-| IMG-01 | — | Pending |
-| IMG-02 | — | Pending |
-| IMG-03 | — | Pending |
-| IMG-04 | — | Pending |
-| THEME-01 | — | Pending |
-| THEME-02 | — | Pending |
-| THEME-03 | — | Pending |
-| THEME-04 | — | Pending |
-| THEME-05 | — | Pending |
-| FONT-01 | — | Pending |
-| FONT-02 | — | Pending |
-| FONT-03 | — | Pending |
-| FONT-04 | — | Pending |
-| FONT-05 | — | Pending |
+| AVAIL-01 | Phase 3 | Pending |
+| AVAIL-02 | Phase 3 | Pending |
+| AVAIL-03 | Phase 3 | Pending |
+| IMG-01 | Phase 4 | Pending |
+| IMG-02 | Phase 4 | Pending |
+| IMG-03 | Phase 4 | Pending |
+| IMG-04 | Phase 4 | Pending |
+| THEME-01 | Phase 5 | Pending |
+| THEME-02 | Phase 5 | Pending |
+| THEME-03 | Phase 5 | Pending |
+| THEME-04 | Phase 5 | Pending |
+| THEME-05 | Phase 5 | Pending |
+| FONT-01 | Phase 6 | Pending |
+| FONT-02 | Phase 6 | Pending |
+| FONT-03 | Phase 6 | Pending |
+| FONT-04 | Phase 6 | Pending |
+| FONT-05 | Phase 6 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 — traceability complete after roadmap creation*
