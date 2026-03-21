@@ -22,7 +22,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details
 **Milestone Goal:** Give shops visual identity and operational control — selectable themes, custom fonts, optimized images, and item availability toggles.
 
 - [x] **Phase 3: Item Availability** - Admin toggles products sold-out; guest menu shows greyed badge instead of hiding (completed 2026-03-21)
-- [ ] **Phase 4: Image Optimization** - Uploaded images auto-resize and convert to WebP with size variants
+- [x] **Phase 4: Image Optimization** - Uploaded images auto-resize and convert to WebP with size variants (completed 2026-03-21)
 - [ ] **Phase 5: Menu Themes** - Three preset themes selectable per shop with brand color overrides
 - [ ] **Phase 6: Custom Fonts** - Admin types a Google Font name; system fetches and self-hosts it
 
@@ -50,10 +50,10 @@ Plans:
   2. The guest menu loads product images using the card-size WebP variant with lazy loading — not the original upload
   3. A product save does not fail or stall visibly when a photo up to 5MB is uploaded
   4. If the server's GD driver does not support WebP, the system falls back to JPEG without silent failure
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 04-01-PLAN.md — ImageService + ProductManager integration (resize, WebP convert, variant generation)
-- [ ] 04-02-PLAN.md — Blade view updates (productImage helper) + backfill artisan command
+- [x] 04-02-PLAN.md — Blade view updates (productImage helper) + backfill artisan command
 
 ### Phase 5: Menu Themes
 **Goal**: Shops can choose a visual identity for their guest menu from three distinct preset themes
@@ -85,6 +85,6 @@ Plans:
 | 1. Polish | v1.0 | 3/3 | Complete | 2026-03-20 |
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 3. Item Availability | v1.1 | 2/2 | Complete   | 2026-03-21 |
-| 4. Image Optimization | v1.1 | 1/2 | In Progress|  |
+| 4. Image Optimization | v1.1 | 2/2 | Complete   | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |

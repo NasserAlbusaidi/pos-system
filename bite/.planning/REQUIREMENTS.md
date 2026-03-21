@@ -18,7 +18,7 @@ Requirements for v1.1 Customization & Polish. Each maps to roadmap phases.
 - [x] **IMG-01**: Product images are automatically resized on upload (max 800px longest edge)
 - [x] **IMG-02**: Product images are automatically converted to WebP on upload, originals deleted after variants confirmed
 - [x] **IMG-03**: Multiple image size variants are generated on upload (thumbnail 200px, card 400px, full 800px)
-- [ ] **IMG-04**: Guest menu uses optimized image variants with lazy loading
+- [x] **IMG-04**: Guest menu uses optimized image variants with lazy loading
 
 ### Menu Themes
 
@@ -72,7 +72,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | IMG-01 | Phase 4 | Complete |
 | IMG-02 | Phase 4 | Complete |
 | IMG-03 | Phase 4 | Complete |
-| IMG-04 | Phase 4 | Pending |
+| IMG-04 | Phase 4 | Complete |
 | THEME-01 | Phase 5 | Pending |
 | THEME-02 | Phase 5 | Pending |
 | THEME-03 | Phase 5 | Pending |

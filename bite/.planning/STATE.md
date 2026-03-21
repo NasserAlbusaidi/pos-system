@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: Completed 04-image-optimization-01-PLAN.md
-last_updated: "2026-03-21T06:40:35.085Z"
+stopped_at: Completed 04-image-optimization-02-PLAN.md
+last_updated: "2026-03-21T06:45:56.469Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -45,6 +45,7 @@ Plan: 2 of 2
 | Phase 03-item-availability P01 | 132s | 2 tasks | 5 files |
 | Phase 03-item-availability P02 | 2 | 2 tasks | 7 files |
 | Phase 04-image-optimization P01 | 297 | 2 tasks | 7 files |
+| Phase 04-image-optimization P02 | 157 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [Phase 03-item-availability]: submitOrder auto-removes stale cart items instead of just erroring — better UX for guest cart recovery
 - [Phase 04-01]: WebP quality at 80 and JPEG fallback at 85 for food photo balance
 - [Phase 04-01]: saveVariant() protected method enables test subclass overriding without Mockery
+- [Phase 04-02]: POS dashboard confirmed text-only — zero img tags and zero image_url references, D-04 satisfied without changes
+- [Phase 04-02]: productImage() called for both truthiness check and src in guest-menu — single helper pattern, no double-prefixing
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T06:40:35.083Z
-Stopped at: Completed 04-image-optimization-01-PLAN.md
+Last session: 2026-03-21T06:45:56.467Z
+Stopped at: Completed 04-image-optimization-02-PLAN.md
 Resume file: None
