@@ -65,7 +65,10 @@ Plans:
   3. Shop brand colors (paper/ink/accent) apply on top of the selected theme — switching themes does not discard brand colors
   4. All three themes render correctly in Arabic RTL layout with no letter-spacing artifacts or font fallback failures
   5. A live preview of the theme change is visible in settings before the admin commits the save
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — CSS theme foundation, font files, backend wiring (data-theme injection, ShopSettings, tests)
+- [ ] 05-02-PLAN.md — Guest menu blade layout structures + theme picker UI + visual verification
 
 ### Phase 6: Custom Fonts
 **Goal**: Shops can use any Google Font on their guest menu, self-hosted with no external CDN dependency
@@ -86,5 +89,5 @@ Plans:
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 3. Item Availability | v1.1 | 2/2 | Complete   | 2026-03-21 |
 | 4. Image Optimization | v1.1 | 2/2 | Complete   | 2026-03-21 |
-| 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
+| 5. Menu Themes | v1.1 | 0/2 | In progress | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |
