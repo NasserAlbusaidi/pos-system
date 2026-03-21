@@ -46,11 +46,14 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: IMG-01, IMG-02, IMG-03, IMG-04
 **Success Criteria** (what must be TRUE):
-  1. Uploading a product image automatically produces a thumbnail (200px), card (400px), and full (800px) size variant in WebP format with the original preserved
+  1. Uploading a product image automatically produces a thumbnail (200px), card (400px), and full (800px) size variant in WebP format (originals deleted per D-02)
   2. The guest menu loads product images using the card-size WebP variant with lazy loading — not the original upload
   3. A product save does not fail or stall visibly when a photo up to 5MB is uploaded
   4. If the server's GD driver does not support WebP, the system falls back to JPEG without silent failure
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — ImageService + ProductManager integration (resize, WebP convert, variant generation)
+- [ ] 04-02-PLAN.md — Blade view updates (productImage helper) + backfill artisan command
 
 ### Phase 5: Menu Themes
 **Goal**: Shops can choose a visual identity for their guest menu from three distinct preset themes
@@ -82,6 +85,6 @@ Plans:
 | 1. Polish | v1.0 | 3/3 | Complete | 2026-03-20 |
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 3. Item Availability | v1.1 | 2/2 | Complete   | 2026-03-21 |
-| 4. Image Optimization | v1.1 | 0/TBD | Not started | - |
+| 4. Image Optimization | v1.1 | 0/2 | Planned | - |
 | 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |
