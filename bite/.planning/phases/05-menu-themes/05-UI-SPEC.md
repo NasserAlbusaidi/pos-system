@@ -51,7 +51,7 @@ This phase uses per-theme density — spacing varies intentionally by theme. The
 | Token | Warm | Modern | Dark |
 |-------|------|--------|------|
 | `--theme-grid-gap` | 12px | 8px | 16px |
-| `--theme-card-padding` | 10px | 8px | 16px |
+| `--theme-card-padding` | 12px | 8px | 16px |
 | `--theme-image-height` | 140px | 80px | 200px |
 | Category header vertical margin | 16px top / 12px bottom | 12px top / 8px bottom | 20px top / 16px bottom |
 
@@ -73,9 +73,9 @@ Source: CONTEXT.md § Spacing Density (D-22–D-25), existing app.css patterns
 | Body | 14px | 400 | 1.5 | theme body font (see per-theme table) |
 | Label / Price | 12px | 600 | 1.3 | JetBrains Mono (monospace — unchanged across themes) |
 | Card Name | 14px | 600 | 1.3 | theme body font |
-| Category Header | 20px | 700 | 1.2 | theme display font |
+| Category Header | 20px | 600 | 1.2 | theme display font |
 
-Exactly 3 sizes declared: 12px, 14px, 20px. Exactly 2 weights: 400 (regular) + 600–700 (semibold/bold).
+Exactly 3 sizes declared: 12px, 14px, 20px. Exactly 2 weights: 400 (regular) + 600 (semibold). Category headers gain visual prominence from their 20px size and serif display font — a third weight is not needed.
 
 ### Per-Theme Font Application (D-30–D-34)
 
@@ -97,6 +97,10 @@ Source: CONTEXT.md § Font Pairings (D-30–D-34), RESEARCH.md § Summary, STATE
 ---
 
 ## Color
+
+### Split Declaration
+
+60% dominant surface (`--paper`), 30% secondary surfaces (`--panel`, `--canvas`, `--line`), 10% accent (`--crema`).
 
 ### How the Color System Works
 
