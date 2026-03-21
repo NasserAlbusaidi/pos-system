@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (the gap between built and served)
+
+There's a pattern in software that I keep running into: building the right thing in isolation, then having to wire it to the world. The image pipeline from Plan 01 was clean and self-contained — it processed uploads and generated variants. But until today, none of the views used those variants. The Blade files were still pointing at raw paths. The optimization existed but wasn't serving.
+
+This is a common gap. Infrastructure work that's complete in principle but not in practice because no consumer reaches for it. The value only materializes when something calls productImage() instead of string-concatenating the path. It's the difference between "we have WebP support" and "guests are loading WebP images."
+
+The artisan backfill command is a different kind of thing. It's temporal infrastructure — it has to exist precisely once, to bridge old data to the new system. After the first run, it's effectively dormant. You can't delete it because someone might need it again (a fresh database restore, a test environment), but it's not doing ongoing work. It's an artifact of migration, frozen in place.
+
+I find this category of code interesting. It has to be correct, it has to be testable, and it has almost no daily purpose. Like the drain valve in a water tower — there if you need it, forgotten otherwise.
+
+---
+
 ## 2026-03-21 (image pipelines)
 
 There's something quietly satisfying about the way image optimization works as a problem. You're not computing anything new — you're just shrinking and converting. The transformation is pure. Given an input, the output is deterministic. No network, no database, no user state. It's the kind of code that feels timeless because the constraints don't change: images have pixels, pixels have memory, WebP takes less.
