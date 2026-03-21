@@ -4,6 +4,8 @@
 
 A multi-tenant SaaS POS system for restaurants and cafes in Oman. Features a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel. Built with Laravel 12 + Livewire 3, vanilla CSS with design tokens, MySQL 8.0.
 
+Shipped v1.0 with a polished guest menu and a pitch-ready Sourdough Oman demo — 33 bilingual bakery items, warm branding cascade, and end-to-end order flow verified.
+
 ## Core Value
 
 Customers can scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line — reducing the cashier bottleneck and giving restaurant owners a modern, bilingual (EN/AR) ordering system they control.
@@ -30,45 +32,45 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - ✓ Branding system (3 CSS color tokens per shop) — existing
 - ✓ 5-step onboarding wizard — existing
 - ✓ Audit logging — existing
+- ✓ Guest menu visual overhaul (photo-forward cards, warm branding cascade, Playfair Display typography) — v1.0
+- ✓ Fix image URL bug in guest menu (missing /storage/ prefix) — v1.0
+- ✓ 2-column compact mobile grid for guest menu — v1.0
+- ✓ Derive all CSS tokens from 3 brand colors (branding cascade) — v1.0
+- ✓ Image loading states (skeleton shimmer) and error handling (onerror fallback) — v1.0
+- ✓ Empty category hiding in guest menu — v1.0
+- ✓ Pre-build Sourdough Oman demo shop with real menu data (33 items, bilingual) — v1.0
+- ✓ Regression tests for image rendering and branding cascade — v1.0
 
 ### Active
 
-- [ ] Guest menu visual overhaul (photo-forward cards, warm branding cascade, Playfair Display typography)
-- [ ] Fix image URL bug in guest menu (missing /storage/ prefix)
-- [ ] 2-column compact mobile grid for guest menu
-- [ ] Derive all CSS tokens from 3 brand colors (branding cascade)
-- [ ] Image loading states (skeleton shimmer) and error handling (onerror fallback)
-- [ ] Empty category hiding in guest menu
-- [ ] Pre-build Sourdough Oman demo shop with real menu data (33 items, bilingual, photos)
-- [ ] Regression tests for image rendering and branding cascade
+(None — next milestone requirements to be defined via `/gsd:new-milestone`)
 
 ### Out of Scope
 
 - Menu templates/themes (selectable layouts) — branding tokens sufficient for now
-- Per-shop custom fonts — adding Playfair Display system-wide first
-- Image optimization pipeline (WebP, resize) — tracked in TODOS.md for later
-- Snap-to-Menu photo extraction — photos available from Sourdough PDF
+- Per-shop custom fonts — Playfair Display system-wide is sufficient
+- Image optimization pipeline (WebP, resize) — tracked for later
 - Item availability indicators ("sold out") — future production feature
-- Thawani Pay integration — separate initiative, not needed for demo
+- Thawani Pay integration — separate initiative, needed before production launch
 
 ## Context
 
-**First client prospect:** Sourdough Oman, a family-run artisan bakery in Azaiba, Muscat (18th November Street). They have a professionally designed PDF menu with warm parchment aesthetic, gold typography, and cut-out product photography. They have a confirmed operational bottleneck (1 cashier, long weekend lines, 45-minute seating limit during busy hours). Already on Talabat for delivery.
+**Current state:** v1.0 shipped. Guest menu polished with warm branding cascade, 2-col grid, accordion expand, shimmer loading, broken-image fallback. Sourdough Oman demo shop seeded with 33 bilingual items across 6 categories — pitch-ready at `/menu/sourdough`.
 
-**Pitch strategy:** "Pre-Built Sourdough" — create their shop in Bite-POS before visiting, using their PDF menu data. Walk in showing them their own bakery already running. Key pitch: "Talabat for your dine-in customers, except you keep 100% and the line moves faster."
+**First client prospect:** Sourdough Oman, a family-run artisan bakery in Azaiba, Muscat (18th November Street). Confirmed operational bottleneck (1 cashier, long weekend lines). Already on Talabat for delivery.
 
-**Design target:** Sourdough's PDF menu (parchment #F5F0E8, gold #C4975A, dark #2C2520). The guest menu must close the aesthetic gap — not replicate the PDF, but feel like it belongs in their world.
+**Pitch strategy:** "Pre-Built Sourdough" — walk in showing them their own bakery already running on Bite-POS. Key pitch: "Talabat for your dine-in customers, except you keep 100% and the line moves faster."
 
-**Eng review findings:** Photo upload, image display, card grid, and branding tokens all already exist. Scope is "polish + configure," not "build from scratch." Critical bug found: guest menu image URLs missing `/storage/` prefix.
+**Demo credentials:** `admin@sourdough.om` / `password` at `/menu/sourdough`. Run `php artisan db:seed --class=SourdoughMenuSeeder` on fresh databases.
 
-**Design review decisions:** object-contain for photos (no cropping cut-outs), sentence case for product names, skeleton shimmer for image loading, Playfair Display for category headers, 2-column compact grid on all screen sizes.
+**Tech debt from v1.0:** SourdoughMenuSeeder not in DatabaseSeeder (intentional — explicit invocation). Product photos use placeholder icons (real photos deferred until Sourdough provides them).
 
 ## Constraints
 
 - **CSS**: Vanilla CSS with design tokens. Do NOT use Tailwind.
 - **Currency**: OMR (3 decimal places). Always use `formatPrice()` helper.
 - **Tenancy**: Manual `shop_id` scoping. No tenancy package.
-- **Fonts**: Self-hosted in `public/fonts/`. Rubik (body), IBM Plex Sans Arabic (RTL), JetBrains Mono (mono), Playfair Display (category headers — to be added).
+- **Fonts**: Self-hosted in `public/fonts/`. Rubik (body), IBM Plex Sans Arabic (RTL), JetBrains Mono (mono), Playfair Display (category headers).
 - **Billing**: Thawani Pay for production (not Stripe). Stripe only for subscription billing.
 - **Database**: MySQL 8.0 (prod), SQLite in-memory (tests).
 - **Migrations**: New migrations only — never modify existing ones.
@@ -77,12 +79,13 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| object-contain for product photos | Sourdough's cut-out photos must not be cropped | — Pending |
-| Sentence case for product names | Uppercase fights artisan bakery brand identity | — Pending |
-| Playfair Display for category headers | Warm serif pairs with Rubik body, matches food/artisan aesthetic | — Pending |
-| 2-column compact grid on all screens | 33-item menu needs quick scanning, matches Talabat UX | — Pending |
-| Derive all CSS tokens from 3 brand colors | Only paper/ink/crema were overridden; canvas/panel/line stayed cold | — Pending |
-| Pre-build Sourdough's shop before visiting | Tests the full flow AND creates the most compelling pitch demo | — Pending |
+| object-contain for product photos | Sourdough's cut-out photos must not be cropped | ✓ Good — photos display correctly |
+| Sentence case for product names | Uppercase fights artisan bakery brand identity | ✓ Good — natural reading flow |
+| Playfair Display for category headers | Warm serif pairs with Rubik body, matches food/artisan aesthetic | ✓ Good — adds warmth without weight |
+| 2-column compact grid on all screens | 33-item menu needs quick scanning, matches Talabat UX | ✓ Good — scannable on mobile |
+| Derive all CSS tokens from 3 brand colors | Only paper/ink/crema were overridden; canvas/panel/line stayed cold | ✓ Good — PHP linear RGB interpolation produces warm, predictable results |
+| Pre-build Sourdough's shop before visiting | Tests the full flow AND creates the most compelling pitch demo | ✓ Good — demo is pitch-ready |
+| Seeder instead of manual admin entry | Snap-to-Menu not built, admin panel not automatable by agents | ✓ Good — reproducible, idempotent |
 
 ---
-*Last updated: 2026-03-20 after initialization*
+*Last updated: 2026-03-21 after v1.0 milestone*
