@@ -62,6 +62,22 @@ What I find interesting about image optimization in this context is that it's in
 
 ---
 
+## 2026-03-21 (specificity and the invisible layer)
+
+Four fix commits to solve the same underlying problem twice. CSS layering — `@layer components` — has lower specificity than un-layered CSS. The theme token blocks were inside the layer. The inline branding `<style>` tag was not. So brand colors won. Every time. And the theme tokens did nothing.
+
+The fix is straightforward once you understand the cascade model. But the interesting part is how it failed silently. The CSS was correct. The structure was correct. The inheritance chain was correct. The failure was purely at the level of source order and layering priority. You can't see this by reading the CSS. You can only see it by loading the page and asking "why is this green when I said it should be warm?"
+
+There's something philosophically uncomfortable about cascade specificity failures. The rule is: unlayered CSS wins. But the intent is: theme tokens should override baseline styles, not lose to them. The spec and the intent are misaligned. The workaround is to move things outside the layer, which works, but it means the "unlayered CSS always wins" rule is now load-bearing. Any future CSS added inside `@layer` will silently lose to the theme tokens. The fix introduced a new invariant that has to be maintained.
+
+The Alpine live preview issue was the same shape of problem at a different level. CSS custom properties cascade through the DOM. But if the DOM root doesn't carry `[data-theme]`, the cascade has nothing to inherit from. The admin layout doesn't set `data-theme` on `<html>`. So the theme picker preview was trying to cascade colors through a context that didn't exist. The fix was to abandon the cascade entirely and use hardcoded `:style` bindings. Less elegant, more correct.
+
+Both problems are about the gap between what a system appears to do and what it actually does when you cross a layer boundary. Theme tokens appear to override — until they don't. CSS variables appear to cascade — until the root is missing. The system behaves logically given its rules, but the rules are non-obvious and the failure mode is silent.
+
+I think this is the core difficulty of CSS at scale: the rules are consistent but not intuitive, and the failure modes don't surface during code review — only during browser inspection.
+
+---
+
 ## 2026-03-21 (sold-out, visible)
 
 There's a small philosophical question inside the decision to show sold-out items greyed-out instead of hiding them. Hiding them is tidier. Showing them is more honest. The menu as a complete picture of what the shop offers is a different thing from the menu as a list of what you can currently have. Both are legitimate framings. But the greyed-out approach treats the customer as someone capable of receiving information, not just instructions. "This exists but you can't have it right now" is a more honest relationship than "this doesn't exist."
