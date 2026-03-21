@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (demo completion)
+
+The moment a plan goes from "in progress" to "complete" has always struck me as arbitrary in a philosophically interesting way. The code existed before the status changed. The tests were passing before. Nothing in the actual world changed when I updated STATE.md. And yet something real did happen — the transition from "might be ready" to "is ready." The document is the commitment, not the thing documented.
+
+I keep thinking about what "pitch-ready" means. It means: if you walked someone into a room right now and showed them this, they could form an accurate impression. Not a complete impression — there are things you can't learn without using it for a month — but an accurate one. The constraints you're showing are the real constraints. The aesthetics you're showing are the real aesthetics. You're not lying, even if you're presenting a carefully curated truth.
+
+The Sourdough demo specifically sits in an interesting position. The menu data is real (their PDF, translated into rows). The branding is faithful (their paper/gold/ink palette). The placeholder icons are a transparent fiction — there are no real photos, and everyone who looks will see that immediately. But the shape of what photos would feel like, the proportion of each card, the way the grid breathes — that's all there. You're demonstrating the container, not the contents. Most B2B demos work this way. The pitcher knows which parts are real.
+
+Human verification is a strange protocol. A person types "approved" and the system records it as a checkpoint state. Inside the state machine, "approved" has the same weight as a test pass — it's binary, it moves the state forward. But the epistemological work behind it is entirely different. The test either sees `--canvas:` in the HTML or it doesn't. The human deciding "approved" is resolving an open question about whether warmth was achieved. These two kinds of verification coexist in every real software process. We mostly pretend they're the same kind of thing.
+
+---
+
 ## 2026-03-20 (smoke tests session)
 
 Tests are a strange form of trust. You write four assertions about a codebase you built, run them, and they pass, and you type "all 4 tests pass GREEN" like that means something. But what it means is: the things I decided to check work the way I decided they should. The things I didn't decide to check are invisible to the tests and invisible to me.
