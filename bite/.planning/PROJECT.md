@@ -51,7 +51,9 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - [ ] Any Google Font — admin types name, system fetches and self-hosts
 
 #### Image Optimization
-- [ ] On-upload pipeline (resize + WebP conversion, keep originals)
+- [x] On-upload pipeline (resize + WebP conversion, 3 variants) — Validated in Phase 4: image-optimization
+- [x] Blade views serve optimized variants (card/thumb) with lazy loading — Validated in Phase 4: image-optimization
+- [x] Backfill command for existing product images — Validated in Phase 4: image-optimization
 
 #### Item Availability
 - [x] Manual sold-out toggle per product — Validated in Phase 3: item-availability
@@ -76,7 +78,7 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 ## Context
 
-**Current state:** v1.0 shipped. Guest menu polished with warm branding cascade, 2-col grid, accordion expand, shimmer loading, broken-image fallback. Sourdough Oman demo shop seeded with 33 bilingual items across 6 categories — pitch-ready at `/menu/sourdough`.
+**Current state:** v1.0 shipped, v1.1 in progress. Phase 4 complete — product images now auto-optimize on upload (3 WebP variants: 200px thumb, 400px card, 800px full). Guest menu serves card-size WebP with lazy loading; product manager shows thumbnails. `php artisan images:optimize` backfills existing images. 178 tests passing.
 
 **First client prospect:** Sourdough Oman, a family-run artisan bakery in Azaiba, Muscat (18th November Street). Confirmed operational bottleneck (1 cashier, long weekend lines). Already on Talabat for delivery.
 
@@ -127,4 +129,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after Phase 3 (Item Availability) completed*
+*Last updated: 2026-03-21 after Phase 4 (Image Optimization) completed*
