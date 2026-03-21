@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS POS system for restaurants and cafes in Oman. Features a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel. Built with Laravel 12 + Livewire 3, vanilla CSS with design tokens, MySQL 8.0.
 
-Shipped v1.0 with a polished guest menu and a pitch-ready Sourdough Oman demo — 33 bilingual bakery items, warm branding cascade, and end-to-end order flow verified.
+Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo.
 
 ## Core Value
 
@@ -40,45 +40,31 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - ✓ Empty category hiding in guest menu — v1.0
 - ✓ Pre-build Sourdough Oman demo shop with real menu data (33 items, bilingual) — v1.0
 - ✓ Regression tests for image rendering and branding cascade — v1.0
+- ✓ Admin sold-out toggle with greyed-out guest menu display and cart recovery — v1.1
+- ✓ On-upload image optimization pipeline (resize + WebP, 3 size variants) — v1.1
+- ✓ Optimized image serving in guest menu (card-size WebP, lazy loading) — v1.1
+- ✓ Backfill artisan command for existing product images — v1.1
+- ✓ Three selectable menu themes (warm/modern/dark) with distinct layouts and font pairings — v1.1
+- ✓ Theme picker with live preview in shop settings — v1.1
+- ✓ Brand color overrides preserved across theme switches — v1.1
+- ✓ RTL Arabic compatibility for all three themes — v1.1
 
 ### Active
 
-#### Menu Themes
-- [ ] 3-4 selectable themes (layout + color palette + font pairing)
-- [ ] Brand color overrides on top of selected theme
-
-#### Custom Fonts
-- [ ] Any Google Font — admin types name, system fetches and self-hosts
-
-#### Image Optimization
-- [x] On-upload pipeline (resize + WebP conversion, 3 variants) — Validated in Phase 4: image-optimization
-- [x] Blade views serve optimized variants (card/thumb) with lazy loading — Validated in Phase 4: image-optimization
-- [x] Backfill command for existing product images — Validated in Phase 4: image-optimization
-
-#### Item Availability
-- [x] Manual sold-out toggle per product — Validated in Phase 3: item-availability
-
-## Current Milestone: v1.1 Customization & Polish
-
-**Goal:** Give shops visual identity and operational control — selectable themes, custom fonts, optimized images, and item availability toggles.
-
-**Target features:**
-- Menu themes (3-4 full themes with brand color overrides)
-- Per-shop custom fonts (any Google Font)
-- Image optimization on upload (resize + WebP)
-- Item availability indicators (manual sold-out toggle)
+(No active requirements — planning next milestone)
 
 ### Out of Scope
 
-- ~~Menu templates/themes~~ — moved to Active for v1.1
-- ~~Per-shop custom fonts~~ — moved to Active for v1.1
-- ~~Image optimization pipeline (WebP, resize)~~ — moved to Active for v1.1
-- ~~Item availability indicators ("sold out")~~ — moved to Active for v1.1
 - Thawani Pay integration — separate initiative, needed before production launch
+- Custom fonts (per-shop Google Fonts) — dropped from v1.1; preset theme pairings sufficient
+- Menu templates marketplace (user-uploaded themes) — curated presets sufficient
+- Custom CSS editor per shop — security risk (XSS)
+- Stock management (auto-decrement) — deferred to v2
+- CDN image delivery — deferred to v2
 
 ## Context
 
-**Current state:** v1.0 shipped, v1.1 in progress. Phase 4 complete — product images now auto-optimize on upload (3 WebP variants: 200px thumb, 400px card, 800px full). Guest menu serves card-size WebP with lazy loading; product manager shows thumbnails. `php artisan images:optimize` backfills existing images. 178 tests passing.
+**Current state:** v1.1 shipped. 188 tests passing (458 assertions). Guest menu supports 3 themes with brand color overrides, auto-optimized WebP product images, and sold-out indicators. Self-hosted font system (Rubik, Playfair Display, Inter, DM Sans, DM Serif Display, IBM Plex Sans Arabic). Image pipeline produces thumb (200px), card (400px), full (800px) variants on upload.
 
 **First client prospect:** Sourdough Oman, a family-run artisan bakery in Azaiba, Muscat (18th November Street). Confirmed operational bottleneck (1 cashier, long weekend lines). Already on Talabat for delivery.
 
@@ -86,17 +72,21 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 **Demo credentials:** `admin@sourdough.om` / `password` at `/menu/sourdough`. Run `php artisan db:seed --class=SourdoughMenuSeeder` on fresh databases.
 
-**Tech debt from v1.0:** SourdoughMenuSeeder not in DatabaseSeeder (intentional — explicit invocation). Product photos use placeholder icons (real photos deferred until Sourdough provides them).
+**Tech debt:**
+- SourdoughMenuSeeder not in DatabaseSeeder (intentional — explicit invocation)
+- Product photos use placeholder icons (real photos deferred until Sourdough provides them)
+- GD WebP support unverified on production server — need startup health check
 
 ## Constraints
 
 - **CSS**: Vanilla CSS with design tokens. Do NOT use Tailwind.
 - **Currency**: OMR (3 decimal places). Always use `formatPrice()` helper.
 - **Tenancy**: Manual `shop_id` scoping. No tenancy package.
-- **Fonts**: Self-hosted in `public/fonts/`. Rubik (body), IBM Plex Sans Arabic (RTL), JetBrains Mono (mono), Playfair Display (category headers).
+- **Fonts**: Self-hosted in `public/fonts/`. Rubik (body), Inter (modern theme), DM Sans/DM Serif Display (dark theme), IBM Plex Sans Arabic (RTL), JetBrains Mono (mono), Playfair Display (warm theme headers).
 - **Billing**: Thawani Pay for production (not Stripe). Stripe only for subscription billing.
 - **Database**: MySQL 8.0 (prod), SQLite in-memory (tests).
 - **Migrations**: New migrations only — never modify existing ones.
+- **Images**: intervention/image v3 only (v4 requires PHP 8.3+). GD driver, not Imagick.
 
 ## Key Decisions
 
@@ -109,6 +99,11 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 | Derive all CSS tokens from 3 brand colors | Only paper/ink/crema were overridden; canvas/panel/line stayed cold | ✓ Good — PHP linear RGB interpolation produces warm, predictable results |
 | Pre-build Sourdough's shop before visiting | Tests the full flow AND creates the most compelling pitch demo | ✓ Good — demo is pitch-ready |
 | Seeder instead of manual admin entry | Snap-to-Menu not built, admin panel not automatable by agents | ✓ Good — reproducible, idempotent |
+| WebP quality 80, JPEG fallback 85 | Balance file size vs food photo quality | ✓ Good — visually indistinguishable from originals |
+| intervention/image v3 (not v4) | v4 requires PHP 8.3+; production runs 8.2 | ✓ Good — avoids deployment blocker |
+| Theme tokens outside @layer | @layer has lower specificity than inline branding styles | ✓ Good — fixed cascade conflict |
+| Warm theme preserves object-contain | Sourdough cut-out photos look wrong with cover crop | ✓ Good — modern/dark use cover appropriately |
+| Drop custom fonts from v1.1 | Three preset font pairings provide sufficient variety | ✓ Good — reduced scope, faster ship |
 
 ---
 ## Evolution
@@ -129,4 +124,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after Phase 4 (Image Optimization) completed*
+*Last updated: 2026-03-21 after v1.1 milestone (Customization & Polish) completed*

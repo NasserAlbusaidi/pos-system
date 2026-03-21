@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
-status: unknown
-stopped_at: Completed 05-02-PLAN.md (Phase 05 Menu Themes complete)
-last_updated: "2026-03-21T13:26:22.263Z"
+status: milestone_complete
+stopped_at: v1.1 milestone archived — all 3 phases shipped
+last_updated: "2026-03-21T14:00:00.000Z"
 progress:
-  total_phases: 4
+  total_phases: 3
   completed_phases: 3
   total_plans: 6
   completed_plans: 6
@@ -19,76 +19,48 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 05 — menu-themes
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 05 (menu-themes) — EXECUTING
-Plan: 2 of 2
+Milestone: v1.1 complete
+Next: `/gsd:new-milestone` to start v1.2 or v2.0
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5 (v1.0 only)
-- Average duration: —
-- Total execution time: —
+- v1.0: 2 phases, 5 plans
+- v1.1: 3 phases, 6 plans
+- Total: 5 phases, 11 plans shipped
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Polish (v1.0) | 3 | - | - |
-| 2. Demo (v1.0) | 2 | - | - |
-
-*Updated after each plan completion*
-| Phase 03-item-availability P01 | 132s | 2 tasks | 5 files |
-| Phase 03-item-availability P02 | 2 | 2 tasks | 7 files |
-| Phase 04-image-optimization P01 | 297 | 2 tasks | 7 files |
-| Phase 04-image-optimization P02 | 157 | 2 tasks | 4 files |
-| Phase 05-menu-themes P01 | 6m | 2 tasks | 12 files |
-| Phase 05-menu-themes P02 | 7200 | 2 tasks | 3 files |
+| Phase | Duration | Tasks | Files |
+|-------|----------|-------|-------|
+| Phase 03-item-availability P01 | 132s | 2 | 5 |
+| Phase 03-item-availability P02 | ~2m | 2 | 7 |
+| Phase 04-image-optimization P01 | 297s | 2 | 7 |
+| Phase 04-image-optimization P02 | 157s | 2 | 4 |
+| Phase 05-menu-themes P01 | 6m | 2 | 12 |
+| Phase 05-menu-themes P02 | 7200s | 2 | 3 |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v1.0]: object-contain for product photos — Sourdough cut-outs must not be cropped
-- [v1.0]: Derive all CSS tokens from 3 brand colors — PHP linear RGB interpolation
-- [v1.1 research]: intervention/image v3 only — v4 blocked (requires PHP 8.3+)
-- [v1.1 research]: Theme tokens must not overwrite --paper/--ink/--crema (branding cascade owns those)
-- [v1.1 research]: Font name validation: ^[A-Za-z0-9 ]+$ before any processing; SSRF allowlist to fonts.googleapis.com and fonts.gstatic.com only
-- [Phase 03-01]: Available/Sold Out language in ProductManager (not 86'd) — 86'd stays POS-only per D-06
-- [Phase 03-item-availability]: Guest menu shows unavailable products greyed-out (not hidden) — render() filter removed; addToCart guard preserved
-- [Phase 03-item-availability]: submitOrder auto-removes stale cart items instead of just erroring — better UX for guest cart recovery
-- [Phase 04-01]: WebP quality at 80 and JPEG fallback at 85 for food photo balance
-- [Phase 04-01]: saveVariant() protected method enables test subclass overriding without Mockery
-- [Phase 04-02]: POS dashboard confirmed text-only — zero img tags and zero image_url references, D-04 satisfied without changes
-- [Phase 04-02]: productImage() called for both truthiness check and src in guest-menu — single helper pattern, no double-prefixing
-- [Phase 05-01]: Theme computed in Blade @php before html tag (not inside @if shop block) so data-theme attribute renders correctly
-- [Phase 05-01]: Warm theme preserves object-contain for Sourdough cut-out photos; modern/dark use object-fit:cover
-- [Phase 05-01]: Theme palette tokens in [data-theme] blocks are overridden by inline style when shop has custom branding — cascade ordering preserved via specificity
-- [Phase 05-02]: Modern card uses dedicated .menu-card-modern-image div (80x80) separate from .menu-product-image-area to avoid height conflict with dark hero card (200px)
-- [Phase 05-02]: .menu-badge-sale class replaces per-card inline Tailwind strings — shared across all 3 theme card templates
-- [Phase 05-02]: Warm card wrapped in @else (not @elseif) to act as safe fallback for any invalid theme value
-- [Phase 05-menu-themes]: Live preview in settings uses Alpine inline :style bindings with hardcoded palette values — CSS custom property cascade doesn't work reliably when [data-theme] is absent from the admin html element
-- [Phase 05-menu-themes]: Theme CSS token blocks moved outside @layer components — @layer has lower specificity than un-layered CSS, causing theme tokens to lose against the inline branding style block
+All decisions logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Phase 4]: GD WebP support unverified on production server — create startup health check before shipping image pipeline
-- [Phase 5]: RTL Arabic compatibility is a hard requirement for all 3 themes — letter-spacing must be scoped to [dir="ltr"]; screenshot required before merge
-- [Phase 6]: Google Fonts CSS2 woff2 URL format is stable but not contractually versioned — test regex against live API responses during implementation
+- GD WebP support unverified on production server — create startup health check before shipping image pipeline
 
 ## Session Continuity
 
-Last session: 2026-03-21T13:26:22.261Z
-Stopped at: Completed 05-02-PLAN.md (Phase 05 Menu Themes complete)
+Last session: 2026-03-21
+Stopped at: v1.1 milestone complete
 Resume file: None

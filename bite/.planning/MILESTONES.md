@@ -1,5 +1,20 @@
 # Milestones
 
+## v1.1 Customization & Polish (Shipped: 2026-03-21)
+
+**Phases completed:** 3 phases, 6 plans, 6 tasks
+
+**Key accomplishments:**
+
+- Admin sold-out toggle with greyed-out guest menu display and stale cart auto-recovery
+- On-upload image pipeline: auto-resize + WebP conversion producing 3 size variants (thumb/card/full)
+- Backfill artisan command (`images:optimize`) for existing product images
+- Three distinct guest menu themes (warm/modern/dark) with unique layouts, card styles, and font pairings
+- Theme picker with Alpine-powered live preview in shop settings
+- Self-hosted font system: Inter, DM Sans, DM Serif Display, Playfair Display (all WOFF2)
+
+---
+
 ## v1.0 Sourdough Demo (Shipped: 2026-03-21)
 
 **Phases completed:** 2 phases, 5 plans, 9 tasks
