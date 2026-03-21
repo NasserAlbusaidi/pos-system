@@ -682,7 +682,33 @@ class GuestMenu extends Component
             ->all();
 
         if (! empty($unavailableNames)) {
-            $this->orderError = __('guest.items_unavailable', [
+            // Auto-remove unavailable items from cart
+            $unavailableIds = collect($cartItems)
+                ->filter(fn ($item) => ! $products->has($item['id']))
+                ->pluck('id')
+                ->unique()
+                ->all();
+
+            if ($this->isGroupMode) {
+                $groupCart = $this->groupCart;
+                if ($groupCart) {
+                    DB::transaction(function () use ($groupCart, $unavailableIds) {
+                        GroupCart::where('id', $groupCart->id)->lockForUpdate()->first();
+                        $groupCart->refresh();
+                        $items = collect($groupCart->items ?? [])
+                            ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
+                            ->values()
+                            ->all();
+                        $groupCart->update(['items' => $items]);
+                    });
+                }
+            } else {
+                $this->cart = collect($this->cart)
+                    ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
+                    ->all();
+            }
+
+            $this->orderError = __('guest.items_unavailable_removed', [
                 'items' => implode(', ', $unavailableNames),
             ]);
             $this->showReviewModal = true;
@@ -1011,7 +1037,6 @@ class GuestMenu extends Component
         $categories = $this->shop->categories()
             ->with(['products' => function ($query) {
                 $query->where('is_visible', true)
-                    ->where('is_available', true)
                     ->with('modifierGroups.options')
                     ->orderBy('sort_order');
             }])

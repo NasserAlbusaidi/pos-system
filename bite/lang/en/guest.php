@@ -76,7 +76,9 @@ return [
     'status_cancelled' => 'Order expired before payment. Please reorder.',
 
     // Availability
+    'sold_out' => 'Sold Out',
     'items_unavailable' => 'Sorry, these items are no longer available: :items. Please remove them and try again.',
+    'items_unavailable_removed' => 'The following items were sold out and removed from your order: :items. You can continue with the remaining items.',
 
     // Rate limiting
     'too_many_orders' => 'Too many orders. Please wait a moment before trying again.',
