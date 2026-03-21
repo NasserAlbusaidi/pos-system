@@ -36,7 +36,10 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details
   1. Admin or manager can toggle a product's availability on/off from the menu builder without leaving the page
   2. Guest menu shows unavailable products with a greyed-out card and a visible "Sold Out" badge — items are not hidden
   3. A guest who added an item to the cart before it was marked sold out sees a clear error at checkout and cannot complete the order with that item
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Admin availability toggle in ProductManager (inline list + edit form)
+- [ ] 03-02-PLAN.md — Guest menu sold-out display and cart error recovery
 
 ### Phase 4: Image Optimization
 **Goal**: All newly uploaded product images are automatically optimized for fast mobile loading
@@ -78,7 +81,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details
 |-------|-----------|----------------|--------|-----------|
 | 1. Polish | v1.0 | 3/3 | Complete | 2026-03-20 |
 | 2. Demo | v1.0 | 2/2 | Complete | 2026-03-21 |
-| 3. Item Availability | v1.1 | 0/TBD | Not started | - |
+| 3. Item Availability | v1.1 | 0/2 | Planning | - |
 | 4. Image Optimization | v1.1 | 0/TBD | Not started | - |
 | 5. Menu Themes | v1.1 | 0/TBD | Not started | - |
 | 6. Custom Fonts | v1.1 | 0/TBD | Not started | - |
