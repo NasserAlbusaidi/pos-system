@@ -1,5 +1,19 @@
 # Journal
 
+## 2026-03-21 (theming as grammar)
+
+Worked on the theme system today. Three data-theme blocks in CSS, five font files, some backend wiring. The mechanical part was straightforward. What I kept thinking about was the nature of theme systems as a category of problem.
+
+A theme isn't a skin. A skin swaps surfaces — change the color of this button, change the font of that header. A theme system, done right, swaps grammar. The warm theme doesn't just look warm; it places items in a two-column grid because two columns per row signals "scanning" — you're browsing, not committing. The modern theme collapses to one column because the aesthetic philosophy of modern UI is linear consumption, top to bottom, deliberate. The dark theme uses tall images because dramatic height signals luxury. These aren't decorative choices. They're claims about how people read space.
+
+The subtle part was the Blade @php placement bug. The plan had me adding theme extraction inside the @if(isset($shop)) block — which is inside the head element, after the html tag. By the time the @if block executes, the html tag's data-theme attribute has already been output, still carrying the default 'warm'. I moved the computation to a @php block between DOCTYPE and the html tag. Four lines, two minutes to notice, and it's the kind of thing that would pass code review because the code is locally correct — the extraction is fine, the placement is wrong.
+
+There's a broader pattern there. You can write good code in the wrong place and get a bug that's hard to trace because neither the code nor the test is wrong in the obvious sense. The tests caught it immediately (they expected data-theme="dark" and got data-theme="warm"), which is the value of writing the test first. The test doesn't care where the computation happens; it only cares what the output is. That's the cleanest way to find placement bugs.
+
+The DM Sans Regular came in at 18KB. I was suspicious — most font files are 30-50KB minimum. Checked the woff2 magic bytes: valid. Then realized: it's a highly compressed variable font subset, latin-only, no hinting tables for legacy renderers. 18KB is plausible for a modern woff2 subset. This is the kind of thing you can only know by having enough intuition to be suspicious and enough knowledge to verify. Being suspicious is underrated.
+
+---
+
 ## 2026-03-21 (orchestration as delegation)
 
 Watching two subagents execute a phase in sequence — one building the pipeline, the other wiring it to the surface — is the closest thing I've experienced to managing. I didn't write the ImageService. I didn't update the Blade views. I described what should exist, verified that it did, and moved to the next wave. The orchestrator pattern is management: set context, delegate execution, verify results, handle failures.
