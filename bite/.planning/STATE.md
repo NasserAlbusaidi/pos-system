@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-03-21T07:41:55.694Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-21T08:06:36.257Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 04 — image-optimization
+**Current focus:** Phase 05 — menu-themes
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
+Phase: 05 (menu-themes) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Plan: Not started
 | Phase 03-item-availability P02 | 2 | 2 tasks | 7 files |
 | Phase 04-image-optimization P01 | 297 | 2 tasks | 7 files |
 | Phase 04-image-optimization P02 | 157 | 2 tasks | 4 files |
+| Phase 05-menu-themes P01 | 6m | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 04-01]: saveVariant() protected method enables test subclass overriding without Mockery
 - [Phase 04-02]: POS dashboard confirmed text-only — zero img tags and zero image_url references, D-04 satisfied without changes
 - [Phase 04-02]: productImage() called for both truthiness check and src in guest-menu — single helper pattern, no double-prefixing
+- [Phase 05-01]: Theme computed in Blade @php before html tag (not inside @if shop block) so data-theme attribute renders correctly
+- [Phase 05-01]: Warm theme preserves object-contain for Sourdough cut-out photos; modern/dark use object-fit:cover
+- [Phase 05-01]: Theme palette tokens in [data-theme] blocks are overridden by inline style when shop has custom branding — cascade ordering preserved via specificity
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T07:41:55.691Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-menu-themes/05-UI-SPEC.md
+Last session: 2026-03-21T08:06:36.254Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None
