@@ -68,7 +68,7 @@ Plans:
 **Plans:** 1/2 plans executed
 Plans:
 - [x] 05-01-PLAN.md — CSS theme foundation, font files, backend wiring (data-theme injection, ShopSettings, tests)
-- [ ] 05-02-PLAN.md — Guest menu blade layout structures + theme picker UI + visual verification
+- [x] 05-02-PLAN.md — Guest menu blade layout structures + theme picker UI + visual verification
 
 ### Phase 6: Custom Fonts
 **Goal**: Shops can use any Google Font on their guest menu, self-hosted with no external CDN dependency

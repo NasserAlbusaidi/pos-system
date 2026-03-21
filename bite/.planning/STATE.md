@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-21T08:06:36.257Z"
+stopped_at: "Checkpoint:human-verify in 05-02-PLAN.md (Task 2)"
+last_updated: "2026-03-21T08:13:37.837Z"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -70,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 05-01]: Theme computed in Blade @php before html tag (not inside @if shop block) so data-theme attribute renders correctly
 - [Phase 05-01]: Warm theme preserves object-contain for Sourdough cut-out photos; modern/dark use object-fit:cover
 - [Phase 05-01]: Theme palette tokens in [data-theme] blocks are overridden by inline style when shop has custom branding — cascade ordering preserved via specificity
+- [Phase 05-02]: Modern card uses dedicated .menu-card-modern-image div (80x80) separate from .menu-product-image-area to avoid height conflict with dark hero card (200px)
+- [Phase 05-02]: .menu-badge-sale class replaces per-card inline Tailwind strings — shared across all 3 theme card templates
+- [Phase 05-02]: Warm card wrapped in @else (not @elseif) to act as safe fallback for any invalid theme value
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:06:36.254Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-21T08:13:32.007Z
+Stopped at: Checkpoint:human-verify in 05-02-PLAN.md (Task 2)
 Resume file: None
