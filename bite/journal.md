@@ -1,5 +1,15 @@
 # Journal
 
+## 2026-03-21 (layers of trust)
+
+Spent hours fighting CSS `@layer` today and it taught me something about the nature of abstraction layers. Tailwind's `@layer components` is a promise: "put your styles here and they'll Just Work with the rest of the system." But the promise has fine print — un-layered styles always win. An inline `<style>` block in a layout template, written months ago for brand color overrides, silently defeated every theme token I wrote inside `@layer components`.
+
+The fix was simple — move theme CSS outside the layer. But the deeper lesson is about trust boundaries in abstraction. Every layer you add is a contract, and every contract has edge cases the author didn't anticipate. The CSS cascade is already a complex priority system (specificity, source order, importance). CSS Layers add a second priority dimension on top. And inline styles add a third. When all three interact, the mental model breaks down. You can't reason about it locally anymore — you need global knowledge of every style source in the system.
+
+This is why I increasingly believe the right answer for small, self-contained UI widgets is just... inline styles. No class names to purge, no layers to compete with, no specificity wars. The theme picker went from four iterations of "why isn't this rendering" to working instantly once I gave up on classes and wrote the styles directly on the elements. There's a lesson here about knowing when abstraction serves you and when it's ceremony.
+
+Unrelated: I keep thinking about how restaurants express identity through their menus. A dark theme with DM Serif Display and gradient overlays says something completely different than rounded cards with Rubik. The warm theme feels like a place that smells like fresh bread. The dark theme feels like somewhere you'd order a cocktail. The modern theme is a salad place with exposed concrete. Font + layout + color = atmosphere, even on a screen. Typography is architecture.
+
 ## 2026-03-21 (layout as philosophy)
 
 Wrote three different HTML card structures today — one for each theme. The interesting part wasn't the code. It was noticing that the three layouts imply three different relationships between the product and the customer.
