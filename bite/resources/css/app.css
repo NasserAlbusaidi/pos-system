@@ -448,160 +448,7 @@
         min-height: 100vh;
     }
 
-    /* ========================================================================
-       Theme System — Guest Menu Themes
-       ======================================================================== */
-
-    /* Warm Theme (default — matches existing Sourdough aesthetic) */
-    [data-theme="warm"] {
-        --theme-card-radius: 14px;
-        --theme-card-shadow: 0 2px 12px -4px rgb(0 0 0 / 0.1);
-        --theme-card-border: 1px solid rgb(var(--line) / 0.6);
-        --theme-grid-cols: repeat(2, 1fr);
-        --theme-grid-gap: 14px;
-        --theme-image-height: 150px;
-        --theme-body-font: 'Rubik', system-ui, sans-serif;
-        --theme-display-font: 'Playfair Display', Georgia, serif;
-        --theme-card-padding: 10px 12px 12px;
-
-        /* Default palette — overridden by inline <style> when shop has custom branding */
-        --paper: 245 240 230;
-        --ink: 44 37 32;
-        --crema: 196 151 90;
-    }
-
-    /* Modern Theme — clean, minimal, high-contrast */
-    [data-theme="modern"] {
-        --theme-card-radius: 2px;
-        --theme-card-shadow: none;
-        --theme-card-border: 1px solid rgb(var(--line));
-        --theme-grid-cols: 1fr;
-        --theme-grid-gap: 6px;
-        --theme-image-height: 80px;
-        --theme-body-font: 'Inter', system-ui, sans-serif;
-        --theme-display-font: 'Inter', system-ui, sans-serif;
-        --theme-card-padding: 10px 12px;
-
-        --paper: 255 255 255;
-        --ink: 15 15 15;
-        --crema: 79 70 229;
-    }
-
-    /* Dark Theme — moody, premium */
-    [data-theme="dark"] {
-        --theme-card-radius: 10px;
-        --theme-card-shadow: 0 0 20px -6px rgb(var(--crema) / 0.15);
-        --theme-card-border: none;
-        --theme-grid-cols: 1fr;
-        --theme-grid-gap: 20px;
-        --theme-image-height: 220px;
-        --theme-body-font: 'DM Sans', system-ui, sans-serif;
-        --theme-display-font: 'DM Serif Display', Georgia, serif;
-        --theme-card-padding: 14px 16px;
-
-        --paper: 14 14 18;
-        --ink: 240 238 234;
-        --crema: 200 160 80;
-    }
-
-    /* Warm category header — centered with decorative underline */
-    [data-theme="warm"] .menu-category-header {
-        text-align: center;
-        padding-left: 0;
-        padding-top: 16px;
-        padding-bottom: 12px;
-    }
-
-    [data-theme="warm"] .menu-category-header::before {
-        display: none;
-    }
-
-    [data-theme="warm"] .menu-category-header::after {
-        content: '';
-        display: block;
-        width: 40px;
-        height: 2px;
-        background-color: rgb(var(--crema));
-        margin: 8px auto 0;
-        border-radius: 1px;
-    }
-
-    /* Modern category header — left-aligned, 1px separator beneath */
-    [data-theme="modern"] .menu-category-header {
-        padding-left: 0;
-        padding-top: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgb(var(--line));
-        margin-bottom: 8px;
-    }
-
-    [data-theme="modern"] .menu-category-header::before {
-        display: none;
-    }
-
-    /* Dark category header — full-width divider with subtle glow */
-    [data-theme="dark"] .menu-category-header {
-        text-align: center;
-        padding-left: 0;
-        padding-top: 20px;
-        padding-bottom: 16px;
-    }
-
-    [data-theme="dark"] .menu-category-header::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgb(var(--crema) / 0.5), transparent);
-        box-shadow: 0 0 8px rgb(var(--crema) / 0.3);
-        transform: none;
-        width: 100%;
-        border-radius: 0;
-    }
-
-    /* Dark theme — gradient overlay on product images */
-    [data-theme="dark"] .menu-product-image-area::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 0.65) 100%);
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    /* Dark theme — flat dark background instead of warm gradient */
-    [data-theme="dark"] .guest-menu-bg {
-        background: rgb(var(--paper));
-    }
-
-    /* Modern theme — square crop, clean edges */
-    [data-theme="modern"] .menu-product-img {
-        object-fit: cover;
-    }
-
-    /* Warm theme — preserve object-contain (Sourdough requirement) */
-    [data-theme="warm"] .menu-product-img {
-        object-fit: contain;
-    }
-
-    [data-theme="dark"] .menu-product-img {
-        object-fit: cover;
-    }
-
-    /* Warm + Modern: subtle letter-spacing on category headers (LTR only) */
-    [dir="ltr"][data-theme="warm"] .menu-category-header,
-    [dir="ltr"][data-theme="modern"] .menu-category-header {
-        letter-spacing: 0.01em;
-    }
-
-    /* Dark: no letter-spacing on headers */
-    [data-theme="dark"] .menu-category-header {
-        letter-spacing: 0;
-    }
-
-    /* Theme Picker — styles moved to inline in shop-settings.blade.php */
+    /* Theme overrides moved outside @layer — see after closing brace */
 
     /* Sale/Discount badge — base (Warm default) */
     .menu-badge-sale {
@@ -629,56 +476,7 @@
         letter-spacing: 0;
     }
 
-    /* Modern — sale badge (compact, top-right of card) */
-    [data-theme="modern"] .menu-badge-sale {
-        position: absolute;
-        top: 4px;
-        z-index: 10;
-        padding: 2px 6px;
-        border-radius: 9999px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 8px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        background-color: rgb(var(--crema) / 0.15);
-        color: rgb(var(--crema));
-        border: 1px solid rgb(var(--crema) / 0.5);
-    }
-
-    [dir="ltr"] [data-theme="modern"] .menu-badge-sale {
-        right: 4px;
-    }
-
-    [dir="rtl"] [data-theme="modern"] .menu-badge-sale {
-        left: 4px;
-    }
-
-    /* Dark — sale badge */
-    [data-theme="dark"] .menu-badge-sale {
-        position: absolute;
-        top: 8px;
-        z-index: 10;
-        padding: 2px 8px;
-        border-radius: 9999px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 8px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        background-color: rgb(var(--crema) / 0.2);
-        color: rgb(var(--crema));
-        border: 1px solid rgb(var(--crema) / 0.4);
-        backdrop-filter: blur(4px);
-    }
-
-    [dir="ltr"] [data-theme="dark"] .menu-badge-sale {
-        right: 8px;
-    }
-
-    [dir="rtl"] [data-theme="dark"] .menu-badge-sale {
-        left: 8px;
-    }
+    /* Theme-specific badge overrides moved outside @layer */
 
     /* Modern theme — horizontal card layout */
     .menu-card-modern-inner {
@@ -745,6 +543,143 @@
         line-height: 1.4;
         color: rgb(var(--ink-soft));
     }
+}
+
+/* ========================================================================
+   Theme System — outside @layer so they always win over layered styles
+   ======================================================================== */
+
+/* Theme token blocks */
+[data-theme="warm"] {
+    --theme-card-radius: 14px;
+    --theme-card-shadow: 0 2px 12px -4px rgb(0 0 0 / 0.1);
+    --theme-card-border: 1px solid rgb(var(--line) / 0.6);
+    --theme-grid-cols: repeat(2, 1fr);
+    --theme-grid-gap: 14px;
+    --theme-image-height: 150px;
+    --theme-body-font: 'Rubik', system-ui, sans-serif;
+    --theme-display-font: 'Playfair Display', Georgia, serif;
+    --theme-card-padding: 10px 12px 12px;
+}
+
+[data-theme="modern"] {
+    --theme-card-radius: 2px;
+    --theme-card-shadow: none;
+    --theme-card-border: 1px solid rgb(var(--line));
+    --theme-grid-cols: 1fr;
+    --theme-grid-gap: 6px;
+    --theme-image-height: 80px;
+    --theme-body-font: 'Inter', system-ui, sans-serif;
+    --theme-display-font: 'Inter', system-ui, sans-serif;
+    --theme-card-padding: 10px 12px;
+}
+
+[data-theme="dark"] {
+    --theme-card-radius: 10px;
+    --theme-card-shadow: 0 0 20px -6px rgb(var(--crema) / 0.15);
+    --theme-card-border: none;
+    --theme-grid-cols: 1fr;
+    --theme-grid-gap: 20px;
+    --theme-image-height: 220px;
+    --theme-body-font: 'DM Sans', system-ui, sans-serif;
+    --theme-display-font: 'DM Serif Display', Georgia, serif;
+    --theme-card-padding: 14px 16px;
+}
+
+/* Category header — per-theme overrides */
+[data-theme="warm"] .menu-category-header {
+    text-align: center;
+    padding-left: 0;
+    padding-top: 16px;
+    padding-bottom: 12px;
+}
+
+[data-theme="warm"] .menu-category-header::before {
+    display: none;
+}
+
+[data-theme="warm"] .menu-category-header::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background-color: rgb(var(--crema));
+    margin: 8px auto 0;
+    border-radius: 1px;
+}
+
+[data-theme="modern"] .menu-category-header {
+    padding-left: 0;
+    padding-top: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgb(var(--line));
+    margin-bottom: 8px;
+}
+
+[data-theme="modern"] .menu-category-header::before {
+    display: none;
+}
+
+[data-theme="dark"] .menu-category-header {
+    text-align: center;
+    padding-left: 0;
+    padding-top: 20px;
+    padding-bottom: 16px;
+    letter-spacing: 0;
+}
+
+[data-theme="dark"] .menu-category-header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(var(--crema) / 0.5), transparent);
+    box-shadow: 0 0 8px rgb(var(--crema) / 0.3);
+    transform: none;
+    width: 100%;
+    border-radius: 0;
+}
+
+/* Image treatment — per-theme */
+[data-theme="warm"] .menu-product-img { object-fit: contain; }
+[data-theme="modern"] .menu-product-img { object-fit: cover; }
+[data-theme="dark"] .menu-product-img { object-fit: cover; }
+
+[data-theme="dark"] .menu-product-image-area::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 0.65) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+[data-theme="dark"] .guest-menu-bg {
+    background: rgb(var(--paper));
+}
+
+/* Letter-spacing — per-theme */
+[dir="ltr"][data-theme="warm"] .menu-category-header,
+[dir="ltr"][data-theme="modern"] .menu-category-header {
+    letter-spacing: 0.01em;
+}
+
+/* Sale badge — per-theme overrides */
+[data-theme="modern"] .menu-badge-sale {
+    top: 4px;
+    padding: 2px 6px;
+    background-color: rgb(var(--crema) / 0.15);
+}
+
+[dir="ltr"] [data-theme="modern"] .menu-badge-sale { right: 4px; }
+[dir="rtl"] [data-theme="modern"] .menu-badge-sale { left: 4px; }
+
+[data-theme="dark"] .menu-badge-sale {
+    background-color: rgb(var(--crema) / 0.2);
+    border-color: rgb(var(--crema) / 0.4);
+    backdrop-filter: blur(4px);
 }
 
 /* Theme RTL overrides */
