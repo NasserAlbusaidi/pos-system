@@ -78,6 +78,22 @@
                             </div>
                         </div>
 
+                        @if ($editingProductId)
+                            <div class="space-y-2">
+                                <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.product_availability') }}</label>
+                                @php $editProduct = \App\Models\Product::find($editingProductId); @endphp
+                                @if($editProduct)
+                                    <button
+                                        type="button"
+                                        wire:click="toggleAvailability({{ $editingProductId }})"
+                                        class="w-full rounded-lg border px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] transition-all duration-200 {{ $editProduct->is_available ? 'border-crema/50 bg-crema/10 text-crema' : 'border-alert/50 bg-alert/15 text-alert' }}"
+                                    >
+                                        {{ $editProduct->is_available ? __('admin.product_available') : __('admin.product_sold_out') }}
+                                    </button>
+                                @endif
+                            </div>
+                        @endif
+
                         <button type="submit" class="btn-primary w-full">
                             {{ $editingProductId ? __('admin.product_update') : __('admin.product_save') }}
                         </button>
@@ -103,17 +119,29 @@
                         <div class="flex items-center justify-between px-5 py-4 transition-colors hover:bg-muted/35 group">
                             <div class="flex items-center space-x-3 sm:space-x-6">
                                 @if($product->image_url)
-                                    <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-line">
+                                    <img src="{{ asset('storage/' . $product->image_url) }}" class="h-10 w-10 rounded-lg object-cover border border-line {{ ! $product->is_available ? 'opacity-40' : '' }}">
                                 @else
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-ink-soft">{{ $loop->iteration }}</div>
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-ink-soft {{ ! $product->is_available ? 'opacity-40' : '' }}">{{ $loop->iteration }}</div>
                                 @endif
                                 <div>
-                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->name_en }}</div>
+                                    <div class="text-sm font-semibold uppercase tracking-tight text-ink {{ ! $product->is_available ? 'opacity-50 line-through' : '' }}">{{ $product->name_en }}</div>
                                     <div class="mt-0.5 font-mono text-[10px] text-ink-soft">{{ $product->category->name_en }}</div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 sm:gap-6 md:gap-12">
                                 <div class="font-mono text-sm font-bold"><x-price :amount="$product->price" :shop="$shop" /></div>
+                                <button
+                                    wire:click="toggleAvailability({{ $product->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="toggleAvailability({{ $product->id }})"
+                                    class="rounded-full border px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-200 {{ ! $product->is_available ? 'border-alert/50 bg-alert/15 text-alert' : 'border-crema/50 bg-crema/10 text-crema' }}"
+                                    title="{{ $product->is_available ? __('admin.product_available') : __('admin.product_sold_out') }}"
+                                >
+                                    <span wire:loading.remove wire:target="toggleAvailability({{ $product->id }})">
+                                        {{ $product->is_available ? __('admin.product_available') : __('admin.product_sold_out') }}
+                                    </span>
+                                    <span wire:loading wire:target="toggleAvailability({{ $product->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
+                                </button>
                                 <button wire:click="editProduct({{ $product->id }})" class="sm:opacity-0 sm:group-hover:opacity-100 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema hover:text-crema transition-opacity">{{ __('admin.menu_edit') }}</button>
                             </div>
                         </div>
