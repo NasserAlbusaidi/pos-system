@@ -269,6 +269,9 @@ return [
     'menu_no_items' => 'لا توجد عناصر',
 
     // Product Manager
+    'product_availability' => 'التوفر',
+    'product_available' => 'متاح',
+    'product_sold_out' => 'نفذ',
     'product_edit' => 'تعديل المنتج',
     'product_add' => 'إضافة منتج جديد',
     'product_name_en' => 'الاسم (إنجليزي)',

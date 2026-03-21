@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Services\BillingService;
@@ -160,6 +161,27 @@ class ProductManager extends Component
 
         $this->reset(['name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
         session()->flash('message', 'Product added successfully.');
+    }
+
+    public function toggleAvailability(int $productId): void
+    {
+        $product = Product::where('shop_id', Auth::user()->shop_id)
+            ->findOrFail($productId);
+
+        $product->update(['is_available' => ! $product->is_available]);
+
+        AuditLog::record(
+            $product->is_available ? 'product.restored' : 'product.86d',
+            $product,
+            ['product_name' => $product->name_en]
+        );
+
+        $this->dispatch('toast',
+            message: $product->is_available
+                ? "{$product->name_en} is now available."
+                : "{$product->name_en} marked as sold out.",
+            variant: $product->is_available ? 'success' : 'error'
+        );
     }
 
     #[Layout('layouts.admin')]

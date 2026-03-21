@@ -269,6 +269,9 @@ return [
     'menu_no_items' => 'No Items',
 
     // Product Manager
+    'product_availability' => 'Availability',
+    'product_available' => 'Available',
+    'product_sold_out' => 'Sold Out',
     'product_edit' => 'Edit Product',
     'product_add' => 'Add New Product',
     'product_name_en' => 'Name (English)',
