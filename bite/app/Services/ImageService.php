@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\ImageManager;
 
 class ImageService
 {
@@ -53,7 +53,7 @@ class ImageService
         // Derive base name without extension: e.g. "products/abc123"
         $baseName = preg_replace('/\.[^.]+$/', '', $storedPath);
 
-        $manager = new ImageManager(new GdDriver());
+        $manager = new ImageManager(new GdDriver);
 
         $variants = [
             'thumb' => 200,

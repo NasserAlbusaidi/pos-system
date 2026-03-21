@@ -23,6 +23,6 @@ if (! function_exists('productImage')) {
         // Replace "-full." with "-{$variant}."
         $variantPath = preg_replace('/-full\./', "-{$variant}.", $product->image_url);
 
-        return '/storage/' . $variantPath;
+        return '/storage/'.$variantPath;
     }
 }

@@ -83,7 +83,7 @@ class ImageServiceTest extends TestCase
 
     public function test_product_image_helper_returns_card_url(): void
     {
-        $product = new \App\Models\Product();
+        $product = new \App\Models\Product;
         $product->image_url = 'products/abc123-full.webp';
 
         $result = productImage($product, 'card');
@@ -93,7 +93,7 @@ class ImageServiceTest extends TestCase
 
     public function test_product_image_helper_returns_null_when_no_image(): void
     {
-        $product = new \App\Models\Product();
+        $product = new \App\Models\Product;
         $product->image_url = null;
 
         $result = productImage($product, 'card');
@@ -131,7 +131,8 @@ class ImageServiceTest extends TestCase
         $storedPath = $fakeImage->store('products', 'public');
 
         // Create a service that will fail on the second variant
-        $imageService = new class extends ImageService {
+        $imageService = new class extends ImageService
+        {
             private int $variantCount = 0;
 
             public function supportsWebp(): bool
@@ -161,7 +162,8 @@ class ImageServiceTest extends TestCase
 
     private function webpSupportedService(): ImageService
     {
-        return new class extends ImageService {
+        return new class extends ImageService
+        {
             public function supportsWebp(): bool
             {
                 return true;
@@ -171,7 +173,8 @@ class ImageServiceTest extends TestCase
 
     private function noWebpService(): ImageService
     {
-        return new class extends ImageService {
+        return new class extends ImageService
+        {
             public function supportsWebp(): bool
             {
                 return false;
