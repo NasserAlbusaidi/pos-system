@@ -22,77 +22,52 @@
 
                     {{-- Menu Theme --}}
                     <div x-data="{ previewTheme: @entangle('theme') }" wire:ignore.self>
-                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft" style="margin-bottom: 10px;">Menu Theme</p>
+                        <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft" style="margin-bottom: 12px;">Menu Theme</p>
 
-                        <div class="theme-picker-grid">
-                            {{-- Warm --}}
-                            <button type="button"
-                                x-on:click="previewTheme = 'warm'; $wire.set('theme', 'warm')"
-                                :class="previewTheme === 'warm' && 'theme-card--selected'"
-                                class="theme-card">
-                                <span x-show="previewTheme === 'warm'" x-cloak class="theme-card-check">&#10003;</span>
-                                <div class="theme-mockup" style="background: #f5f0e6; padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-content: start;">
-                                    <div style="background: #fffcf8; border-radius: 6px; overflow: hidden;">
-                                        <div style="height: 36px; background: #e4e3dc;"></div>
-                                        <div style="padding: 4px;"><div style="height: 4px; width: 60%; background: #2c2520; border-radius: 2px;"></div><div style="height: 3px; width: 35%; background: #2c2520; border-radius: 2px; margin-top: 3px; opacity: 0.5;"></div></div>
-                                    </div>
-                                    <div style="background: #fffcf8; border-radius: 6px; overflow: hidden;">
-                                        <div style="height: 36px; background: #e4e3dc;"></div>
-                                        <div style="padding: 4px;"><div style="height: 4px; width: 50%; background: #2c2520; border-radius: 2px;"></div><div style="height: 3px; width: 30%; background: #2c2520; border-radius: 2px; margin-top: 3px; opacity: 0.5;"></div></div>
-                                    </div>
-                                </div>
-                                <p class="theme-card-name">Warm</p>
-                            </button>
+                        {{-- Theme Cards — fully inline-styled for reliability --}}
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            @php
+                                $themes = [
+                                    'warm' => ['label' => 'Warm', 'bg' => '#f5f0e6', 'card' => '#fffcf8', 'img' => '#e4e3dc', 'text' => '#2c2520'],
+                                    'modern' => ['label' => 'Modern', 'bg' => '#ffffff', 'card' => '#ffffff', 'img' => '#e4e3dc', 'text' => '#0f0f0f'],
+                                    'dark' => ['label' => 'Dark', 'bg' => '#0e0e12', 'card' => '#1e1e24', 'img' => '#2a2a32', 'text' => '#f0eeea'],
+                                ];
+                            @endphp
 
-                            {{-- Modern --}}
-                            <button type="button"
-                                x-on:click="previewTheme = 'modern'; $wire.set('theme', 'modern')"
-                                :class="previewTheme === 'modern' && 'theme-card--selected'"
-                                class="theme-card">
-                                <span x-show="previewTheme === 'modern'" x-cloak class="theme-card-check">&#10003;</span>
-                                <div class="theme-mockup" style="background: #ffffff; padding: 8px; display: flex; flex-direction: column; gap: 3px; justify-content: center;">
-                                    <div style="display: flex; border: 1px solid #c3c7cb; height: 32px;">
-                                        <div style="width: 32px; min-width: 32px; background: #e4e3dc;"></div>
-                                        <div style="padding: 5px 6px; flex: 1;"><div style="height: 4px; width: 55%; background: #0f0f0f; border-radius: 2px;"></div><div style="height: 3px; width: 30%; background: #0f0f0f; border-radius: 2px; margin-top: 3px; opacity: 0.5;"></div></div>
-                                    </div>
-                                    <div style="display: flex; border: 1px solid #c3c7cb; height: 32px;">
-                                        <div style="width: 32px; min-width: 32px; background: #e4e3dc;"></div>
-                                        <div style="padding: 5px 6px; flex: 1;"><div style="height: 4px; width: 45%; background: #0f0f0f; border-radius: 2px;"></div><div style="height: 3px; width: 25%; background: #0f0f0f; border-radius: 2px; margin-top: 3px; opacity: 0.5;"></div></div>
-                                    </div>
-                                    <div style="display: flex; border: 1px solid #c3c7cb; height: 32px;">
-                                        <div style="width: 32px; min-width: 32px; background: #e4e3dc;"></div>
-                                        <div style="padding: 5px 6px; flex: 1;"><div style="height: 4px; width: 50%; background: #0f0f0f; border-radius: 2px;"></div><div style="height: 3px; width: 35%; background: #0f0f0f; border-radius: 2px; margin-top: 3px; opacity: 0.5;"></div></div>
-                                    </div>
-                                </div>
-                                <p class="theme-card-name">Modern</p>
-                            </button>
+                            @foreach($themes as $themeKey => $t)
+                                <button type="button"
+                                    x-on:click="previewTheme = '{{ $themeKey }}'; $wire.set('theme', '{{ $themeKey }}')"
+                                    :style="previewTheme === '{{ $themeKey }}'
+                                        ? 'border: 2px solid rgb(var(--crema)); box-shadow: 0 0 0 3px rgb(236 105 46 / 0.18);'
+                                        : 'border: 2px solid rgb(var(--line));'"
+                                    style="position: relative; display: block; padding: 0; border-radius: 10px; cursor: pointer; background: rgb(var(--panel)); text-align: center; width: 100%; overflow: hidden; transition: border-color 200ms ease, box-shadow 200ms ease;">
 
-                            {{-- Dark --}}
-                            <button type="button"
-                                x-on:click="previewTheme = 'dark'; $wire.set('theme', 'dark')"
-                                :class="previewTheme === 'dark' && 'theme-card--selected'"
-                                class="theme-card">
-                                <span x-show="previewTheme === 'dark'" x-cloak class="theme-card-check">&#10003;</span>
-                                <div class="theme-mockup" style="background: #0e0e12; padding: 8px; display: flex; flex-direction: column; gap: 5px; justify-content: center;">
-                                    <div style="border-radius: 5px; overflow: hidden; position: relative; height: 48px; background: #1e1e24;">
-                                        <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 5px 6px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7));">
-                                            <div style="height: 4px; width: 50%; background: #f0eeea; border-radius: 2px;"></div>
-                                            <div style="height: 3px; width: 25%; background: #f0eeea; border-radius: 2px; margin-top: 3px; opacity: 0.6;"></div>
-                                        </div>
+                                    {{-- Checkmark --}}
+                                    <span x-show="previewTheme === '{{ $themeKey }}'" x-cloak
+                                          style="position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; background: rgb(var(--crema)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; z-index: 2; box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);">&#10003;</span>
+
+                                    {{-- Mockup area --}}
+                                    <div style="background: {{ $t['bg'] }}; padding: 10px; aspect-ratio: 4 / 3; display: flex; flex-direction: column; gap: 4px; justify-content: center; overflow: hidden;">
+                                        @for($i = 0; $i < ($themeKey === 'warm' ? 2 : 3); $i++)
+                                            <div style="background: {{ $t['card'] }}; border-radius: {{ $themeKey === 'warm' ? '4px' : ($themeKey === 'dark' ? '3px' : '0') }}; overflow: hidden; {{ $themeKey === 'modern' ? 'border: 1px solid #ddd;' : '' }} {{ $themeKey === 'dark' ? 'box-shadow: 0 0 6px rgb(200 160 80 / 0.1);' : '' }}">
+                                                <div style="height: {{ $themeKey === 'warm' ? '20px' : '14px' }}; background: {{ $t['img'] }};"></div>
+                                                <div style="padding: 3px 5px;">
+                                                    <div style="height: 3px; width: {{ 40 + ($i * 10) }}%; background: {{ $t['text'] }}; border-radius: 1px; opacity: 0.7;"></div>
+                                                </div>
+                                            </div>
+                                        @endfor
                                     </div>
-                                    <div style="border-radius: 5px; overflow: hidden; position: relative; height: 48px; background: #1e1e24;">
-                                        <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 5px 6px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7));">
-                                            <div style="height: 4px; width: 40%; background: #f0eeea; border-radius: 2px;"></div>
-                                            <div style="height: 3px; width: 30%; background: #f0eeea; border-radius: 2px; margin-top: 3px; opacity: 0.6;"></div>
-                                        </div>
+
+                                    {{-- Label --}}
+                                    <div style="padding: 7px 6px 9px; border-top: 1px solid rgb(var(--line) / 0.4); font-size: 12px; font-weight: 600; color: rgb(var(--ink));">
+                                        {{ $t['label'] }}
                                     </div>
-                                </div>
-                                <p class="theme-card-name">Dark</p>
-                            </button>
+                                </button>
+                            @endforeach
                         </div>
 
                         {{-- Live Preview --}}
-                        <div class="theme-live-preview" :data-theme="previewTheme"
+                        <div style="border: 1px solid rgb(var(--line)); border-radius: 10px; overflow: hidden; margin-top: 14px;"
                              :style="`background: rgb(${
                                  previewTheme === 'dark' ? '14 14 18' :
                                  previewTheme === 'modern' ? '255 255 255' :
@@ -111,7 +86,7 @@
                                 <div :style="`display: grid; grid-template-columns: ${
                                          previewTheme === 'modern' || previewTheme === 'dark' ? '1fr' : 'repeat(2, 1fr)'
                                      }; gap: 8px;`">
-                                    @foreach(['Latte' => '1.500', 'Espresso' => '0.900'] as $name => $price)
+                                    @foreach(['Latte' => '1.500', 'Espresso' => '0.900'] as $itemName => $itemPrice)
                                         <div :style="`border-radius: ${
                                                  previewTheme === 'modern' ? '2px' : previewTheme === 'dark' ? '8px' : '12px'
                                              }; overflow: hidden; border: ${
@@ -129,12 +104,12 @@
                                                          previewTheme === 'dark' ? '240 238 234' :
                                                          previewTheme === 'modern' ? '15 15 15' :
                                                          '44 37 32'
-                                                     });`">{{ $name }}</div>
+                                                     });`">{{ $itemName }}</div>
                                                 <div :style="`font-size: 9px; font-family: 'JetBrains Mono', monospace; margin-top: 2px; transition: color 300ms ease; color: rgb(${
                                                          previewTheme === 'dark' ? '240 238 234' :
                                                          previewTheme === 'modern' ? '15 15 15' :
                                                          '44 37 32'
-                                                     });`">{{ $price }}</div>
+                                                     });`">{{ $itemPrice }}</div>
                                             </div>
                                         </div>
                                     @endforeach
