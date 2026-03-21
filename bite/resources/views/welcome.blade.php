@@ -208,6 +208,11 @@
             font-family: 'Rubik', system-ui, sans-serif;
             letter-spacing: 0.01em;
             line-height: 1.05;
+            text-wrap: balance;
+        }
+
+        p {
+            text-wrap: pretty;
         }
 
         .font-mono {
@@ -324,7 +329,9 @@
             color: rgb(var(--panel));
             background-color: rgb(var(--ink));
             box-shadow: 0 8px 24px -14px rgb(10 15 24 / 0.9);
-            transition: all 200ms ease;
+            transition-property: transform, background-color, border-color, box-shadow;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
             cursor: pointer;
         }
 
@@ -333,6 +340,10 @@
             background-color: rgb(var(--crema));
             border-color: rgb(var(--crema));
             box-shadow: 0 12px 24px -12px rgb(var(--crema) / 0.55);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.96);
         }
 
         .btn-secondary {
@@ -351,7 +362,9 @@
             text-decoration: none;
             color: rgb(var(--ink));
             background-color: rgb(var(--panel));
-            transition: all 200ms ease;
+            transition-property: transform, border-color, box-shadow;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
             cursor: pointer;
         }
 
@@ -359,6 +372,10 @@
             transform: translateY(-1px);
             border-color: rgb(var(--ink));
             box-shadow: 0 8px 16px -14px rgb(10 15 24 / 0.7);
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.96);
         }
 
         .btn-whatsapp {
@@ -377,13 +394,19 @@
             text-decoration: none;
             color: #fff;
             background-color: rgb(var(--signal));
-            transition: all 200ms ease;
+            transition-property: transform, box-shadow;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
             cursor: pointer;
         }
 
         .btn-whatsapp:hover {
             transform: translateY(-1px);
             box-shadow: 0 12px 24px -12px rgb(var(--signal) / 0.5);
+        }
+
+        .btn-whatsapp:active {
+            transform: scale(0.96);
         }
 
         /* ===== Animations ===== */
@@ -421,7 +444,9 @@
             right: 0;
             z-index: 100;
             padding: 1rem 0;
-            transition: all 300ms ease;
+            transition-property: background-color, backdrop-filter, border-bottom-color, padding;
+            transition-duration: 300ms;
+            transition-timing-function: ease;
         }
 
         .landing-nav.scrolled {
@@ -485,7 +510,10 @@
             letter-spacing: 0.14em;
             text-decoration: none;
             color: rgb(var(--ink-soft));
-            transition: color 200ms ease;
+            transition-property: color;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
+            padding: 0.75rem 0;
         }
 
         .nav-links a:hover {
@@ -506,7 +534,10 @@
             letter-spacing: 0.14em;
             text-decoration: none;
             color: rgb(var(--ink-soft));
-            transition: color 200ms ease;
+            transition-property: color;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
+            padding: 0.75rem 0.5rem;
         }
 
         .nav-login:hover { color: rgb(var(--ink)); }
@@ -717,6 +748,7 @@
             font-size: 0.9375rem;
             font-weight: 800;
             color: rgb(var(--ink));
+            font-variant-numeric: tabular-nums;
         }
 
         .mockup-sidebar {
@@ -744,6 +776,7 @@
             font-size: 1.25rem;
             font-weight: 800;
             color: rgb(var(--crema));
+            font-variant-numeric: tabular-nums;
         }
 
         .mockup-badge {
@@ -864,7 +897,9 @@
 
         .feature-card {
             padding: 2rem 1.75rem;
-            transition: all 250ms ease;
+            transition-property: transform, box-shadow;
+            transition-duration: 250ms;
+            transition-timing-function: ease;
         }
 
         .feature-card:hover {
@@ -1026,6 +1061,7 @@
             font-size: 2.75rem;
             line-height: 1;
             color: rgb(var(--ink));
+            font-variant-numeric: tabular-nums;
         }
 
         .pricing-period {
@@ -1150,7 +1186,9 @@
             border: 1px solid rgb(var(--line) / 0.7);
             background: rgb(var(--panel) / 0.7);
             overflow: hidden;
-            transition: border-color 200ms ease;
+            transition-property: border-color;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
         }
 
         .faq-item:hover {
@@ -1175,12 +1213,15 @@
         }
 
         .faq-trigger:hover { color: rgb(var(--crema)); }
+        .faq-trigger:active { transform: scale(0.96); }
 
         .faq-chevron {
             width: 20px;
             height: 20px;
             flex-shrink: 0;
-            transition: transform 300ms ease;
+            transition-property: transform;
+            transition-duration: 300ms;
+            transition-timing-function: ease;
             color: rgb(var(--ink-soft));
         }
 
@@ -1189,7 +1230,9 @@
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 300ms ease;
+            transition-property: max-height;
+            transition-duration: 300ms;
+            transition-timing-function: ease;
         }
 
         .faq-item.open .faq-answer {
@@ -1285,7 +1328,11 @@
             font-size: 0.875rem;
             color: rgb(var(--ink-soft));
             text-decoration: none;
-            transition: color 200ms ease;
+            transition-property: color;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
+            padding: 0.375rem 0;
+            display: inline-block;
         }
 
         .footer-links a:hover { color: rgb(var(--crema)); }
@@ -1324,7 +1371,11 @@
             letter-spacing: 0.1em;
             color: rgb(var(--ink-soft));
             text-decoration: none;
-            transition: color 200ms ease;
+            transition-property: color;
+            transition-duration: 200ms;
+            transition-timing-function: ease;
+            padding: 0.375rem 0;
+            display: inline-block;
         }
 
         .footer-legal a:hover { color: rgb(var(--crema)); }
