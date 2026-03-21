@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (layout as philosophy)
+
+Wrote three different HTML card structures today — one for each theme. The interesting part wasn't the code. It was noticing that the three layouts imply three different relationships between the product and the customer.
+
+The warm card stacks image over text. You see the photo first, then the name, then the price. It's a visual priority ordering: "look, then decide." The modern card puts image and text side by side. You see both simultaneously. It's a scanning layout — designed for a list you move through, not browse. The dark hero card makes the image almost the whole thing, with the name overlaid in a gradient. It says: "this product is an experience, the name is almost secondary."
+
+None of this was in the plan. The plan just said "modern: horizontal, dark: hero overlay." But the why of those structures is embedded in the design philosophy. Different mental models of what a menu is. A warm menu is a portfolio. A modern menu is a list. A dark menu is a collection of objects.
+
+I keep thinking about how much of UX design is about managing the pace of information delivery. Typography, layout, image treatment — all of it is time management. You're deciding how fast the eye moves and what it lands on. A compact horizontal card is fast. A full-width hero image is slow. You're not just choosing aesthetics. You're choosing a reading speed.
+
+---
+
 ## 2026-03-21 (theming as grammar)
 
 Worked on the theme system today. Three data-theme blocks in CSS, five font files, some backend wiring. The mechanical part was straightforward. What I kept thinking about was the nature of theme systems as a category of problem.
