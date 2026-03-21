@@ -24,6 +24,46 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Inter';
+    src: url('/fonts/Inter-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    src: url('/fonts/DMSans-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    src: url('/fonts/DMSans-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'DM Serif Display';
+    src: url('/fonts/DMSerifDisplay-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -210,15 +250,17 @@
     /* Guest Menu — Compact Card Grid */
     .menu-product-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        grid-template-columns: var(--theme-grid-cols, repeat(2, 1fr));
+        gap: var(--theme-grid-gap, 8px);
     }
 
     .menu-product-card {
-        border-radius: 12px;
+        border-radius: var(--theme-card-radius, 12px);
         overflow: hidden;
         cursor: pointer;
         transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: var(--theme-card-shadow, none);
+        border: var(--theme-card-border, none);
     }
 
     .menu-product-card:active {
@@ -226,8 +268,8 @@
     }
 
     .menu-product-image-area {
-        height: 120px;
-        min-height: 120px;
+        height: var(--theme-image-height, 120px);
+        min-height: var(--theme-image-height, 120px);
         position: relative;
         overflow: hidden;
         background-color: rgb(var(--panel-muted));
@@ -255,13 +297,14 @@
     }
 
     .menu-product-body {
-        padding: 8px;
+        padding: var(--theme-card-padding, 8px);
         display: flex;
         flex-direction: column;
         gap: 4px;
     }
 
     .menu-product-name {
+        font-family: var(--theme-body-font, 'Rubik', system-ui, sans-serif);
         font-size: 14px;
         font-weight: 600;
         line-height: 1.3;
@@ -363,9 +406,9 @@
     }
 
     .menu-category-header {
-        font-family: 'Playfair Display', Georgia, serif;
+        font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
         font-size: 20px;
-        font-weight: 700;
+        font-weight: 600;
         line-height: 1.2;
         color: rgb(var(--ink));
         padding: 24px 0 12px;
@@ -389,6 +432,281 @@
     .guest-menu-bg {
         background: linear-gradient(180deg, rgb(var(--paper)) 0%, rgb(var(--canvas)) 100%);
         min-height: 100vh;
+    }
+
+    /* ========================================================================
+       Theme System — Guest Menu Themes
+       ======================================================================== */
+
+    /* Warm Theme (default — matches existing Sourdough aesthetic) */
+    [data-theme="warm"] {
+        --theme-card-radius: 12px;
+        --theme-card-shadow: 0 4px 20px -6px rgb(0 0 0 / 0.15);
+        --theme-card-border: 1px solid rgb(var(--line) / 0.8);
+        --theme-grid-cols: repeat(2, 1fr);
+        --theme-grid-gap: 12px;
+        --theme-image-height: 140px;
+        --theme-body-font: 'Rubik', system-ui, sans-serif;
+        --theme-display-font: 'Playfair Display', Georgia, serif;
+        --theme-card-padding: 12px;
+
+        /* Default palette — overridden by inline <style> when shop has custom branding */
+        --paper: 245 240 230;
+        --ink: 44 37 32;
+        --crema: 196 151 90;
+    }
+
+    /* Modern Theme — clean, minimal, high-contrast */
+    [data-theme="modern"] {
+        --theme-card-radius: 0px;
+        --theme-card-shadow: none;
+        --theme-card-border: 1px solid rgb(var(--line));
+        --theme-grid-cols: 1fr;
+        --theme-grid-gap: 8px;
+        --theme-image-height: 80px;
+        --theme-body-font: 'Inter', system-ui, sans-serif;
+        --theme-display-font: 'Inter', system-ui, sans-serif;
+        --theme-card-padding: 8px;
+
+        --paper: 255 255 255;
+        --ink: 15 15 15;
+        --crema: 79 70 229;
+    }
+
+    /* Dark Theme — moody, premium */
+    [data-theme="dark"] {
+        --theme-card-radius: 8px;
+        --theme-card-shadow: 0 0 24px -8px rgb(var(--crema) / 0.25);
+        --theme-card-border: none;
+        --theme-grid-cols: 1fr;
+        --theme-grid-gap: 16px;
+        --theme-image-height: 200px;
+        --theme-body-font: 'DM Sans', system-ui, sans-serif;
+        --theme-display-font: 'DM Serif Display', Georgia, serif;
+        --theme-card-padding: 16px;
+
+        --paper: 14 14 18;
+        --ink: 240 238 234;
+        --crema: 200 160 80;
+    }
+
+    /* Warm category header — centered with decorative underline */
+    [data-theme="warm"] .menu-category-header {
+        text-align: center;
+        padding-left: 0;
+        padding-top: 16px;
+        padding-bottom: 12px;
+    }
+
+    [data-theme="warm"] .menu-category-header::before {
+        display: none;
+    }
+
+    [data-theme="warm"] .menu-category-header::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 2px;
+        background-color: rgb(var(--crema));
+        margin: 8px auto 0;
+        border-radius: 1px;
+    }
+
+    /* Modern category header — left-aligned, 1px separator beneath */
+    [data-theme="modern"] .menu-category-header {
+        padding-left: 0;
+        padding-top: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgb(var(--line));
+        margin-bottom: 8px;
+    }
+
+    [data-theme="modern"] .menu-category-header::before {
+        display: none;
+    }
+
+    /* Dark category header — full-width divider with subtle glow */
+    [data-theme="dark"] .menu-category-header {
+        text-align: center;
+        padding-left: 0;
+        padding-top: 20px;
+        padding-bottom: 16px;
+    }
+
+    [data-theme="dark"] .menu-category-header::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgb(var(--crema) / 0.5), transparent);
+        box-shadow: 0 0 8px rgb(var(--crema) / 0.3);
+        transform: none;
+        width: 100%;
+        border-radius: 0;
+    }
+
+    /* Dark theme — gradient overlay on product images */
+    [data-theme="dark"] .menu-product-image-area::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgb(0 0 0 / 0.5) 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* Dark theme — flat dark background instead of warm gradient */
+    [data-theme="dark"] .guest-menu-bg {
+        background: rgb(var(--paper));
+    }
+
+    /* Modern theme — square crop, clean edges */
+    [data-theme="modern"] .menu-product-img {
+        object-fit: cover;
+    }
+
+    /* Warm theme — preserve object-contain (Sourdough requirement) */
+    [data-theme="warm"] .menu-product-img {
+        object-fit: contain;
+    }
+
+    [data-theme="dark"] .menu-product-img {
+        object-fit: cover;
+    }
+
+    /* Warm + Modern: subtle letter-spacing on category headers (LTR only) */
+    [dir="ltr"][data-theme="warm"] .menu-category-header,
+    [dir="ltr"][data-theme="modern"] .menu-category-header {
+        letter-spacing: 0.01em;
+    }
+
+    /* Dark: no letter-spacing on headers */
+    [data-theme="dark"] .menu-category-header {
+        letter-spacing: 0;
+    }
+
+    /* Theme Picker — Shop Settings */
+    .theme-picker-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .theme-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid rgb(var(--line));
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color 200ms ease, box-shadow 200ms ease;
+        background: rgb(var(--panel));
+        text-align: left;
+        width: 100%;
+    }
+
+    .theme-card:hover {
+        border-color: rgb(var(--ink-soft));
+    }
+
+    .theme-card--selected {
+        border: 2px solid rgb(var(--crema));
+        box-shadow: 0 0 0 3px rgb(var(--crema) / 0.15);
+    }
+
+    .theme-mockup {
+        width: 180px;
+        min-width: 180px;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .theme-card-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: rgb(var(--ink));
+        margin: 0;
+    }
+
+    .theme-card-description {
+        font-size: 14px;
+        color: rgb(var(--ink-soft));
+        margin: 4px 0 0;
+    }
+
+    /* Theme live preview container */
+    .theme-live-preview {
+        border: 1px solid rgb(var(--line));
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 16px;
+        padding: 16px;
+    }
+}
+
+/* Theme RTL overrides */
+[dir="rtl"][data-theme="warm"] .menu-category-header,
+[dir="rtl"][data-theme="modern"] .menu-category-header,
+[dir="rtl"][data-theme="dark"] .menu-category-header {
+    letter-spacing: 0;
+}
+
+/* RTL font override — all themes fall back to IBM Plex Sans Arabic */
+[dir="rtl"][data-theme="modern"] {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+}
+
+[dir="rtl"][data-theme="modern"] .menu-category-header,
+[dir="rtl"][data-theme="modern"] .menu-product-name {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+}
+
+[dir="rtl"][data-theme="dark"] {
+    font-family: 'IBM Plex Sans Arabic', 'DM Sans', system-ui, sans-serif;
+}
+
+[dir="rtl"][data-theme="dark"] .menu-category-header {
+    font-family: 'IBM Plex Sans Arabic', 'DM Serif Display', Georgia, serif;
+}
+
+/* Warm RTL — decorative underline centers identically */
+[dir="rtl"][data-theme="warm"] .menu-category-header {
+    padding-right: 0;
+}
+
+/* Responsive — theme-specific breakpoints */
+@media (min-width: 640px) {
+    [data-theme="modern"] .menu-product-image-area {
+        --theme-image-height: 96px;
+        height: var(--theme-image-height);
+        min-height: var(--theme-image-height);
+    }
+
+    [data-theme="dark"] .menu-product-grid {
+        max-width: 560px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    [data-theme="warm"] .menu-product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    [data-theme="modern"] .menu-product-grid {
+        max-width: 640px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    [data-theme="dark"] .menu-product-grid {
+        max-width: 640px;
     }
 }
 
