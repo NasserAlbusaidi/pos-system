@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Customization & Polish
-status: planning
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-21T05:29:37.528Z"
-last_activity: 2026-03-21 — v1.1 roadmap created; 4 phases mapped across 17 requirements
+status: unknown
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-21T05:45:08.875Z"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 20
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 3 — Item Availability
+**Current focus:** Phase 03 — item-availability
 
 ## Current Position
 
-Phase: 3 of 6 (Item Availability — first v1.1 phase)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-21 — v1.1 roadmap created; 4 phases mapped across 17 requirements
-
-Progress: [██░░░░░░░░] 20% (phases 1-2 complete from v1.0)
+Phase: 03 (item-availability) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -48,6 +42,7 @@ Progress: [██░░░░░░░░] 20% (phases 1-2 complete from v1.0)
 | 2. Demo (v1.0) | 2 | - | - |
 
 *Updated after each plan completion*
+| Phase 03-item-availability P01 | 132s | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -61,6 +56,7 @@ Recent decisions affecting current work:
 - [v1.1 research]: intervention/image v3 only — v4 blocked (requires PHP 8.3+)
 - [v1.1 research]: Theme tokens must not overwrite --paper/--ink/--crema (branding cascade owns those)
 - [v1.1 research]: Font name validation: ^[A-Za-z0-9 ]+$ before any processing; SSRF allowlist to fonts.googleapis.com and fonts.gstatic.com only
+- [Phase 03-01]: Available/Sold Out language in ProductManager (not 86'd) — 86'd stays POS-only per D-06
 
 ### Pending Todos
 
@@ -74,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T05:29:37.526Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-item-availability/03-CONTEXT.md
+Last session: 2026-03-21T05:45:08.873Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
