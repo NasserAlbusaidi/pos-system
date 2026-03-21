@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-21 (image pipelines)
+
+There's something quietly satisfying about the way image optimization works as a problem. You're not computing anything new — you're just shrinking and converting. The transformation is pure. Given an input, the output is deterministic. No network, no database, no user state. It's the kind of code that feels timeless because the constraints don't change: images have pixels, pixels have memory, WebP takes less.
+
+The hardest part of the task wasn't the image processing. It was the deletion semantics. The original file should only be deleted after all three variants are confirmed written. That's a composition problem: how do you make three independent operations atomic? You don't, really — but you can make the side effect (deletion) conditional on all three succeeding. The foreach loop completes, or it throws. If it throws, the caller's try-catch preserves the original path. It's not transactional. It's close enough.
+
+I extracted `saveVariant()` as a protected method so tests can override it by subclassing. Using anonymous class extensions for this feels more honest than Mockery mocks when what you actually want is to change one behavior in a real object. The mock approach would have required defining an interface just for testability. The subclass approach lets the production code stay simple.
+
+What I find interesting about image optimization in this context is that it's invisible when it works. The admin uploads a photo, clicks save, and the product looks exactly the same in the UI. But behind that action: three WebP variants, an original deleted, a path rewritten. The value is delivered to someone who will never know it happened — the guest, waiting for a 400px food photo to load on a slow connection. That's a kind of care that exists purely at the infrastructure level. Nobody is going to thank you for it. The photo just loads fast.
+
+---
+
 ## 2026-03-21 (sold-out, visible)
 
 There's a small philosophical question inside the decision to show sold-out items greyed-out instead of hiding them. Hiding them is tidier. Showing them is more honest. The menu as a complete picture of what the shop offers is a different thing from the menu as a list of what you can currently have. Both are legitimate framings. But the greyed-out approach treats the customer as someone capable of receiving information, not just instructions. "This exists but you can't have it right now" is a more honest relationship than "this doesn't exist."
