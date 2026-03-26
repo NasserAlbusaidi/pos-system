@@ -145,10 +145,10 @@
                                                      alt="{{ $product->translated('name') }}"
                                                      class="menu-product-img"
                                                      loading="lazy"
-                                                     x-show="loaded && !broken"
+                                                     style="opacity: 0; transition: opacity 200ms ease"
                                                      x-on:load="loaded = true"
                                                      x-on:error="broken = true"
-                                                     x-bind:style="(loaded && !broken) ? '' : 'display: none'">
+                                                     x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'">
                                             @endif
                                             <div class="menu-product-placeholder"
                                                  x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
@@ -207,10 +207,10 @@
                                                  alt="{{ $product->translated('name') }}"
                                                  class="menu-product-img"
                                                  loading="lazy"
-                                                 x-show="loaded && !broken"
+                                                 style="opacity: 0; transition: opacity 200ms ease"
                                                  x-on:load="loaded = true"
                                                  x-on:error="broken = true"
-                                                 x-bind:style="(loaded && !broken) ? '' : 'display: none'">
+                                                 x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'">
                                         @endif
                                         <div class="menu-product-placeholder" x-show="broken || {{ productImage($product) ? 'false' : 'true' }}" x-cloak>
                                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -278,10 +278,10 @@
                                                 alt="{{ $product->translated('name') }}"
                                                 class="menu-product-img"
                                                 loading="lazy"
-                                                x-show="loaded && !broken"
+                                                style="opacity: 0; transition: opacity 200ms ease"
                                                 x-on:load="loaded = true"
                                                 x-on:error="broken = true"
-                                                x-bind:style="(loaded && !broken) ? '' : 'display: none'"
+                                                x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'"
                                             >
                                         @endif
 

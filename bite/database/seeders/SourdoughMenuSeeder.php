@@ -6,19 +6,76 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
+use App\Services\ImageService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SourdoughMenuSeeder extends Seeder
 {
     /**
-     * Seed the Sourdough Oman shop with full bakery menu.
+     * Pexels photo IDs mapped by product name (English).
+     * Free for commercial use, no attribution required.
      *
-     * Idempotent: skips if 'sourdough' shop already exists.
+     * @var array<string, int>
+     */
+    private const PHOTO_MAP = [
+        // Breads
+        'Sourdough loaf' => 7541727,
+        'French baguette' => 1871024,
+        'Ciabatta' => 7568493,
+        'Focaccia' => 30666809,
+        'Multigrain loaf' => 1079020,
+        'Olive bread' => 34590349,
+        // Pastries
+        'Butter croissant' => 1458677,
+        'Pain au chocolat' => 267308,
+        'Almond danish' => 8105045,
+        'Cinnamon roll' => 3951306,
+        'Cheese roll' => 4610166,
+        'Zaatar manakeesh' => 351962,
+        // Sandwiches
+        'Grilled chicken sandwich' => 1396660,
+        'Turkey club' => 9624298,
+        'Caprese sandwich' => 30925490,
+        'Tuna melt' => 7729372,
+        'Falafel wrap' => 5175621,
+        'Halloumi sandwich' => 8751405,
+        // Salads & Bowls
+        'Caesar salad' => 12557608,
+        'Greek salad' => 1059905,
+        'Quinoa bowl' => 17597408,
+        'Grain bowl' => 6823336,
+        'Soup of the day' => 539451,
+        // Beverages
+        'Espresso' => 9050518,
+        'Cappuccino' => 30707443,
+        'Latte' => 12703064,
+        'Fresh juice' => 5946790,
+        'Iced tea' => 1484678,
+        'Hot chocolate' => 5464634,
+        // Desserts
+        'Tiramisu' => 754954,
+        'Cheesecake' => 1098592,
+        'Dark chocolate brownie' => 5386663,
+        'Fruit tart' => 19910617,
+    ];
+
+    /**
+     * Seed the Sourdough Oman shop with full bakery menu and stock photos.
+     *
+     * If shop already exists, adds photos to products that don't have one.
+     * Photos are downloaded from Pexels (free, no attribution required)
+     * and processed through ImageService for WebP variants.
      */
     public function run(): void
     {
-        if (Shop::where('slug', 'sourdough')->exists()) {
-            $this->command?->info('Sourdough shop already exists — skipping.');
+        $existing = Shop::where('slug', 'sourdough')->first();
+
+        if ($existing) {
+            $this->command?->info('Sourdough shop exists — adding photos to products missing images...');
+            $this->addPhotosToExistingProducts($existing);
 
             return;
         }
@@ -106,6 +163,8 @@ class SourdoughMenuSeeder extends Seeder
         ]);
 
         // ── Products ─────────────────────────────────────────────
+        // Each item includes a Pexels photo ID for stock imagery.
+        // Photos are free for commercial use, no attribution required.
 
         // Breads — 6 items
         $breadItems = [
@@ -362,23 +421,29 @@ class SourdoughMenuSeeder extends Seeder
             ],
         ];
 
-        // ── Create products using explicit shop_id assignment (shop_id is guarded) ──
-        $this->createProducts($shop, $breads, $breadItems);
-        $this->createProducts($shop, $pastries, $pastryItems);
-        $this->createProducts($shop, $sandwiches, $sandwichItems);
-        $this->createProducts($shop, $salads, $saladItems);
-        $this->createProducts($shop, $beverages, $beverageItems);
-        $this->createProducts($shop, $desserts, $dessertItems);
+        // ── Create products with photos ─────────────────────────
+        $imageService = app(ImageService::class);
+
+        $this->createProducts($shop, $breads, $breadItems, $imageService);
+        $this->createProducts($shop, $pastries, $pastryItems, $imageService);
+        $this->createProducts($shop, $sandwiches, $sandwichItems, $imageService);
+        $this->createProducts($shop, $salads, $saladItems, $imageService);
+        $this->createProducts($shop, $beverages, $beverageItems, $imageService);
+        $this->createProducts($shop, $desserts, $dessertItems, $imageService);
     }
 
     /**
      * Create products for a category, setting shop_id explicitly since it is guarded.
+     * Downloads and processes product photos from Pexels via ImageService.
      *
      * @param  array<int, array<string, mixed>>  $items
      */
-    private function createProducts(Shop $shop, Category $category, array $items): void
+    private function createProducts(Shop $shop, Category $category, array $items, ImageService $imageService): void
     {
         foreach ($items as $index => $data) {
+            $pexelsId = self::PHOTO_MAP[$data['name_en']] ?? null;
+            $imageUrl = $pexelsId ? $this->downloadAndProcessPhoto($pexelsId, $imageService) : null;
+
             $product = new Product([
                 'category_id' => $category->id,
                 'name_en' => $data['name_en'],
@@ -386,6 +451,7 @@ class SourdoughMenuSeeder extends Seeder
                 'description_en' => $data['description_en'],
                 'description_ar' => $data['description_ar'],
                 'price' => $data['price'],
+                'image_url' => $imageUrl,
                 'is_available' => true,
                 'is_visible' => true,
                 'sort_order' => $index + 1,
@@ -394,6 +460,74 @@ class SourdoughMenuSeeder extends Seeder
             // shop_id is guarded — must be set explicitly to prevent tenant isolation bypass
             $product->shop_id = $shop->id;
             $product->save();
+
+            $status = $imageUrl ? 'with photo' : 'no photo';
+            $this->command?->info("  {$data['name_en']} ({$status})");
+        }
+    }
+
+    /**
+     * Add photos to existing Sourdough products that don't have images.
+     */
+    private function addPhotosToExistingProducts(Shop $shop): void
+    {
+        $imageService = app(ImageService::class);
+        $products = Product::where('shop_id', $shop->id)->whereNull('image_url')->get();
+
+        if ($products->isEmpty()) {
+            $this->command?->info('All products already have photos.');
+
+            return;
+        }
+
+        $this->command?->info("Found {$products->count()} products without photos.");
+
+        foreach ($products as $product) {
+            $pexelsId = self::PHOTO_MAP[$product->name_en] ?? null;
+
+            if (! $pexelsId) {
+                $this->command?->warn("  No photo mapped for: {$product->name_en}");
+
+                continue;
+            }
+
+            $imageUrl = $this->downloadAndProcessPhoto($pexelsId, $imageService);
+
+            if ($imageUrl) {
+                $product->update(['image_url' => $imageUrl]);
+                $this->command?->info("  {$product->name_en} — photo added");
+            }
+        }
+    }
+
+    /**
+     * Download a photo from Pexels and process it through ImageService.
+     *
+     * Returns the image_url (e.g. "products/sourdough-abc123-full.webp") or null on failure.
+     */
+    private function downloadAndProcessPhoto(int $pexelsId, ImageService $imageService): ?string
+    {
+        $url = "https://images.pexels.com/photos/{$pexelsId}/pexels-photo-{$pexelsId}.jpeg?auto=compress&cs=tinysrgb&w=800";
+
+        try {
+            $response = Http::timeout(15)->get($url);
+
+            if (! $response->successful()) {
+                $this->command?->warn("    Failed to download Pexels photo {$pexelsId} (HTTP {$response->status()})");
+
+                return null;
+            }
+
+            // Store the raw download as a temporary JPEG in products/
+            $filename = 'products/seed-'.Str::random(16).'.jpg';
+            Storage::disk('public')->put($filename, $response->body());
+
+            // Process through ImageService → creates thumb/card/full WebP variants
+            return $imageService->processUpload($filename);
+        } catch (\Throwable $e) {
+            $this->command?->warn("    Photo download failed for Pexels {$pexelsId}: {$e->getMessage()}");
+
+            return null;
         }
     }
 }
