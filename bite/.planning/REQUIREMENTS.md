@@ -51,24 +51,24 @@ Requirements for production deployment on Google Cloud Run.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEPLOY-01 | — | Pending |
-| DEPLOY-02 | — | Pending |
-| DEPLOY-03 | — | Pending |
-| DEPLOY-04 | — | Pending |
-| HARD-01 | — | Pending |
-| HARD-02 | — | Pending |
-| HARD-03 | — | Pending |
-| HARD-04 | — | Pending |
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| SEC-04 | — | Pending |
+| DEPLOY-01 | Phase 6 | Pending |
+| DEPLOY-02 | Phase 6 | Pending |
+| DEPLOY-03 | Phase 6 | Pending |
+| DEPLOY-04 | Phase 8 | Pending |
+| HARD-01 | Phase 7 | Pending |
+| HARD-02 | Phase 7 | Pending |
+| HARD-03 | Phase 7 | Pending |
+| HARD-04 | Phase 7 | Pending |
+| SEC-01 | Phase 7 | Pending |
+| SEC-02 | Phase 6 | Pending |
+| SEC-03 | Phase 7 | Pending |
+| SEC-04 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after initial definition*
+*Last updated: 2026-03-26 after roadmap creation*
