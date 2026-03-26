@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS POS system for restaurants and cafes in Oman. Features a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel. Built with Laravel 12 + Livewire 3, vanilla CSS with design tokens, MySQL 8.0.
 
-Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo.
+Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo. Now preparing for production deployment on Google Cloud Run.
 
 ## Core Value
 
@@ -51,7 +51,12 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 ### Active
 
-(No active requirements — planning next milestone)
+- [ ] Containerize app for Google Cloud Run (Dockerfile, Nginx + PHP-FPM)
+- [ ] Set up Cloud SQL (MySQL 8.0) as managed database
+- [ ] Migrate file storage to Google Cloud Storage (GCS filesystem driver)
+- [ ] CI/CD pipeline via GitHub Actions (test → build → deploy to Cloud Run)
+- [ ] Production hardening (health checks, env validation, GD WebP verification, rate limiting)
+- [ ] Security audit (tenant isolation, CSRF, secret management, input validation, backups)
 
 ### Out of Scope
 
@@ -61,6 +66,20 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - Custom CSS editor per shop — security risk (XSS)
 - Stock management (auto-decrement) — deferred to v2
 - CDN image delivery — deferred to v2
+
+## Current Milestone: v1.2 Production Readiness
+
+**Goal:** Deploy Bite-POS to Google Cloud Run with production-grade infrastructure, hardening, and security — ready for Sourdough Oman as first live customer.
+
+**Target features:**
+- Containerization for Cloud Run (Dockerfile, Nginx + PHP-FPM)
+- Cloud SQL managed MySQL 8.0 database
+- Cloud Storage for product images/uploads (GCS filesystem driver)
+- GitHub Actions CI/CD pipeline (test → build → deploy)
+- Production hardening (health checks, env validation, rate limiting, Sentry)
+- Security audit (tenant isolation, CSRF, secrets, input validation, backups)
+
+**Branch strategy:** All v1.2 work on a dedicated branch, merged to main when complete.
 
 ## Context
 
@@ -87,6 +106,8 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - **Database**: MySQL 8.0 (prod), SQLite in-memory (tests).
 - **Migrations**: New migrations only — never modify existing ones.
 - **Images**: intervention/image v3 only (v4 requires PHP 8.3+). GD driver, not Imagick.
+- **Hosting**: Google Cloud Run + Cloud SQL + Cloud Storage. CI/CD via GitHub Actions.
+- **Branch**: v1.2 work on dedicated branch, not main.
 
 ## Key Decisions
 
@@ -124,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after v1.1 milestone (Customization & Polish) completed*
+*Last updated: 2026-03-26 after v1.2 milestone (Production Readiness) started*
