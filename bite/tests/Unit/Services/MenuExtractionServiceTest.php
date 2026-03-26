@@ -2,9 +2,10 @@
 
 namespace Tests\Unit\Services;
 
+use App\Exceptions\MenuExtractionException;
 use App\Services\MenuExtractionService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
-use RuntimeException;
 use Tests\TestCase;
 
 class MenuExtractionServiceTest extends TestCase
@@ -73,7 +74,7 @@ class MenuExtractionServiceTest extends TestCase
         $this->assertSame(0.750, $result[1]['price']);
     }
 
-    public function test_extract_throws_on_api_failure(): void
+    public function test_extract_throws_api_error_on_500_failure(): void
     {
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response('Server Error', 500),
@@ -83,13 +84,71 @@ class MenuExtractionServiceTest extends TestCase
             ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
         ];
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Menu extraction failed');
+        $this->expectException(MenuExtractionException::class);
 
-        $this->service->extract($images);
+        try {
+            $this->service->extract($images);
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('api_error', $e->reason);
+            throw $e;
+        }
     }
 
-    public function test_extract_throws_on_invalid_json_response(): void
+    public function test_extract_throws_rate_limit_on_429(): void
+    {
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response('Too Many Requests', 429),
+        ]);
+
+        $images = [
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ];
+
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('rate_limit', $e->reason);
+        }
+    }
+
+    public function test_extract_throws_api_key_on_401(): void
+    {
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response('Unauthorized', 401),
+        ]);
+
+        $images = [
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ];
+
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('api_key', $e->reason);
+        }
+    }
+
+    public function test_extract_throws_invalid_image_on_400(): void
+    {
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response('Bad Request', 400),
+        ]);
+
+        $images = [
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ];
+
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('invalid_image', $e->reason);
+        }
+    }
+
+    public function test_extract_throws_parse_error_on_invalid_json_response(): void
     {
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
@@ -109,10 +168,32 @@ class MenuExtractionServiceTest extends TestCase
             ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
         ];
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Could not parse');
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('parse_error', $e->reason);
+        }
+    }
 
-        $this->service->extract($images);
+    public function test_extract_throws_parse_error_on_unexpected_response_structure(): void
+    {
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [],
+            ]),
+        ]);
+
+        $images = [
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ];
+
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('parse_error', $e->reason);
+        }
     }
 
     public function test_extract_handles_json_wrapped_in_markdown_code_block(): void
@@ -268,9 +349,30 @@ class MenuExtractionServiceTest extends TestCase
             ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
         ];
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Gemini API key not configured');
+        try {
+            $service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('api_key', $e->reason);
+            $this->assertStringContainsString('Gemini API key not configured', $e->getMessage());
+        }
+    }
 
-        $service->extract($images);
+    public function test_extract_throws_timeout_on_connection_exception(): void
+    {
+        Http::fake(function () {
+            throw new ConnectionException('cURL error 28: Operation timed out');
+        });
+
+        $images = [
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ];
+
+        try {
+            $this->service->extract($images);
+            $this->fail('Expected MenuExtractionException was not thrown');
+        } catch (MenuExtractionException $e) {
+            $this->assertSame('timeout', $e->reason);
+        }
     }
 }

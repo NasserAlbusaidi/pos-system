@@ -190,9 +190,13 @@
                     <div class="p-6 space-y-6">
                         {{-- Error banner --}}
                         @if ($extractionError)
+                            @php
+                                $knownErrors = ['no_items', 'api_error', 'api_key', 'rate_limit', 'timeout', 'invalid_image', 'parse_error'];
+                                $errorKey = in_array($extractionError, $knownErrors) ? 'snap_' . $extractionError : 'snap_error';
+                            @endphp
                             <div class="rounded-lg border border-alert/30 bg-alert/5 px-4 py-3">
                                 <p class="text-sm text-alert">
-                                    {{ __('admin.snap_' . ($extractionError === 'no_items' ? 'no_items' : 'error')) }}
+                                    {{ __('admin.' . $errorKey) }}
                                 </p>
                             </div>
                         @endif

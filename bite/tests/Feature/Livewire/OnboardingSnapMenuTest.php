@@ -138,7 +138,7 @@ class OnboardingSnapMenuTest extends TestCase
             ->set('menuPhotos', [$photo])
             ->call('extractMenu')
             ->assertSet('menuMode', 'choose')
-            ->assertSet('extractionError', 'failed');
+            ->assertSet('extractionError', 'api_error');
     }
 
     public function test_save_extracted_menu_creates_categories_and_products(): void

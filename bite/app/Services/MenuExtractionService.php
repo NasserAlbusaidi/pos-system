@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\MenuExtractionException;
 use Illuminate\Support\Facades\Http;
-use RuntimeException;
 
 class MenuExtractionService
 {
@@ -13,14 +13,14 @@ class MenuExtractionService
      * @param  array<int, array{mime_type: string, data: string}>  $images
      * @return array<int, array{category_en: string, category_ar: string, name_en: string, name_ar: string, description_en: string, description_ar: string, price: float}>
      *
-     * @throws RuntimeException
+     * @throws MenuExtractionException
      */
     public function extract(array $images): array
     {
         $apiKey = config('services.gemini.api_key');
 
         if (! $apiKey) {
-            throw new RuntimeException('Gemini API key not configured');
+            throw new MenuExtractionException('api_key', 'Gemini API key not configured');
         }
 
         $model = config('services.gemini.model', 'gemini-2.5-flash');
@@ -28,20 +28,32 @@ class MenuExtractionService
 
         $parts = $this->buildRequestParts($images);
 
-        $response = Http::timeout(30)->post($url, [
-            'contents' => [
-                [
-                    'parts' => $parts,
+        try {
+            $response = Http::timeout(60)->connectTimeout(15)->post($url, [
+                'contents' => [
+                    [
+                        'parts' => $parts,
+                    ],
                 ],
-            ],
-            'generationConfig' => [
-                'temperature' => 0.1,
-                'responseMimeType' => 'application/json',
-            ],
-        ]);
+                'generationConfig' => [
+                    'temperature' => 0.1,
+                    'responseMimeType' => 'application/json',
+                ],
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new MenuExtractionException('timeout', 'Request timed out or could not connect', $e);
+        }
 
         if ($response->failed()) {
-            throw new RuntimeException('Menu extraction failed: '.$response->status());
+            $status = $response->status();
+            $reason = match (true) {
+                $status === 429 => 'rate_limit',
+                $status === 400 => 'invalid_image',
+                $status === 401 || $status === 403 => 'api_key',
+                default => 'api_error',
+            };
+
+            throw new MenuExtractionException($reason, "Gemini API returned HTTP {$status}");
         }
 
         $text = $this->extractTextFromResponse($response->json());
@@ -105,14 +117,14 @@ PROMPT;
     /**
      * Extract the text content from the Gemini API response structure.
      *
-     * @throws RuntimeException
+     * @throws MenuExtractionException
      */
     private function extractTextFromResponse(?array $response): string
     {
         $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         if ($text === null) {
-            throw new RuntimeException('Could not parse menu extraction response: unexpected response structure');
+            throw new MenuExtractionException('parse_error', 'Unexpected Gemini response structure — no text candidate returned');
         }
 
         return $text;
@@ -123,7 +135,7 @@ PROMPT;
      *
      * @return array<int, array<string, mixed>>
      *
-     * @throws RuntimeException
+     * @throws MenuExtractionException
      */
     private function parseJsonResponse(string $text): array
     {
@@ -132,7 +144,7 @@ PROMPT;
         $decoded = json_decode($cleaned, true);
 
         if (! is_array($decoded)) {
-            throw new RuntimeException('Could not parse menu extraction response: invalid JSON');
+            throw new MenuExtractionException('parse_error', 'Gemini response was not valid JSON');
         }
 
         return $decoded;

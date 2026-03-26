@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\MenuExtractionException;
 use App\Models\Category;
 use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
@@ -247,9 +248,13 @@ class OnboardingWizard extends Component
 
             $this->extractedItems = $items;
             $this->menuMode = 'review';
+        } catch (MenuExtractionException $e) {
+            report($e);
+            $this->extractionError = $e->reason;
+            $this->menuMode = 'choose';
         } catch (\Throwable $e) {
             report($e);
-            $this->extractionError = 'failed';
+            $this->extractionError = 'api_error';
             $this->menuMode = 'choose';
         }
     }
