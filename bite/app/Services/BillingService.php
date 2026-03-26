@@ -96,11 +96,25 @@ class BillingService
     }
 
     /**
-     * Check if the shop has an active subscription (including trial).
+     * Check if the shop has access (active subscription, trial, or free plan).
+     *
+     * Free-plan shops have no Stripe subscription record but are still legitimate
+     * users — they should not be blocked by the subscription gate. Only shops
+     * whose subscription has fully expired/lapsed should be redirected to billing.
      */
     public function isSubscribed(Shop $shop): bool
     {
-        return $shop->subscribed('default') || $shop->onGenericTrial();
+        // Active Stripe subscription or generic trial → always allow.
+        if ($shop->subscribed('default') || $shop->onGenericTrial()) {
+            return true;
+        }
+
+        // No subscription record at all = free plan. Free plan is a valid tier,
+        // not an expired state. Allow access; plan limits are enforced separately
+        // via canAccess() at the feature level.
+        $subscription = $shop->subscription('default');
+
+        return $subscription === null;
     }
 
     /**
