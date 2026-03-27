@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Production Readiness
-status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-27T14:14:25.753Z"
-last_activity: 2026-03-26 — v1.2 roadmap created
+status: executing
+stopped_at: Completed 06-containerization-cloud-services-01-PLAN.md
+last_updated: "2026-03-27T14:32:53.813Z"
+last_activity: 2026-03-27
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 62
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 6 — Containerization & Cloud Services
+**Current focus:** Phase 06 — containerization-cloud-services
 
 ## Current Position
 
-Phase: 6 of 8 (Containerization & Cloud Services)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-26 — v1.2 roadmap created
+Phase: 06 (containerization-cloud-services) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-03-27
 
 Progress: [██████████░░░░░░] 62% (5/8 phases, 11/11 prior plans done)
 
@@ -50,6 +50,7 @@ Progress: [██████████░░░░░░] 62% (5/8 phases, 11
 | Phase 04-image-optimization P02 | 157s | 2 | 4 |
 | Phase 05-menu-themes P01 | 6m | 2 | 12 |
 | Phase 05-menu-themes P02 | 7200s | 2 | 3 |
+| Phase 06-containerization-cloud-services P01 | 10m | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,9 @@ Recent decisions affecting current work:
 - [v1.2]: GitHub Actions for CI/CD pipeline
 - [v1.2]: All v1.2 work on dedicated branch, not main
 - [v1.2]: intervention/image v3 (GD driver) — needs health check verification in container
+- [Phase 06-containerization-cloud-services]: Nginx + PHP-FPM via supervisord in single container — Cloud Run requires one process group
+- [Phase 06-containerization-cloud-services]: clear_env=no in PHP-FPM pool — Cloud Run env vars must be visible to PHP worker processes
+- [Phase 06-containerization-cloud-services]: MySQL as default DB connection — tests unaffected by phpunit.xml SQLite override
 
 ### Pending Todos
 
@@ -74,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:14:25.750Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-containerization-cloud-services/06-CONTEXT.md
+Last session: 2026-03-27T14:32:53.811Z
+Stopped at: Completed 06-containerization-cloud-services-01-PLAN.md
+Resume file: None

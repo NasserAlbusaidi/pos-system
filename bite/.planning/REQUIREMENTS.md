@@ -9,8 +9,8 @@ Requirements for production deployment on Google Cloud Run.
 
 ### Containerization & Deployment
 
-- [ ] **DEPLOY-01**: App runs in a multi-stage Docker container with PHP-FPM + Nginx, Composer deps, and Vite-built assets
-- [ ] **DEPLOY-02**: App connects to Cloud SQL MySQL 8.0 via Cloud SQL Auth Proxy with proper connection config
+- [x] **DEPLOY-01**: App runs in a multi-stage Docker container with PHP-FPM + Nginx, Composer deps, and Vite-built assets
+- [x] **DEPLOY-02**: App connects to Cloud SQL MySQL 8.0 via Cloud SQL Auth Proxy with proper connection config
 - [ ] **DEPLOY-03**: Product images and file uploads use Google Cloud Storage filesystem driver instead of local disk
 - [ ] **DEPLOY-04**: GitHub Actions workflow runs tests, builds Docker image, pushes to Artifact Registry, and deploys to Cloud Run on push to main
 
@@ -24,7 +24,7 @@ Requirements for production deployment on Google Cloud Run.
 ### Security & Data Safety
 
 - [ ] **SEC-01**: Tenant isolation audit confirms every database query on tenant data is scoped to shop_id
-- [ ] **SEC-02**: All secrets managed via Cloud Run environment/secrets — no hardcoded credentials, .env excluded from container
+- [x] **SEC-02**: All secrets managed via Cloud Run environment/secrets — no hardcoded credentials, .env excluded from container
 - [ ] **SEC-03**: Input validation sweep covers all user inputs, form submissions, and file uploads for injection/XSS vulnerabilities
 - [ ] **SEC-04**: Cloud SQL automated backups enabled with retention policy and point-in-time recovery
 
@@ -51,8 +51,8 @@ Requirements for production deployment on Google Cloud Run.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEPLOY-01 | Phase 6 | Pending |
-| DEPLOY-02 | Phase 6 | Pending |
+| DEPLOY-01 | Phase 6 | Complete |
+| DEPLOY-02 | Phase 6 | Complete |
 | DEPLOY-03 | Phase 6 | Pending |
 | DEPLOY-04 | Phase 8 | Pending |
 | HARD-01 | Phase 7 | Pending |
@@ -60,7 +60,7 @@ Requirements for production deployment on Google Cloud Run.
 | HARD-03 | Phase 7 | Pending |
 | HARD-04 | Phase 7 | Pending |
 | SEC-01 | Phase 7 | Pending |
-| SEC-02 | Phase 6 | Pending |
+| SEC-02 | Phase 6 | Complete |
 | SEC-03 | Phase 7 | Pending |
 | SEC-04 | Phase 8 | Pending |
 

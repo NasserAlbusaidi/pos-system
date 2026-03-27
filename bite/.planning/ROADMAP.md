@@ -43,9 +43,9 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 **Goal**: App runs as a containerized service connected to managed cloud database and storage, with no hardcoded secrets
 **Depends on**: Phase 5 (v1.1 complete)
 **Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03, SEC-02
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 06-01-PLAN.md — Production container with Nginx + PHP-FPM, Cloud SQL MySQL config, secrets enforcement
+- [x] 06-01-PLAN.md — Production container with Nginx + PHP-FPM, Cloud SQL MySQL config, secrets enforcement
 - [ ] 06-02-PLAN.md — GCS storage migration for product images, ImageService refactor, Livewire temp uploads
 **Success Criteria** (what must be TRUE):
   1. App boots in a Docker container with PHP-FPM + Nginx serving requests and returning correct responses
@@ -85,6 +85,6 @@ Plans:
 | 3. Item Availability | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
-| 6. Containerization & Cloud Services | v1.2 | 0/2 | Planning | - |
+| 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
 | 7. Hardening & Security | v1.2 | 0/? | Not started | - |
 | 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
