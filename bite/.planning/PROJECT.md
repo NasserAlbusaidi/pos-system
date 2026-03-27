@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS POS system for restaurants and cafes in Oman. Features a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel. Built with Laravel 12 + Livewire 3, vanilla CSS with design tokens, MySQL 8.0.
 
-Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo. Phase 6 complete: production Docker container (Nginx + PHP-FPM + supervisord), Cloud SQL MySQL 8.0, Google Cloud Storage for images. Continuing v1.2 with hardening and CI/CD.
+Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo. Phase 6 complete: production Docker container (Nginx + PHP-FPM + supervisord), Cloud SQL MySQL 8.0, Google Cloud Storage for images. Phase 7 complete: production hardening with health checks, rate limiting, structured logging, PII masking, tenant isolation audit, and input validation sweep (265 tests passing). Continuing v1.2 with CI/CD.
 
 ## Core Value
 
@@ -55,8 +55,17 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 ### Active
 
 - [ ] CI/CD pipeline via GitHub Actions (test → build → deploy to Cloud Run)
-- [ ] Production hardening (health checks, env validation, GD WebP verification, rate limiting)
-- [ ] Security audit (tenant isolation, CSRF, secret management, input validation, backups)
+
+### Validated in Phase 7: Hardening & Security
+
+- ✓ Production health check endpoint (DB, storage, GD/WebP, queue) — v1.2
+- ✓ Startup environment validation (fail-fast on missing config in production) — v1.2
+- ✓ Rate limiting for webhooks (60/min), guest ordering (10/15min), login (5/min) — v1.2
+- ✓ Structured JSON logging for Cloud Logging with PII masking (phone, email, IP) — v1.2
+- ✓ Slow request detection middleware (>2s threshold) — v1.2
+- ✓ Sentry performance trace sampling (10% default) — v1.2
+- ✓ Tenant isolation audit — all components confirmed scoped, regression tests added — v1.2
+- ✓ Input validation sweep — all Livewire components audited, OrderTracker upgraded — v1.2
 
 ### Out of Scope
 
