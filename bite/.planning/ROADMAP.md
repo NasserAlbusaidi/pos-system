@@ -74,11 +74,14 @@ Plans:
 **Goal**: Code pushed to main is automatically tested, built, and deployed to Cloud Run, with database backups ensuring data recovery
 **Depends on**: Phase 7
 **Requirements**: DEPLOY-04, SEC-04
+**Plans:** 2 plans
+Plans:
+- [ ] 08-01-PLAN.md — CI/CD pipeline: rewrite ci.yml with test gate + Docker build + Artifact Registry push + Cloud Run deploy + health check + auto-rollback (DEPLOY-04)
+- [ ] 08-02-PLAN.md — GCP WIF setup, GitHub secrets configuration, pipeline verification, Cloud SQL backup enablement (DEPLOY-04, SEC-04)
 **Success Criteria** (what must be TRUE):
   1. Pushing to main triggers a GitHub Actions workflow that runs the test suite, builds the Docker image, pushes to Artifact Registry, and deploys to Cloud Run
   2. A failed test suite prevents deployment — the pipeline stops and reports the failure
   3. Cloud SQL automated daily backups are enabled with a defined retention period and point-in-time recovery is available
-**Plans**: TBD
 
 ## Progress
 
@@ -91,4 +94,4 @@ Plans:
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
 | 7. Hardening & Security | v1.2 | 3/3 | Complete   | 2026-03-27 |
-| 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
+| 8. CI/CD & Data Safety | v1.2 | 0/2 | Not started | - |
