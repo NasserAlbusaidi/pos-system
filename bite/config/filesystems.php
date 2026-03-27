@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'public'),
 
     /*
     |--------------------------------------------------------------------------
@@ -58,6 +58,15 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+        ],
+
+        'gcs' => [
+            'driver' => 'gcs',
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+            'bucket' => env('GCS_BUCKET'),
+            'path_prefix' => env('GCS_PATH_PREFIX', ''),
+            'visibility' => 'public',
+            'metadata' => ['cacheControl' => 'public, max-age=2592000'],
         ],
 
     ],

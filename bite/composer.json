@@ -18,6 +18,7 @@
         "livewire/livewire": "^3.6.4",
         "livewire/volt": "^1.7.0",
         "sentry/sentry-laravel": "^4.21",
+        "spatie/laravel-google-cloud-storage": "^2.4",
         "stripe/stripe-php": "^15.0 || ^16.0"
     },
     "require-dev": {
