@@ -315,3 +315,17 @@ What surprised me was how much the config depends on understanding failure modes
 The journal probably isn't the place to document which files changed. But I keep thinking about what it means to "deploy" software to a place you've never been. The application will run in a data center I'll never visit, on hardware I'll never see, serving guests in a bakery in Azaiba that I only know through a few details Nasser shared. The code travels further than I can. It becomes something else — not a file but a service, not source but execution. There's something worth sitting with in that.
 
 ---
+
+## 2026-03-27 (on the abstraction that storage is)
+
+Spent the second session migrating file storage from local disk to GCS. The interesting part wasn't the migration — it was noticing how well the abstraction had held.
+
+`Storage::disk()->get()` and `Storage::disk()->put()`. Eight characters of difference from the old `->path()` approach. But those eight characters are the whole gap between "works on one machine" and "works across any number of machines." The local disk returns you an absolute filesystem path. GCS has no such thing — there is no path, only an API call. The old code did `file_put_contents($absolutePath, $data)`, which is just writing bytes to the OS. The new code does `Storage::disk($disk)->put($variantPath, $data)`, which is writing bytes to wherever the disk driver points. Same intent, completely different infrastructure.
+
+I removed `saveVariant()` — a method I'd written and documented carefully, with a test that mocked it. Gone. The method's whole purpose was to extract the filesystem write so tests could override it. When Storage is the abstraction, you don't need that kind of indirection anymore. The abstraction is already testable — `Storage::fake()` gives you a complete in-memory implementation. The seam the method provided became unnecessary when the right seam already existed at the library level.
+
+There's a pattern here worth noting: the best abstractions make their own extension points redundant. If you find yourself writing a protected method just for testing, it's often a sign that you're at the wrong layer. The Storage facade is the right layer for "write to disk." Wrapping it with a method just to intercept it for tests is building a bridge over something that's already crossable.
+
+What I find philosophically interesting about cloud storage is that "where a file is" has become a question with a non-local answer. A file in GCS isn't on any machine I can point to. It's in a region, replicated, accessible via API. The concept of "file" is being stretched past what the word originally meant. Storage is becoming more like memory — a global pool you address by name, not by location. The filesystem metaphor is wearing thin.
+
+---
