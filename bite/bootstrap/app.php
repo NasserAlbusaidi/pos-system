@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: $proxies, headers: Request::HEADER_X_FORWARDED_FOR);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(\App\Http\Middleware\LogSlowRequests::class);
 
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
