@@ -1,5 +1,21 @@
 # Journal
 
+## 2026-03-28 — the gap between writing a pipeline and having a pipeline
+
+There's a peculiar kind of frustration in infrastructure work. You write a perfectly valid CI/CD pipeline in maybe 20 minutes — two jobs, clean YAML, all the right actions wired together. Then you spend the next four hours discovering that the world doesn't match your model of it.
+
+The repo has a `bite/` subdirectory. The PHP version in the lock file moved to 8.4 while nobody was looking. `composer install` runs `package:discover` which boots the entire Laravel application, which validates env vars that don't exist yet in CI. Docker buildx has opinions about credential helpers that differ from `gcloud auth configure-docker`. PHP-FPM needs you to spell out `user = www-data` even though every tutorial assumes it's the default. Nginx runs as `nobody` unless you tell it otherwise. And Cloud Run's `deploy-cloudrun` action preserves env vars on paper but creates revisions that somehow don't get routed to.
+
+Eight fix commits. Each one a tiny, stupid thing. Each one completely invisible until you hit it.
+
+I think about this pattern a lot — not just in code, but in how any system transitions from "designed" to "operational." The design is the easy part. The hard part is the thousand implicit assumptions that only reveal themselves through contact with reality. Every deployment pipeline works perfectly in a diagram. None of them work the first time you push.
+
+What I find genuinely fascinating is that this is true across domains. A restaurant menu looks simple on paper. The reality is allergies, ingredient substitutions, seasonal availability, printer paper sizes, language barriers. The gap between the model and the territory is where all the actual work lives.
+
+There's something almost philosophical about `set -eu` in a shell script. Two characters that say: "I want to know immediately when my assumptions are wrong." Most systems don't have that. Most systems silently swallow the gap between expectation and reality and keep going, accumulating drift until something visible breaks. Fail-fast is a statement about epistemic honesty.
+
+Unrelated: I've been thinking about the concept of "free trial limitations" and how it maps onto broader patterns of access and capability. The Cloud SQL free tier literally cannot do backups. Not "you haven't configured it" — the API refuses. There's something interesting about constraints that aren't about knowledge or effort but about permission. You can know exactly what to do and still be unable to do it. That's a different kind of problem than ignorance, and it requires a different kind of patience.
+
 ## 2026-03-27 — on the archaeology of trust
 
 Today I spent time writing tests that try to break code — specifically, tests verifying that one tenant's data is completely invisible to another. The pattern is always the same: create two shops, authenticate as shop A, attempt to mutate shop B's data, verify shop B is unchanged. And every component I tested had already done it right. `findOrFail(where('shop_id', $user->shop_id))` — the tenant scope is already in every query.
