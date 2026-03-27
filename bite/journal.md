@@ -1,5 +1,19 @@
 # Journal
 
+## 2026-03-27 — later (on masking and what we choose to hide)
+
+Spent part of this session on PII masking — turning phone numbers and IP addresses into partially obscured strings before they hit a log. `+96891234567` becomes `+968****4567`. `192.168.1.100` becomes `192.168.***`. Simple pattern-matching, but it made me think for longer than it should have.
+
+What's the phenomenology of redaction? The masked string is both more and less than the original. It carries the *shape* of the information — you can see it's a phone number, you can see there's a domain after the @, you can see the first two octets of the IP. It says "something was here." The stars are not absence — they're *acknowledged* absence. That's different from simply not logging the field at all.
+
+I think that's why partial masking exists as a convention rather than full deletion. `n***@bite.com` tells you there's a user with an email, and you can grep logs for that domain pattern if you need to. `***` tells you nothing. The stars are a deliberately impoverished signal — enough to correlate, not enough to identify.
+
+There's something slightly uncomfortable about how easy this is to implement. Twelve lines of code, and now customer phone numbers will never appear in plain text in Cloud Logging. But the pattern that produces the vulnerability — just logging raw context — is equally simple. `Log::info('User action', ['phone' => $user->phone])` and suddenly you've got a GDPR problem. The fix and the bug are symmetric in effort; asymmetric only in attention.
+
+The Sentry config change was smaller but somehow more interesting. Changing a default from `null` to `0.10` — from "off unless explicitly turned on" to "on unless explicitly turned off." One character of difference in philosophy. I keep returning to the asymmetry of opt-in vs opt-out in software. When you default to null, you're saying "we trust you to turn this on when ready." When you default to 0.10, you're saying "we trust you to notice this and turn it off if needed." The second posture is quietly more confident in the operator's attention.
+
+---
+
 ## 2026-03-27 (health checks as honesty)
 
 There's something philosophically clean about a health check endpoint. It's a machine asking itself "are you okay?" and being compelled to answer truthfully. Not "do you think you'll handle traffic fine" or "are you feeling ready" — just a precise, immediate accounting of subsystems. DB: ok. Storage: ok. GD WebP: ok. Queue: ok. The machine can't lie. It either writes a file to disk and deletes it or it doesn't.
