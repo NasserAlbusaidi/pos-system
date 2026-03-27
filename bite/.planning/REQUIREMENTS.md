@@ -16,9 +16,9 @@ Requirements for production deployment on Google Cloud Run.
 
 ### Production Hardening
 
-- [ ] **HARD-01**: Health check endpoint (GET /health) verifies DB connectivity, storage access, GD extension, and queue status
-- [ ] **HARD-02**: Startup validation fails fast with clear errors if required environment variables are missing
-- [ ] **HARD-03**: Rate limiting applied to login attempts, webhook endpoints, guest ordering, and API routes
+- [x] **HARD-01**: Health check endpoint (GET /health) verifies DB connectivity, storage access, GD extension, and queue status
+- [x] **HARD-02**: Startup validation fails fast with clear errors if required environment variables are missing
+- [x] **HARD-03**: Rate limiting applied to login attempts, webhook endpoints, guest ordering, and API routes
 - [x] **HARD-04**: Sentry error tracking configured for production with structured JSON logging for Cloud Logging
 
 ### Security & Data Safety
@@ -55,9 +55,9 @@ Requirements for production deployment on Google Cloud Run.
 | DEPLOY-02 | Phase 6 | Complete |
 | DEPLOY-03 | Phase 6 | Complete |
 | DEPLOY-04 | Phase 8 | Pending |
-| HARD-01 | Phase 7 | Pending |
-| HARD-02 | Phase 7 | Pending |
-| HARD-03 | Phase 7 | Pending |
+| HARD-01 | Phase 7 | Complete |
+| HARD-02 | Phase 7 | Complete |
+| HARD-03 | Phase 7 | Complete |
 | HARD-04 | Phase 7 | Complete |
 | SEC-01 | Phase 7 | Pending |
 | SEC-02 | Phase 6 | Complete |
