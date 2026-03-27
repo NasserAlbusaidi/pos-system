@@ -58,13 +58,17 @@ Plans:
 **Goal**: App is production-hardened with health monitoring, rate limiting, structured logging, and verified security boundaries
 **Depends on**: Phase 6
 **Requirements**: HARD-01, HARD-02, HARD-03, HARD-04, SEC-01, SEC-03
+**Plans:** 3 plans
+Plans:
+- [ ] 07-01-PLAN.md — Health check endpoint, startup env validation, rate limiting (HARD-01, HARD-02, HARD-03)
+- [ ] 07-02-PLAN.md — Structured JSON logging, PII masking, slow request detection (HARD-04)
+- [ ] 07-03-PLAN.md — Tenant isolation audit with regression tests, input validation sweep (SEC-01, SEC-03)
 **Success Criteria** (what must be TRUE):
   1. GET /health returns status of DB connectivity, storage access, GD extension, and queue — Cloud Run uses this for liveness checks
   2. App refuses to boot and logs a clear error message when any required environment variable is missing
   3. Repeated login attempts, rapid guest orders, and webhook floods are rate-limited and return 429 responses
   4. Unhandled exceptions appear in Sentry within seconds and structured JSON logs are queryable in Cloud Logging
   5. Every database query on tenant-scoped tables is confirmed scoped to shop_id — no cross-tenant data leakage possible
-**Plans**: TBD
 
 ### Phase 8: CI/CD & Data Safety
 **Goal**: Code pushed to main is automatically tested, built, and deployed to Cloud Run, with database backups ensuring data recovery
@@ -86,5 +90,5 @@ Plans:
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
-| 7. Hardening & Security | v1.2 | 0/? | Not started | - |
+| 7. Hardening & Security | v1.2 | 0/3 | Not started | - |
 | 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
