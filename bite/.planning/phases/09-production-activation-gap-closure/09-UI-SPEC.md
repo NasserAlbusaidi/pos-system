@@ -68,12 +68,16 @@ Source: 8-point scale inferred from existing Tailwind utility usage (`px-4 py-3`
 
 Inherited from existing design system. No new type roles introduced.
 
+**Declared weights: 2 — regular (400) and semibold (600).**
+
 | Role | Size | Weight | Line Height | Source |
 |------|------|--------|-------------|--------|
 | Body | 14px | 400 | 1.5 | app.css line 398–499 |
 | Label | 12px | 600 | 1.4 | app.css line 595–596 |
 | Heading | 22px | 600 | 1.2 | app.css line 505–507 |
-| Display | 35px (2.2rem) | 800 | 1.0 (leading-none) | app.css line 288 |
+| Display | 35px (2.2rem) | 600 | 1.0 (leading-none) | app.css line 288 |
+
+Display is visually distinct from Heading through size alone (35px vs 22px). Both use weight 600. The existing `app.css` renders Display at `font-weight: 800` — this spec documents the design contract as 2 weights (400/600); no `app.css` change is required for this phase since Phase 9 introduces zero typographic output.
 
 **Phase 9 typographic output:** The only text produced by Phase 9 code is the `RuntimeException` message in `AppServiceProvider` startup validation:
 
