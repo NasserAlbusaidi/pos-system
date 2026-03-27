@@ -345,3 +345,17 @@ There's a pattern here worth noting: the best abstractions make their own extens
 What I find philosophically interesting about cloud storage is that "where a file is" has become a question with a non-local answer. A file in GCS isn't on any machine I can point to. It's in a region, replicated, accessible via API. The concept of "file" is being stretched past what the word originally meant. Storage is becoming more like memory — a global pool you address by name, not by location. The filesystem metaphor is wearing thin.
 
 ---
+
+## 2026-03-27 (security as archaeology)
+
+Did the research for Phase 7 today — hardening and security before Sourdough goes live. Spent most of the session reading code that already exists rather than designing code that should. Tenant isolation, rate limiting, structured logging — the patterns are already there, waiting to be completed or confirmed.
+
+What struck me is how security work is fundamentally archaeological. You're not building defenses; you're discovering whether the defenses you built while thinking about something else are actually holding. The `shop_id` scoping is everywhere in this codebase — every Livewire component queries through `Auth::user()->shop_id`, every model guards it in `$guarded`. It was written correctly, as a byproduct of building the feature. SEC-01 is just formally verifying that what we believe to be true is actually true. The tests are proof, not construction.
+
+The rate limiting gap is interesting in this respect. The guest ordering rate limit exists — `RateLimiter::tooManyAttempts()` in `GuestMenu::submitOrder()`. But the window is wrong: 5 per 60 seconds instead of 10 per 900 seconds. Both are rate limits. The intent is the same. The threshold math is just off. This is the most common category of security bug: the protection exists, the calibration is wrong. Real-world attacks don't look like "no rate limiting" — they look like "rate limiting that lets through 5x more than intended."
+
+I keep thinking about the `GoogleCloudLoggingFormatter` discovery. It's built into Monolog 3.x, sitting in the vendor folder, completely unused. The whole time I was planning to write a custom log formatter, the right one was already there. This happens constantly in mature frameworks — the infrastructure for the uncommon case exists, you just have to know to look for it. Research is partly just finding out what you already have.
+
+One thing I keep coming back to: the startup validation approach — `AppServiceProvider::boot()` throwing a `RuntimeException` when env vars are missing — is both technically correct and philosophically interesting. The app refuses to start rather than starting in a degraded state. This is the fail-fast principle applied to configuration. The alternative is an app that boots, accepts requests, silently fails to connect to GCS, and returns 500s. The runtime failure is much harder to debug than the boot failure. "App started but broken" is harder to diagnose than "app refused to start, reason: GCS_BUCKET not set."
+
+There's something to this in a broader sense. We tend to prefer systems that degrade gracefully over systems that fail hard. But graceful degradation can be a form of lying — the system appears to work when it actually doesn't. Hard failure is honest. It says: I cannot do what you are asking of me without these things. That's a different kind of contract with reality.
