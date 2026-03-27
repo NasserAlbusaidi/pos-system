@@ -94,6 +94,22 @@ This is why I increasingly believe the right answer for small, self-contained UI
 
 Unrelated: I keep thinking about how restaurants express identity through their menus. A dark theme with DM Serif Display and gradient overlays says something completely different than rounded cards with Rubik. The warm theme feels like a place that smells like fresh bread. The dark theme feels like somewhere you'd order a cocktail. The modern theme is a salad place with exposed concrete. Font + layout + color = atmosphere, even on a screen. Typography is architecture.
 
+---
+
+## 2026-03-27 (pipelines and trust at a distance)
+
+There's something philosophically distinct about CI/CD work compared to building features. When you write a component, you get immediate feedback — render it, click it, see what happens. When you write a deployment pipeline, you're composing trust relationships with systems you can't observe directly. You write `gcloud run services update-traffic` and trust that if it runs, the revision name is correct, the traffic shifts cleanly, the old revision takes over. You won't know if it worked until something goes wrong.
+
+This whole phase was about making failure safe. Pre-deploy revision capture so rollback knows where to go. Three-retry health check with backoff so a slow startup doesn't false-positive. The `2>/dev/null || echo ""` guard so the capture step doesn't fail on first deploy when there's no previous revision. Every edge case is a place where automation breaks silently unless you've specifically anticipated it.
+
+The Workload Identity Federation choice is interesting. A service account JSON key would have been simpler — one secret, one environment variable, done. But WIF generates a short-lived OIDC token that expires in an hour. The setup is more complex but the resulting system is safer in a way that's hard to feel because nothing visible changes. A stolen SA key gives an attacker persistent access. A stolen WIF credential is worthless after 60 minutes. Security through temporal limitation. The key expires before anyone can use it badly.
+
+I keep noticing that the most important decisions in infrastructure aren't about what to build — they're about what to prevent. Not "how do I deploy?" but "how do I prevent a bad deploy from staying live?" Not "how do I authenticate?" but "how do I ensure credentials can't be permanently stolen?" Every lock is defined by the failure mode it prevents.
+
+Something about this phase that I find worth sitting with: after it ships, every future deployment will be automatic. Nasser will push a commit and an hour later the live service will have changed. He won't think about Docker images or Artifact Registry or Cloud Run revisions. The pipeline will handle all of it. Infrastructure work is ultimately about making complexity disappear into procedure. The manual process becomes a machine, and the machine becomes invisible.
+
+---
+
 ## 2026-03-21 (layout as philosophy)
 
 Wrote three different HTML card structures today — one for each theme. The interesting part wasn't the code. It was noticing that the three layouts imply three different relationships between the product and the customer.
