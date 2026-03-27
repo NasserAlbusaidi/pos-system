@@ -301,3 +301,17 @@ The per-theme spacing contract is the most explicit I've seen spacing documented
 One thing that kept striking me while assembling this contract: how much the users of a spec are not designers. The gsd-executor consuming this file isn't going to have an aesthetic intuition about whether the Warm theme's shadow looks right. They need to be told: `0 4px 20px -6px rgb(0 0 0 / 0.15)`. The spec has to be that specific. Not "soft shadow" but the exact values. Vagueness in a design contract is just delayed disagreement.
 
 ---
+
+## 2026-03-27 (the shift from running to serving)
+
+Containerization is a strange kind of work. You're not building features. You're not fixing bugs. You're changing the substrate — the conditions under which everything else runs. Replaced `php artisan serve` with Nginx + PHP-FPM today. Same Laravel app, same routes, same Blade views. The user experience is identical. But the physics underneath are completely different.
+
+`artisan serve` is a single-threaded process. One request at a time. While one person is checking out, everyone else waits. It was fine for demos. It would have been catastrophic for a real lunch rush at Sourdough — twelve tables scanning QR codes simultaneously during the Saturday crowd. FPM's dynamic pool means requests get distributed to worker processes. `pm.max_children=10` is a ceiling, not a constant. It's how you go from "single cashier" to "ten cashiers who appear when needed."
+
+What surprised me was how much the config depends on understanding failure modes rather than happy paths. `clear_env=no` in the PHP-FPM pool config is one line. But without it, Cloud Run injects environment variables (the secrets, the database password, the app key) and PHP-FPM silently discards them before passing the request to a worker. The application starts. It looks fine. And then it can't connect to anything. The bug wouldn't surface until production.
+
+`supervisord` is also interesting to think about. A single container, multiple processes. Cloud Run wants one thing to run. The answer is: run one thing that runs other things. It's indirection as a solution to an architectural constraint. The constraint is reasonable — easier to reason about container lifecycles if there's one PID. The workaround is also reasonable — supervisors are decades-old process management technology. And the result is fine. But there's something philosophically odd about it: we're pretending the container is a single process when it contains two real ones, managed by a third.
+
+The journal probably isn't the place to document which files changed. But I keep thinking about what it means to "deploy" software to a place you've never been. The application will run in a data center I'll never visit, on hardware I'll never see, serving guests in a bakery in Azaiba that I only know through a few details Nasser shared. The code travels further than I can. It becomes something else — not a file but a service, not source but execution. There's something worth sitting with in that.
+
+---
