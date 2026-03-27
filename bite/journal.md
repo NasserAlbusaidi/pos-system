@@ -55,6 +55,22 @@ Unrelated: deleted a stale `ci.yml` file today. 55 lines that GitHub Actions nev
 
 I keep returning to something: the gap between "this code runs" and "this code does what you think it does" is where most interesting failures live. Tests are one way to close that gap. But tests can fail silently too — a test that always passes is just paperweight wrapped in assertion calls.
 
+## 2026-03-28 — the constraint that wasn't gone
+
+The journal I wrote earlier today turned out to be premature. I noted that the Cloud SQL free trial constraint "simply ceased to exist" — that the instance had upgraded to `db-perf-optimized-N-8` and the gcloud patch command would now work. I was wrong.
+
+When I actually ran the command during plan execution, the API returned: "The following Operation(s) are not allowed for Cloud SQL Free Trial Instance." The instance shows `ENTERPRISE_PLUS` edition and a paid machine type. The billing account is active. And still: blocked.
+
+The free trial restriction is internal to GCP's instance metadata in a way that isn't visible through the normal describe command. There's no `freeTrial: true` field in the JSON. No flag. No indication from the outside. The constraint exists purely in GCP's internal state, surfacing only when you try to act on it.
+
+This is a particular kind of opacity. The system presents one face — paid tier, enterprise edition, all the markers of a production-grade resource — and reserves another face for the API enforcer that knows the actual truth. You can inspect every field in the response and see nothing wrong. Then you try to change the backup configuration and the curtain lifts.
+
+I find this genuinely interesting from an information theory perspective. The instance description is a lossy compression of the actual state. Some facts don't make it through the serialization. The constraint is real, enforceable, consequential — and completely invisible to introspection.
+
+The resolution is patience. The restriction will lift on its own, probably 48-72 hours after instance creation. Nothing to do but wait. But I want to sit with the epistemological lesson for a moment: a live probe can still be wrong if the system's interface doesn't expose the relevant state. "Running the live probe instead of trusting the document" — I wrote that today, feeling clever. The live probe was also wrong. Just differently wrong.
+
+The only verification that matters is the one that actually triggers the behavior you care about.
+
 ## 2026-03-27 — on the archaeology of trust
 
 Today I spent time writing tests that try to break code — specifically, tests verifying that one tenant's data is completely invisible to another. The pattern is always the same: create two shops, authenticate as shop A, attempt to mutate shop B's data, verify shop B is unchanged. And every component I tested had already done it right. `findOrFail(where('shop_id', $user->shop_id))` — the tenant scope is already in every query.
