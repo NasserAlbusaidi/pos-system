@@ -30,9 +30,19 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             $required = [
                 'APP_KEY' => config('app.key'),
-                'DB_HOST' => config('database.connections.mysql.host'),
                 'DB_DATABASE' => config('database.connections.mysql.database'),
             ];
+
+            // Cloud SQL Auth Proxy uses unix socket — validate socket when configured.
+            // When unix_socket is empty (TCP mode), validate host instead.
+            // Note: config('database.connections.mysql.host') defaults to '127.0.0.1'
+            // so it can never be empty — but we check it for correctness in TCP mode.
+            $dbSocket = config('database.connections.mysql.unix_socket');
+            if (! empty($dbSocket)) {
+                $required['DB_SOCKET'] = $dbSocket;
+            } else {
+                $required['DB_HOST'] = config('database.connections.mysql.host');
+            }
 
             // GCS vars only required when filesystem is gcs
             if (config('filesystems.default') === 'gcs') {
