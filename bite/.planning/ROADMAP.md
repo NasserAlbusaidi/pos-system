@@ -89,6 +89,10 @@ Plans:
 **Depends on**: Phase 8
 **Requirements**: SEC-04
 **Gap Closure**: Closes gaps from v1.2-MILESTONE-AUDIT.md
+**Plans:** 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — AppServiceProvider DB_SOCKET validation fix, test coverage, stale ci.yml removal (HARD-02 gap, cleanup)
+- [ ] 09-02-PLAN.md — Cloud SQL backup enablement, GCS bucket setup, Cloud Run env var activation, Sentry DSN (SEC-04, HARD-04 activation)
 **Success Criteria** (what must be TRUE):
   1. Cloud SQL automated daily backups enabled with 7-day retention and point-in-time recovery (SEC-04)
   2. LOG_CHANNEL=stackdriver set on Cloud Run — structured JSON logs with PII masking queryable in Cloud Logging (HARD-04 activation)
@@ -109,4 +113,4 @@ Plans:
 | 6. Containerization & Cloud Services | v1.2 | 2/2 | Complete | 2026-03-27 |
 | 7. Hardening & Security | v1.2 | 3/3 | Complete | 2026-03-27 |
 | 8. CI/CD & Data Safety | v1.2 | 2/2 | Complete | 2026-03-27 |
-| 9. Production Activation & Gap Closure | v1.2 | 0/0 | Planned | |
+| 9. Production Activation & Gap Closure | v1.2 | 0/2 | Planned | |
