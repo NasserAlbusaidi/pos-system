@@ -27,15 +27,18 @@ class OrderTracker extends Component
 
     public function submitFeedback(): void
     {
+        // SEC-03: Validate inputs before mutation to prevent invalid data and stored XSS.
+        $this->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'feedbackComment' => ['nullable', 'string', 'max:500'],
+        ]);
+
         if ($this->order->customer_rating !== null) {
             return;
         }
 
-        if ($this->rating < 1 || $this->rating > 5) {
-            return;
-        }
-
-        $comment = mb_substr(trim($this->feedbackComment), 0, 500);
+        // Sanitize comment to prevent stored XSS — strip any HTML/script tags.
+        $comment = strip_tags(mb_substr(trim($this->feedbackComment), 0, 500));
 
         $this->order->update([
             'customer_rating' => $this->rating,
