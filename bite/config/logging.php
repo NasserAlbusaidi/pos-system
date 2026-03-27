@@ -105,6 +105,24 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        // HARD-04: Structured JSON logging for Google Cloud Logging (Cloud Run production).
+        // Set LOG_CHANNEL=stackdriver in Cloud Run env vars to activate.
+        // Local dev uses LOG_CHANNEL=stack (default). Level defaults to 'error' so only
+        // errors and slow-request warnings surface in production logs.
+        'stackdriver' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'error'),
+            'handler' => \Monolog\Handler\StreamHandler::class,
+            'handler_with' => [
+                'stream' => 'php://stderr',
+                'level' => env('LOG_LEVEL', 'error'),
+            ],
+            'formatter' => \Monolog\Formatter\GoogleCloudLoggingFormatter::class,
+            'processors' => [
+                \App\Logging\PiiMaskingProcessor::class,
+            ],
+        ],
+
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
