@@ -62,7 +62,7 @@ Requirements for production deployment on Google Cloud Run.
 | SEC-01 | Phase 7 | Complete |
 | SEC-02 | Phase 6 | Complete |
 | SEC-03 | Phase 7 | Complete |
-| SEC-04 | Phase 8 | Pending |
+| SEC-04 | Phase 9 (gap closure) | Pending |
 
 **Coverage:**
 - v1.2 requirements: 12 total
@@ -71,4 +71,4 @@ Requirements for production deployment on Google Cloud Run.
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after roadmap creation*
+*Last updated: 2026-03-28 — SEC-04 reassigned to Phase 9 (gap closure from v1.2 audit)*

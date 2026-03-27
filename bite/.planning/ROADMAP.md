@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Sourdough Demo** — Phases 1-2 (shipped 2026-03-21)
 - ✅ **v1.1 Customization & Polish** — Phases 3-5 (shipped 2026-03-21)
-- 🚧 **v1.2 Production Readiness** — Phases 6-8 (in progress)
+- 🚧 **v1.2 Production Readiness** — Phases 6-9 (in progress)
 
 ## Phases
 
@@ -33,9 +33,10 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 
 **Milestone Goal:** Deploy Bite-POS to Google Cloud Run with production-grade infrastructure, hardening, and security — ready for Sourdough Oman as first live customer.
 
-- [ ] **Phase 6: Containerization & Cloud Services** - App runs in Docker with Cloud SQL and Cloud Storage, secrets managed via environment
+- [x] **Phase 6: Containerization & Cloud Services** - App runs in Docker with Cloud SQL and Cloud Storage, secrets managed via environment (completed 2026-03-27)
 - [x] **Phase 7: Hardening & Security** - Production-grade health checks, rate limiting, observability, tenant isolation audit, and input validation (completed 2026-03-27)
-- [ ] **Phase 8: CI/CD & Data Safety** - Automated test-build-deploy pipeline and database backup strategy
+- [x] **Phase 8: CI/CD & Data Safety** - Automated test-build-deploy pipeline and database backup strategy (completed 2026-03-27)
+- [ ] **Phase 9: Production Activation & Gap Closure** - Activate production services (backups, logging, Sentry), close audit gaps, minor code fixes
 
 ## Phase Details
 
@@ -83,6 +84,19 @@ Plans:
   2. A failed test suite prevents deployment — the pipeline stops and reports the failure
   3. Cloud SQL automated daily backups are enabled with a defined retention period and point-in-time recovery is available
 
+### Phase 9: Production Activation & Gap Closure
+**Goal**: All production services fully activated (database backups, structured logging, error tracking) and audit gaps from v1.2-MILESTONE-AUDIT.md closed
+**Depends on**: Phase 8
+**Requirements**: SEC-04
+**Gap Closure**: Closes gaps from v1.2-MILESTONE-AUDIT.md
+**Success Criteria** (what must be TRUE):
+  1. Cloud SQL automated daily backups enabled with 7-day retention and point-in-time recovery (SEC-04)
+  2. LOG_CHANNEL=stackdriver set on Cloud Run — structured JSON logs with PII masking queryable in Cloud Logging (HARD-04 activation)
+  3. Real SENTRY_LARAVEL_DSN configured on Cloud Run — unhandled exceptions appear in Sentry dashboard
+  4. FILESYSTEM_DISK=gcs and LIVEWIRE_TEMP_DISK=gcs confirmed set on Cloud Run
+  5. AppServiceProvider validates DB_SOCKET when DB_HOST is not explicitly set (HARD-02 gap fix)
+  6. Stale bite/.github/workflows/ci.yml removed
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -92,6 +106,7 @@ Plans:
 | 3. Item Availability | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
-| 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
-| 7. Hardening & Security | v1.2 | 3/3 | Complete   | 2026-03-27 |
-| 8. CI/CD & Data Safety | v1.2 | 1/2 | In Progress|  |
+| 6. Containerization & Cloud Services | v1.2 | 2/2 | Complete | 2026-03-27 |
+| 7. Hardening & Security | v1.2 | 3/3 | Complete | 2026-03-27 |
+| 8. CI/CD & Data Safety | v1.2 | 2/2 | Complete | 2026-03-27 |
+| 9. Production Activation & Gap Closure | v1.2 | 0/0 | Planned | |
