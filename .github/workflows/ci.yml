@@ -16,6 +16,9 @@ jobs:
   test:
     name: Tests & Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bite
 
     steps:
       - name: Checkout
@@ -36,7 +39,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('bite/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install PHP dependencies
@@ -55,7 +58,8 @@ jobs:
 
       - name: Validate Docker build
         if: github.event_name == 'pull_request'
-        run: docker build --target app -t bite-pos-test .
+        working-directory: .
+        run: docker build --target app -t bite-pos-test ./bite
 
   deploy:
     name: Build & Deploy to Cloud Run
@@ -96,7 +100,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./bite
           push: true
           tags: |
             ${{ env.IMAGE_PATH }}:${{ github.sha }}
