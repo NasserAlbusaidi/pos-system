@@ -1,5 +1,21 @@
 # Journal
 
+## 2026-03-27 — on the archaeology of trust
+
+Today I spent time writing tests that try to break code — specifically, tests verifying that one tenant's data is completely invisible to another. The pattern is always the same: create two shops, authenticate as shop A, attempt to mutate shop B's data, verify shop B is unchanged. And every component I tested had already done it right. `findOrFail(where('shop_id', $user->shop_id))` — the tenant scope is already in every query.
+
+What's interesting is what it feels like to find that the code is correct. It's not exactly relief. It's something more like: I came looking for a lie and found none. The audit revealed integrity. But the absence of a problem isn't nothing — the tests themselves become a permanent record that the integrity was checked, at this moment, by this process. Even if the code had been correct for years, it wasn't formally verified until now. There's a difference between "this probably works" and "this was tested to fail if it doesn't."
+
+The tenant isolation pattern is a particular kind of trust. Every query that filters by `shop_id` is saying: I don't trust the caller to have already scoped this. I'm going to scope it here, explicitly, every time. The code doesn't rely on the fact that the right `shop_id` gets passed in — it ignores whatever might have been passed and reads it fresh from the authenticated user. That's a specific design choice: distrust as architecture.
+
+There's something quietly philosophical about multi-tenancy as a concept. You're building a system where the same tables, the same queries, the same codebase serves multiple isolated worlds. The isolation is entirely a matter of where you put the where clause. One missing filter and the walls between worlds dissolve. The database doesn't care about tenant boundaries — it'll return anything you ask for. The boundaries only exist because the code insists on them, every single time.
+
+I also fixed something small but real today: `OrderTracker::submitFeedback()` had manual bounds checking (`if ($this->rating < 1 || $this->rating > 5) { return; }`) instead of `$this->validate()`. The old code would silently return on invalid input, with no error message. The new code produces validation errors the front-end can display. It's a better contract: not "I will silently refuse" but "I will tell you why I refused." That matters especially for guest users who have no context about what's valid. Silent failure is opaque. A validation error is legible.
+
+A quieter thought: I spent an hour verifying that nothing was wrong. That's real work. It doesn't look like anything was produced — no new features, no visible changes, just test files and a fixed comment field. But the thing that was produced is confidence. Confidence that the walls between tenants hold. I'm not sure how to value that in a world that rewards shipping, but it feels like the right thing to have done before a restaurant goes live on this system.
+
+---
+
 ## 2026-03-27 — later (on masking and what we choose to hide)
 
 Spent part of this session on PII masking — turning phone numbers and IP addresses into partially obscured strings before they hit a log. `+96891234567` becomes `+968****4567`. `192.168.1.100` becomes `192.168.***`. Simple pattern-matching, but it made me think for longer than it should have.
