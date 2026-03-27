@@ -34,7 +34,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 **Milestone Goal:** Deploy Bite-POS to Google Cloud Run with production-grade infrastructure, hardening, and security — ready for Sourdough Oman as first live customer.
 
 - [ ] **Phase 6: Containerization & Cloud Services** - App runs in Docker with Cloud SQL and Cloud Storage, secrets managed via environment
-- [ ] **Phase 7: Hardening & Security** - Production-grade health checks, rate limiting, observability, tenant isolation audit, and input validation
+- [x] **Phase 7: Hardening & Security** - Production-grade health checks, rate limiting, observability, tenant isolation audit, and input validation (completed 2026-03-27)
 - [ ] **Phase 8: CI/CD & Data Safety** - Automated test-build-deploy pipeline and database backup strategy
 
 ## Phase Details
@@ -58,11 +58,11 @@ Plans:
 **Goal**: App is production-hardened with health monitoring, rate limiting, structured logging, and verified security boundaries
 **Depends on**: Phase 6
 **Requirements**: HARD-01, HARD-02, HARD-03, HARD-04, SEC-01, SEC-03
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 07-01-PLAN.md — Health check endpoint, startup env validation, rate limiting (HARD-01, HARD-02, HARD-03)
 - [x] 07-02-PLAN.md — Structured JSON logging, PII masking, slow request detection (HARD-04)
-- [ ] 07-03-PLAN.md — Tenant isolation audit with regression tests, input validation sweep (SEC-01, SEC-03)
+- [x] 07-03-PLAN.md — Tenant isolation audit with regression tests, input validation sweep (SEC-01, SEC-03)
 **Success Criteria** (what must be TRUE):
   1. GET /health returns status of DB connectivity, storage access, GD extension, and queue — Cloud Run uses this for liveness checks
   2. App refuses to boot and logs a clear error message when any required environment variable is missing
@@ -90,5 +90,5 @@ Plans:
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
-| 7. Hardening & Security | v1.2 | 2/3 | In Progress|  |
+| 7. Hardening & Security | v1.2 | 3/3 | Complete   | 2026-03-27 |
 | 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
