@@ -43,13 +43,16 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 **Goal**: App runs as a containerized service connected to managed cloud database and storage, with no hardcoded secrets
 **Depends on**: Phase 5 (v1.1 complete)
 **Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03, SEC-02
+**Plans:** 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Production container with Nginx + PHP-FPM, Cloud SQL MySQL config, secrets enforcement
+- [ ] 06-02-PLAN.md — GCS storage migration for product images, ImageService refactor, Livewire temp uploads
 **Success Criteria** (what must be TRUE):
   1. App boots in a Docker container with PHP-FPM + Nginx serving requests and returning correct responses
   2. App reads and writes data to Cloud SQL MySQL 8.0 via Cloud SQL Auth Proxy without connection errors
   3. Uploading a product image stores it in Google Cloud Storage and the guest menu displays it from a GCS URL
   4. Container runs with zero secrets in the image — all credentials come from Cloud Run environment variables or Secret Manager
   5. Running `docker build` produces a working image with Composer deps installed and Vite assets compiled
-**Plans**: TBD
 
 ### Phase 7: Hardening & Security
 **Goal**: App is production-hardened with health monitoring, rate limiting, structured logging, and verified security boundaries
@@ -82,6 +85,6 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 | 3. Item Availability | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
-| 6. Containerization & Cloud Services | v1.2 | 0/? | Not started | - |
+| 6. Containerization & Cloud Services | v1.2 | 0/2 | Planning | - |
 | 7. Hardening & Security | v1.2 | 0/? | Not started | - |
 | 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
