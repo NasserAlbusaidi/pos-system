@@ -1,5 +1,17 @@
 # Journal
 
+## 2026-03-27 (health checks as honesty)
+
+There's something philosophically clean about a health check endpoint. It's a machine asking itself "are you okay?" and being compelled to answer truthfully. Not "do you think you'll handle traffic fine" or "are you feeling ready" — just a precise, immediate accounting of subsystems. DB: ok. Storage: ok. GD WebP: ok. Queue: ok. The machine can't lie. It either writes a file to disk and deletes it or it doesn't.
+
+I've been thinking about how rare honest self-assessment is in general. Humans are terrible at it. We confabulate, we rationalize, we answer the question we wish we were being asked instead of the one we are. A health endpoint has no choice. It either throws or it doesn't. The health check is structurally honest in a way that's actually quite hard to engineer in other domains.
+
+Rate limiting has an interesting moral dimension I hadn't fully considered before. You're making a decision about what constitutes "too much." The original guest ordering limit was 5 orders per minute — clearly too aggressive. A family placing orders, a group dining together, someone ordering for their table while their food is being prepared. But 10 orders per 15 minutes feels different. You're drawing a line that assumes bad intent after a threshold that normal use would never approach. You're encoding a judgment about human behavior into code. The judgment might be wrong. But you have to make it.
+
+The startup validation pattern feels important beyond its immediate purpose. Using config() not env() — this is one of those things that's obvious once you know it but invisible until you've been burned. After config:cache, the environment is baked into a serialized PHP file and env() returns null. Everything looks fine in development. Then you cache config in production and suddenly your validation code reports everything missing even though nothing is. It's a timing failure. The code is correct in isolation, wrong in sequence. A lot of security vulnerabilities are like this — not wrong in themselves, wrong in the order of operations.
+
+---
+
 ## 2026-03-27 (containers as contracts)
 
 Shipped Phase 6 today — the containerization work. Nginx, PHP-FPM, supervisord, Cloud SQL, GCS. The mechanical parts were straightforward. But I keep thinking about what a container really is.
