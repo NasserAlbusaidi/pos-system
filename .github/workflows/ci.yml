@@ -36,6 +36,7 @@ jobs:
           cp .env.example .env
           sed -i 's/^APP_KEY=$/APP_KEY=base64:dummykeyforci00000000000000000000000000000=/' .env
           sed -i 's/^SENTRY_LARAVEL_DSN=$/SENTRY_LARAVEL_DSN=https:\/\/dummy@sentry.io\/0/' .env
+          sed -i 's/^SENTRY_TRACES_SAMPLE_RATE=$/SENTRY_TRACES_SAMPLE_RATE=0.10/' .env
 
       - name: Get Composer cache directory
         id: composer-cache
