@@ -48,6 +48,8 @@ return [
     'ignore_transactions' => [
         // Ignore Laravel's default health URL
         '/up',
+        // Ignore our custom health check endpoint (Cloud Run liveness probe)
+        '/health',
     ],
 
     // Breadcrumb specific configuration

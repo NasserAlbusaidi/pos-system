@@ -27,7 +27,10 @@ use App\Livewire\ShopSettings;
 use App\Livewire\SuperAdmin\Dashboard as SuperAdminDashboard;
 use App\Livewire\SuperAdmin\Shops\Index as SuperAdminShopsIndex;
 use App\Livewire\SuperAdmin\Shops\Manage as SuperAdminShopsManage;
+use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/health', HealthController::class)->name('health')->withoutMiddleware([\App\Http\Middleware\SecurityHeaders::class]);
 
 Route::view('/', 'welcome');
 Route::view('/offline', 'offline');
