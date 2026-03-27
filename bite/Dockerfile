@@ -60,12 +60,12 @@ ENV APP_ENV=production \
 # Build-time key for artisan commands only (NOT a real secret — thrown away after build)
 ARG BUILD_APP_KEY="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
-RUN APP_KEY="${BUILD_APP_KEY}" \
+RUN APP_KEY="${BUILD_APP_KEY}" SENTRY_LARAVEL_DSN="https://dummy@sentry.io/0" \
     composer install --prefer-dist --no-interaction --optimize-autoloader --no-scripts --no-dev \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
-    && APP_KEY="${BUILD_APP_KEY}" php artisan package:discover --ansi \
-    && APP_KEY="${BUILD_APP_KEY}" php artisan optimize:clear \
+    && APP_KEY="${BUILD_APP_KEY}" SENTRY_LARAVEL_DSN="https://dummy@sentry.io/0" php artisan package:discover --ansi \
+    && APP_KEY="${BUILD_APP_KEY}" SENTRY_LARAVEL_DSN="https://dummy@sentry.io/0" php artisan optimize:clear \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod +x artisan
 
