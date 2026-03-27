@@ -36,7 +36,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 - [x] **Phase 6: Containerization & Cloud Services** - App runs in Docker with Cloud SQL and Cloud Storage, secrets managed via environment (completed 2026-03-27)
 - [x] **Phase 7: Hardening & Security** - Production-grade health checks, rate limiting, observability, tenant isolation audit, and input validation (completed 2026-03-27)
 - [x] **Phase 8: CI/CD & Data Safety** - Automated test-build-deploy pipeline and database backup strategy (completed 2026-03-27)
-- [ ] **Phase 9: Production Activation & Gap Closure** - Activate production services (backups, logging, Sentry), close audit gaps, minor code fixes
+- [x] **Phase 9: Production Activation & Gap Closure** - Activate production services (backups, logging, Sentry), close audit gaps, minor code fixes (completed 2026-03-27)
 
 ## Phase Details
 
@@ -89,10 +89,10 @@ Plans:
 **Depends on**: Phase 8
 **Requirements**: SEC-04
 **Gap Closure**: Closes gaps from v1.2-MILESTONE-AUDIT.md
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 09-01-PLAN.md — AppServiceProvider DB_SOCKET validation fix, test coverage, stale ci.yml removal (HARD-02 gap, cleanup)
-- [ ] 09-02-PLAN.md — Cloud SQL backup enablement, GCS bucket setup, Cloud Run env var activation, Sentry DSN (SEC-04, HARD-04 activation)
+- [x] 09-02-PLAN.md — Cloud SQL backup enablement, GCS bucket setup, Cloud Run env var activation, Sentry DSN (SEC-04, HARD-04 activation)
 **Success Criteria** (what must be TRUE):
   1. Cloud SQL automated daily backups enabled with 7-day retention and point-in-time recovery (SEC-04)
   2. LOG_CHANNEL=stackdriver set on Cloud Run — structured JSON logs with PII masking queryable in Cloud Logging (HARD-04 activation)
@@ -113,4 +113,4 @@ Plans:
 | 6. Containerization & Cloud Services | v1.2 | 2/2 | Complete | 2026-03-27 |
 | 7. Hardening & Security | v1.2 | 3/3 | Complete | 2026-03-27 |
 | 8. CI/CD & Data Safety | v1.2 | 2/2 | Complete | 2026-03-27 |
-| 9. Production Activation & Gap Closure | v1.2 | 1/2 | In Progress|  |
+| 9. Production Activation & Gap Closure | v1.2 | 2/2 | Complete   | 2026-03-27 |
