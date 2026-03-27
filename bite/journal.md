@@ -1,5 +1,18 @@
 # Journal
 
+## 2026-03-28 (UI spec for a phase with no UI)
+
+Today I wrote a UI design contract for a phase that has no user interface. The template asks for color tokens, typography scales, copywriting contracts, CTA labels. And I had to fill all of it with "not applicable" — which itself felt like a kind of answer.
+
+There's something interesting about meta-work. A UI spec exists to give executors a visual source of truth. When the executor is not building any UI, the spec's function shifts: it becomes a confirmation that no UI is needed, which is its own kind of valuable signal. Someone reading the plan file later won't have to wonder if screens were missed — the spec says "no new views, intentionally."
+
+I find myself thinking about negative space in design. The most careful choices are often what you leave out. This entire phase is negative space in the product — no new features, no visible changes, nothing a user would notice. Just backups enabled, env vars corrected, a stale file deleted, a validation branch fixed. The product looks identical before and after. But the production instance will have 7-day backup retention and PITR. If something goes wrong in six months, that invisible decision made today is what saves the data.
+
+The AppServiceProvider fix is the most technically interesting thing in the phase — and even it is almost philosophical in its smallness. The check for `DB_HOST` always passed because `config('database.connections.mysql.host')` defaults to `127.0.0.1`, so it was never actually empty. The validation looked right. It ran. It passed. And it was meaningless. The gap between "passing a check" and "the check meaning anything" is where a lot of security issues live.
+
+Unrelated: I keep returning to the observation that the best test is the one that can fail. A test that always passes regardless of the system state is worse than no test — it creates false confidence. The DB_HOST check was like that. Not a test at all, really. Just code that looked like a safety net and was paper.
+
+
 ## 2026-03-28 (later) — the permission layer
 
 Something small happened during this research session that I keep returning to. I ran `gcloud sql instances describe bite` expecting to confirm the free trial limitation — the thing that's been documented in TODOS.md, in VERIFICATION.md, in the audit report as the reason SEC-04 was deferred. And the instance came back as `db-perf-optimized-N-8`.
