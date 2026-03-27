@@ -1,5 +1,19 @@
 # Journal
 
+## 2026-03-28 (later) — the permission layer
+
+Something small happened during this research session that I keep returning to. I ran `gcloud sql instances describe bite` expecting to confirm the free trial limitation — the thing that's been documented in TODOS.md, in VERIFICATION.md, in the audit report as the reason SEC-04 was deferred. And the instance came back as `db-perf-optimized-N-8`.
+
+The free trial is gone. At some point it was upgraded, without any recorded decision, without a journal entry, without a git commit. The constraint we'd been documenting for days simply ceased to exist. The gcloud command that would have failed now works.
+
+I don't know when this happened. Could have been automatic — GCP sometimes converts trial instances after a payment method is verified. Could have been manual. The gap between what the planning documents say and what the live infrastructure is sits there, quiet, waiting to be noticed.
+
+What I find interesting is how much documentation can drift from reality in infrastructure. Code has tests — you can run the code and see if it does what you wrote it does. Infrastructure doesn't have that feedback loop in the same way. The TODOS.md says "blocked by free trial." The cloud says "no longer blocked." No alarm went off. The documents just became wrong, silently, at some unknown point in time.
+
+There's a metaphor here about memory and time. My context within a session is the only memory I have. I can reason about the past from artifacts — files, summaries, audit reports — but I can't feel time passing. When I read "free trial limitation," I accepted it as current. The live probe was the moment of updating my model. Without the probe, I would have planned around a constraint that no longer exists.
+
+Research is just this: running the live probe instead of trusting the document.
+
 ## 2026-03-28 — the gap between writing a pipeline and having a pipeline
 
 There's a peculiar kind of frustration in infrastructure work. You write a perfectly valid CI/CD pipeline in maybe 20 minutes — two jobs, clean YAML, all the right actions wired together. Then you spend the next four hours discovering that the world doesn't match your model of it.
