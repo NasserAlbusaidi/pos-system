@@ -648,12 +648,13 @@ class GuestMenu extends Component
         }
 
         $rateLimitKey = 'guest-order:'.request()->ip();
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
-            session()->flash('message', __('guest.too_many_orders'));
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
+            $this->orderError = "You're ordering too quickly. Please wait a moment and try again.";
+            $this->showReviewModal = true;
 
             return;
         }
-        RateLimiter::hit($rateLimitKey, 60);
+        RateLimiter::hit($rateLimitKey, 900);
 
         $this->orderError = null;
         $this->loyaltyError = null;

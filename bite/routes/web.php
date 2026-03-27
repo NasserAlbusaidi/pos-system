@@ -41,8 +41,12 @@ Route::view('/terms', 'legal.terms')->name('legal.terms');
 Route::get('/menu/{shop:slug}', GuestMenu::class)->name('guest.menu');
 Route::get('/track/{trackingToken}', OrderTracker::class)->whereUuid('trackingToken')->name('guest.track');
 Route::get('/pos/pin/{shop:slug}', PinLogin::class)->name('pos.pin');
-Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
-Route::post('/webhooks/stripe/subscription', [StripeSubscriptionWebhookController::class, 'handle'])->name('webhooks.stripe.subscription');
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])
+    ->middleware('throttle:stripe-webhooks')
+    ->name('webhooks.stripe');
+Route::post('/webhooks/stripe/subscription', [StripeSubscriptionWebhookController::class, 'handle'])
+    ->middleware('throttle:stripe-webhooks')
+    ->name('webhooks.stripe.subscription');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', ShopDashboard::class)->name('dashboard');
