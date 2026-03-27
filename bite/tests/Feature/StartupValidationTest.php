@@ -43,7 +43,7 @@ class StartupValidationTest extends TestCase
 
         if (! empty($missing)) {
             throw new \RuntimeException(
-                'Missing required environment variables: ' . implode(', ', $missing)
+                'Missing required environment variables: '.implode(', ', $missing)
             );
         }
     }

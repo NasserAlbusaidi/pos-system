@@ -27,8 +27,8 @@ class FreePlanAccessTest extends TestCase
 
         // Create a shop with NO trial and NO Stripe subscription — pure free plan.
         $this->shop = Shop::create([
-            'name'          => 'Free Shop',
-            'slug'          => 'free-shop',
+            'name' => 'Free Shop',
+            'slug' => 'free-shop',
             'trial_ends_at' => null,
         ]);
     }
@@ -99,12 +99,12 @@ class FreePlanAccessTest extends TestCase
         // Create a cancelled, fully-lapsed subscription for this shop.
         // Column is `type` (not `name`) per Cashier v15+ schema.
         $this->shop->subscriptions()->create([
-            'type'            => 'default',
-            'stripe_id'       => 'sub_test_expired',
-            'stripe_status'   => 'canceled',
-            'stripe_price'    => 'price_test',
-            'quantity'        => 1,
-            'ends_at'         => now()->subDay(), // grace period over
+            'type' => 'default',
+            'stripe_id' => 'sub_test_expired',
+            'stripe_status' => 'canceled',
+            'stripe_price' => 'price_test',
+            'quantity' => 1,
+            'ends_at' => now()->subDay(), // grace period over
         ]);
 
         $this->actingAs($admin)
@@ -116,7 +116,7 @@ class FreePlanAccessTest extends TestCase
     {
         return User::factory()->create([
             'shop_id' => $this->shop->id,
-            'role'    => $role,
+            'role' => $role,
         ]);
     }
 }

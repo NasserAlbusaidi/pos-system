@@ -57,8 +57,8 @@ class ImageService
 
         $variants = [
             'thumb' => 200,
-            'card'  => 400,
-            'full'  => 800,
+            'card' => 400,
+            'full' => 800,
         ];
 
         foreach ($variants as $variant => $size) {

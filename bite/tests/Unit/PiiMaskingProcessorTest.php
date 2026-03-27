@@ -15,13 +15,13 @@ class PiiMaskingProcessorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->processor = new PiiMaskingProcessor();
+        $this->processor = new PiiMaskingProcessor;
     }
 
     private function makeRecord(array $context = []): LogRecord
     {
         return new LogRecord(
-            datetime: new DateTimeImmutable(),
+            datetime: new DateTimeImmutable,
             channel: 'test',
             level: Level::Info,
             message: 'test message',

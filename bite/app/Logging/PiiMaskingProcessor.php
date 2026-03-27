@@ -34,7 +34,7 @@ class PiiMaskingProcessor implements ProcessorInterface
         $prefix = substr($phone, 0, 4); // e.g., +968
         $middleLen = strlen($phone) - strlen($prefix) - 4;
 
-        return $prefix . str_repeat('*', max($middleLen, 0)) . $last4;
+        return $prefix.str_repeat('*', max($middleLen, 0)).$last4;
     }
 
     private function maskEmail(string $email): string
@@ -47,7 +47,7 @@ class PiiMaskingProcessor implements ProcessorInterface
         $local = $parts[0];
         $firstChar = mb_substr($local, 0, 1);
 
-        return $firstChar . '***@' . $parts[1];
+        return $firstChar.'***@'.$parts[1];
     }
 
     private function maskIp(string $ip): string
@@ -55,8 +55,9 @@ class PiiMaskingProcessor implements ProcessorInterface
         // Mask last two octets: 192.168.***
         $parts = explode('.', $ip);
         if (count($parts) === 4) {
-            return $parts[0] . '.' . $parts[1] . '.***';
+            return $parts[0].'.'.$parts[1].'.***';
         }
+
         // IPv6 or unexpected format — mask aggressively
         return '***';
     }

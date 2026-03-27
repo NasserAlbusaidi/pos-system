@@ -15,7 +15,7 @@ class LogSlowRequestsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->middleware = new LogSlowRequests();
+        $this->middleware = new LogSlowRequests;
     }
 
     public function test_logs_warning_when_request_exceeds_2000ms_threshold(): void
