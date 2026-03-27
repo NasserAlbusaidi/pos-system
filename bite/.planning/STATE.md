@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Production Readiness
-status: executing
-stopped_at: Completed 06-containerization-cloud-services-01-PLAN.md
-last_updated: "2026-03-27T14:32:53.813Z"
+status: verifying
+stopped_at: Completed 06-containerization-cloud-services-02-PLAN.md
+last_updated: "2026-03-27T14:41:57.507Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 62
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 Phase: 06 (containerization-cloud-services) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-27
 
 Progress: [██████████░░░░░░] 62% (5/8 phases, 11/11 prior plans done)
@@ -51,6 +51,7 @@ Progress: [██████████░░░░░░] 62% (5/8 phases, 11
 | Phase 05-menu-themes P01 | 6m | 2 | 12 |
 | Phase 05-menu-themes P02 | 7200s | 2 | 3 |
 | Phase 06-containerization-cloud-services P01 | 10m | 3 tasks | 7 files |
+| Phase 06-containerization-cloud-services P02 | 4m | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 06-containerization-cloud-services]: Nginx + PHP-FPM via supervisord in single container — Cloud Run requires one process group
 - [Phase 06-containerization-cloud-services]: clear_env=no in PHP-FPM pool — Cloud Run env vars must be visible to PHP worker processes
 - [Phase 06-containerization-cloud-services]: MySQL as default DB connection — tests unaffected by phpunit.xml SQLite override
+- [Phase 06-containerization-cloud-services]: spatie/laravel-google-cloud-storage as GCS driver — wraps google/cloud-storage with Laravel filesystem adapter
+- [Phase 06-containerization-cloud-services]: Stream-based ImageService (Storage::get/put) replaces file_put_contents — compatible with GCS and local disks
+- [Phase 06-containerization-cloud-services]: productImage() uses Storage::disk()->url() for disk-aware URLs — /storage/... locally, storage.googleapis.com/... in production
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:32:53.811Z
-Stopped at: Completed 06-containerization-cloud-services-01-PLAN.md
+Last session: 2026-03-27T14:41:57.504Z
+Stopped at: Completed 06-containerization-cloud-services-02-PLAN.md
 Resume file: None

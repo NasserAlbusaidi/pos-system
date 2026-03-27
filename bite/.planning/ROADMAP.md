@@ -46,7 +46,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 **Plans:** 1/2 plans executed
 Plans:
 - [x] 06-01-PLAN.md — Production container with Nginx + PHP-FPM, Cloud SQL MySQL config, secrets enforcement
-- [ ] 06-02-PLAN.md — GCS storage migration for product images, ImageService refactor, Livewire temp uploads
+- [x] 06-02-PLAN.md — GCS storage migration for product images, ImageService refactor, Livewire temp uploads
 **Success Criteria** (what must be TRUE):
   1. App boots in a Docker container with PHP-FPM + Nginx serving requests and returning correct responses
   2. App reads and writes data to Cloud SQL MySQL 8.0 via Cloud SQL Auth Proxy without connection errors
