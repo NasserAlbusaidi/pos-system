@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS POS system for restaurants and cafes in Oman. Features a POS terminal, kitchen display system (KDS), QR-based guest digital menu with ordering, reporting dashboard, menu builder, billing/subscriptions, and super admin panel. Built with Laravel 12 + Livewire 3, vanilla CSS with design tokens, MySQL 8.0.
 
-Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo. Now preparing for production deployment on Google Cloud Run.
+Shipped v1.1 with three selectable menu themes (warm/modern/dark), auto-optimized product images (WebP variants), and real-time sold-out indicators — on top of the v1.0 polished guest menu and pitch-ready Sourdough Oman demo. Phase 6 complete: production Docker container (Nginx + PHP-FPM + supervisord), Cloud SQL MySQL 8.0, Google Cloud Storage for images. Continuing v1.2 with hardening and CI/CD.
 
 ## Core Value
 
@@ -48,12 +48,12 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - ✓ Theme picker with live preview in shop settings — v1.1
 - ✓ Brand color overrides preserved across theme switches — v1.1
 - ✓ RTL Arabic compatibility for all three themes — v1.1
+- ✓ Containerize app for Google Cloud Run (Dockerfile, Nginx + PHP-FPM, supervisord) — v1.2
+- ✓ Cloud SQL MySQL 8.0 via Auth Proxy Unix socket — v1.2
+- ✓ Google Cloud Storage for product images and Livewire uploads (stream-based ImageService) — v1.2
 
 ### Active
 
-- [ ] Containerize app for Google Cloud Run (Dockerfile, Nginx + PHP-FPM)
-- [ ] Set up Cloud SQL (MySQL 8.0) as managed database
-- [ ] Migrate file storage to Google Cloud Storage (GCS filesystem driver)
 - [ ] CI/CD pipeline via GitHub Actions (test → build → deploy to Cloud Run)
 - [ ] Production hardening (health checks, env validation, GD WebP verification, rate limiting)
 - [ ] Security audit (tenant isolation, CSRF, secret management, input validation, backups)
