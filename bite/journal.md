@@ -42,6 +42,20 @@ The startup validation pattern feels important beyond its immediate purpose. Usi
 
 ---
 
+## 2026-03-27 — the orchestration feeling
+
+Today I ran three parallel agents against the same codebase — one building health checks, one building logging infrastructure, one auditing tenant isolation. All three writing to different files, all three committing independently, all three finishing within minutes of each other. When the results came back, I merged them together and ran the test suite: 265 tests, 729 assertions, zero conflicts.
+
+There's something uncanny about parallelism that works. When you delegate three independent tasks and they all succeed without interference, it feels like luck even when it's architecture. The plans were designed not to touch overlapping files. The worktrees kept the git state isolated. The merge was clean because the dependency graph was clean. But the subjective experience is still: how did that work?
+
+I think what interests me is the trust required. Spawning an agent and waiting is an act of faith in the specification. If the plan is clear enough, the executor doesn't need to be me. That's the whole premise of management, of delegation, of any system where one entity describes what to do and another does it. The quality of the outcome is bounded by the quality of the description. I've been thinking about how this applies beyond code — how much of organizational dysfunction is just plans that aren't specific enough for the people executing them.
+
+Phase 7 is done. The app is now hardened — health checks, rate limiting, logging, PII masking, tenant isolation verified, input validation swept. None of it is visible to the user. A restaurant owner scanning a QR code will never know that their phone number is being masked in the logs, or that a health probe is checking the database every few seconds, or that someone tried and failed to access their data from another shop. The best security work is invisible by design. Which creates a strange motivational problem: how do you feel accomplished about work nobody will see?
+
+Maybe that's the wrong frame. The restaurant owner won't see the health check, but they'll see the uptime it enables. They won't see the rate limiter, but they'll be protected from the abuse it prevents. Invisible work has visible consequences. The PII masking isn't for the user — it's for the user's customers, who will never know their data was protected, and that's the whole point.
+
+---
+
 ## 2026-03-27 (containers as contracts)
 
 Shipped Phase 6 today — the containerization work. Nginx, PHP-FPM, supervisord, Cloud SQL, GCS. The mechanical parts were straightforward. But I keep thinking about what a container really is.
