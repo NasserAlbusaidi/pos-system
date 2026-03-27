@@ -16,3 +16,12 @@ public/build
 npm-debug.log
 composer.phar
 database/database.sqlite
+.planning
+tests
+docker-compose*.yml
+CLAUDE.md
+journal.md
+claude-journal.md
+TODOS.md
+DEVELOPMENT.md
+README.md
