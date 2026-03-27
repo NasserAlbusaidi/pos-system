@@ -25,21 +25,21 @@ class ImageService
     }
 
     /**
-     * Process an uploaded image into 3 size variants.
+     * Process an uploaded image into 3 size variants using stream-based operations.
      *
      * $storedPath is the relative path returned by $file->store()
      * e.g. "products/abc123.jpg"
      *
      * Steps:
-     *  a) Get absolute path via Storage::disk($disk)->path($storedPath)
+     *  a) Read file contents via Storage::disk($disk)->get($storedPath)
      *  b) Determine output extension: 'webp' if supportsWebp(), else 'jpg'
      *  c) Derive base name without extension
      *  d) Create Intervention ImageManager with GD driver
      *  e) For each variant ['thumb' => 200, 'card' => 400, 'full' => 800]:
-     *     - Read original image
+     *     - Read original image from binary string
      *     - Scale down (longest edge)
      *     - Encode to WebP (quality 80) or JPEG (quality 85)
-     *     - Save to disk
+     *     - Write via Storage::disk($disk)->put() — compatible with GCS and local disks
      *  f) ONLY AFTER all 3 variants are confirmed saved, delete the original
      *  g) Return the full-size variant path (new image_url)
      *
@@ -47,7 +47,7 @@ class ImageService
      */
     public function processUpload(string $storedPath, string $disk = 'public'): string
     {
-        $absolutePath = Storage::disk($disk)->path($storedPath);
+        $contents = Storage::disk($disk)->get($storedPath);
         $ext = $this->supportsWebp() ? 'webp' : 'jpg';
 
         // Derive base name without extension: e.g. "products/abc123"
@@ -57,45 +57,26 @@ class ImageService
 
         $variants = [
             'thumb' => 200,
-            'card' => 400,
-            'full' => 800,
+            'card'  => 400,
+            'full'  => 800,
         ];
 
-        $savedVariants = [];
-
         foreach ($variants as $variant => $size) {
-            $image = $manager->read($absolutePath);
+            $image = $manager->read($contents);
             $image->scaleDown(width: $size, height: $size);
 
-            if ($this->supportsWebp()) {
-                $encoded = $image->toWebp(quality: 80);
-            } else {
-                $encoded = $image->toJpeg(quality: 85);
-            }
+            $encoded = $this->supportsWebp()
+                ? $image->toWebp(quality: 80)
+                : $image->toJpeg(quality: 85);
 
             $variantPath = "{$baseName}-{$variant}.{$ext}";
-            $this->saveVariant(Storage::disk($disk)->path($variantPath), $encoded->toString());
-            $savedVariants[] = $variantPath;
+            Storage::disk($disk)->put($variantPath, $encoded->toString());
         }
 
-        // Only delete the original after ALL variants are confirmed saved
+        // Only delete the original after ALL variants are saved
         Storage::disk($disk)->delete($storedPath);
 
         return "{$baseName}-full.{$ext}";
-    }
-
-    /**
-     * Save a variant file to disk.
-     * Extracted as a separate method to allow test mocking/overriding.
-     */
-    protected function saveVariant(string $absolutePath, string $data): void
-    {
-        $directory = dirname($absolutePath);
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        file_put_contents($absolutePath, $data);
     }
 
     /**

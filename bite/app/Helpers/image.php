@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('productImage')) {
     /**
@@ -9,9 +10,9 @@ if (! function_exists('productImage')) {
      * Returns null if the product is null or has no image_url.
      * Valid variants: 'thumb' (200px), 'card' (400px), 'full' (800px).
      *
-     * Example:
-     *   productImage($product, 'card')
-     *   => '/storage/products/abc123-card.webp'
+     * Returns disk-appropriate URLs:
+     *   - Local dev (public disk): '/storage/products/abc123-card.webp'
+     *   - Production (gcs disk):   'https://storage.googleapis.com/BUCKET/products/abc123-card.webp'
      */
     function productImage(?Product $product, string $variant = 'card'): ?string
     {
@@ -23,6 +24,6 @@ if (! function_exists('productImage')) {
         // Replace "-full." with "-{$variant}."
         $variantPath = preg_replace('/-full\./', "-{$variant}.", $product->image_url);
 
-        return '/storage/'.$variantPath;
+        return Storage::disk(config('filesystems.default'))->url($variantPath);
     }
 }

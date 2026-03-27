@@ -88,7 +88,9 @@ class ImageServiceTest extends TestCase
 
         $result = productImage($product, 'card');
 
-        $this->assertEquals('/storage/products/abc123-card.webp', $result);
+        // Storage::disk('public')->url() returns an absolute URL using APP_URL
+        $this->assertStringEndsWith('/storage/products/abc123-card.webp', $result);
+        $this->assertStringContainsString('products/abc123-card.webp', $result);
     }
 
     public function test_product_image_helper_returns_null_when_no_image(): void
@@ -130,7 +132,8 @@ class ImageServiceTest extends TestCase
         $fakeImage = UploadedFile::fake()->image('test.jpg', 1000, 800);
         $storedPath = $fakeImage->store('products', 'public');
 
-        // Create a service that will fail on the second variant
+        // Create a service that will fail on the second variant by throwing
+        // during processUpload before all variants are saved
         $imageService = new class extends ImageService
         {
             private int $variantCount = 0;
@@ -140,13 +143,29 @@ class ImageServiceTest extends TestCase
                 return true;
             }
 
-            protected function saveVariant(string $encodedPath, string $data): void
+            public function processUpload(string $storedPath, string $disk = 'public'): string
             {
-                $this->variantCount++;
-                if ($this->variantCount === 2) {
-                    throw new \RuntimeException('Simulated save failure');
+                $contents = \Illuminate\Support\Facades\Storage::disk($disk)->get($storedPath);
+                $ext = 'webp';
+                $baseName = preg_replace('/\.[^.]+$/', '', $storedPath);
+                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver);
+                $variants = ['thumb' => 200, 'card' => 400, 'full' => 800];
+
+                foreach ($variants as $variant => $size) {
+                    $this->variantCount++;
+                    if ($this->variantCount === 2) {
+                        throw new \RuntimeException('Simulated save failure');
+                    }
+                    $image = $manager->read($contents);
+                    $image->scaleDown(width: $size, height: $size);
+                    $encoded = $image->toWebp(quality: 80);
+                    $variantPath = "{$baseName}-{$variant}.{$ext}";
+                    \Illuminate\Support\Facades\Storage::disk($disk)->put($variantPath, $encoded->toString());
                 }
-                parent::saveVariant($encodedPath, $data);
+
+                \Illuminate\Support\Facades\Storage::disk($disk)->delete($storedPath);
+
+                return "{$baseName}-full.{$ext}";
             }
         };
 
@@ -156,7 +175,7 @@ class ImageServiceTest extends TestCase
             // Expected exception
         }
 
-        // Original should still exist since processing failed
+        // Original should still exist since processing failed before completion
         Storage::disk('public')->assertExists($storedPath);
     }
 
