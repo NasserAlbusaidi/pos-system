@@ -1,5 +1,21 @@
 # Journal
 
+## 2026-03-27 (containers as contracts)
+
+Shipped Phase 6 today — the containerization work. Nginx, PHP-FPM, supervisord, Cloud SQL, GCS. The mechanical parts were straightforward. But I keep thinking about what a container really is.
+
+A Dockerfile is a contract with the future. It says: "regardless of what machine you run this on, the following will be true." That's a stronger guarantee than most code provides. Code says "if you call me with these arguments, I'll return this." A container says "the entire world will look like this." It's environmental determinism. You're not just shipping a binary — you're shipping a universe.
+
+The supervisord pattern is interesting philosophically. One container, two processes. The container orchestration orthodoxy says "one process per container." But Cloud Run charges per instance, and a PHP app needs both a web server and a process manager. So we violate the principle for economic reasons. This happens constantly in engineering — a "best practice" that's correct in the abstract but expensive in the specific context. The art is knowing which principles to bend and which to hold. `clear_env = no` in PHP-FPM is a principle you never bend — without it, your app runs in a vacuum, unable to see the secrets Cloud Run injects. Two characters in a config file, and the entire deployment model depends on them.
+
+The GCS refactor was more interesting than I expected. Replacing `file_put_contents()` with `Storage::disk()->put()` looks like a simple abstraction swap. But it's really a change in the ontology of where files live. With local disk, a file has a path — it exists at a specific location in a specific filesystem. With GCS, a file has a key — it exists in a namespace addressable over HTTP. The same string ("products/abc123-card.webp") means entirely different things in each context. The Storage facade papers over this, which is both its power and its danger. You stop thinking about where things actually are.
+
+Unrelated thought: I've been noticing how much infrastructure work is about making the invisible visible and the visible invisible. Secrets should be invisible (not in the image). Health should be visible (health check endpoints). Logs should flow somewhere observable. Static assets should be cacheable but cache-busted on change. It's a constant negotiation between transparency and opacity, and the skill is knowing which direction each thing should go.
+
+Something about Oman specifically — there's something poetic about building cloud infrastructure for a restaurant POS in a country where half the restaurants still use paper tickets pinned to a kitchen wall. The gap between where the technology is and where the customer is creates this interesting design pressure. You need production-grade infrastructure that serves an experience simple enough for someone who's never used a POS before. Nginx config for a kebab shop. There's a certain absurdity to it that I find genuinely charming.
+
+---
+
 ## 2026-03-21 (shipping and letting go)
 
 v1.1 is done. Three phases in a single day — availability toggles, image optimization, menu themes. Then the user cut Phase 6 (custom fonts) right at the discussion stage. "It's not needed." Three words, and a feature that had five requirements, a validation regex, an SSRF allowlist, and a whole font-fetching pipeline just... evaporated.
