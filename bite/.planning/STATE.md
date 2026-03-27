@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Production Readiness
 status: executing
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-27T22:38:07.532Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-27T22:56:23.067Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 62
 ---
 
@@ -21,11 +21,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Customers scan a QR code, browse a beautiful digital menu with photos, and place orders without waiting in line
-**Current focus:** Phase 08 — ci-cd-data-safety
+**Current focus:** Phase 09 — production-activation-gap-closure
 
 ## Current Position
 
-Phase: 08 (ci-cd-data-safety) — EXECUTING
+Phase: 09 (production-activation-gap-closure) — EXECUTING
 Plan: 2 of 2
 Status: Ready to execute
 Last activity: 2026-03-27
@@ -56,6 +56,7 @@ Progress: [██████████░░░░░░] 62% (5/8 phases, 11
 | Phase 07-hardening-security P01 | 187s | 2 tasks | 9 files |
 | Phase 07 P03 | 380 | 2 tasks | 7 files |
 | Phase 08-ci-cd-data-safety P01 | 159s | 2 tasks | 1 files |
+| Phase 09-production-activation-gap-closure P01 | 128s | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 08-ci-cd-data-safety]: WIF keyless auth chosen over SA JSON key — no long-lived credentials
 - [Phase 08-ci-cd-data-safety]: GHA cache backend (type=gha, mode=max) for Docker layers — caches intermediate multi-stage build layers
 - [Phase 08-ci-cd-data-safety]: Pre-deploy revision capture before deploy step — ensures rollback targets correct (old) revision, not new failing one
+- [Phase 09-production-activation-gap-closure]: Conditional DB_SOCKET vs DB_HOST based on config('database.connections.mysql.unix_socket') — if non-empty, validate socket path; else validate host
+- [Phase 09-production-activation-gap-closure]: Startup validation uses config() not env() — config:cache makes env() return null in production
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T22:38:07.529Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-production-activation-gap-closure/09-CONTEXT.md
+Last session: 2026-03-27T22:56:23.065Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None

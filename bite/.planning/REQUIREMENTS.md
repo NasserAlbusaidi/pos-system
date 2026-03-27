@@ -26,7 +26,7 @@ Requirements for production deployment on Google Cloud Run.
 - [x] **SEC-01**: Tenant isolation audit confirms every database query on tenant data is scoped to shop_id
 - [x] **SEC-02**: All secrets managed via Cloud Run environment/secrets — no hardcoded credentials, .env excluded from container
 - [x] **SEC-03**: Input validation sweep covers all user inputs, form submissions, and file uploads for injection/XSS vulnerabilities
-- [ ] **SEC-04**: Cloud SQL automated backups enabled with retention policy and point-in-time recovery
+- [x] **SEC-04**: Cloud SQL automated backups enabled with retention policy and point-in-time recovery
 
 ## Future Requirements
 
@@ -62,7 +62,7 @@ Requirements for production deployment on Google Cloud Run.
 | SEC-01 | Phase 7 | Complete |
 | SEC-02 | Phase 6 | Complete |
 | SEC-03 | Phase 7 | Complete |
-| SEC-04 | Phase 9 (gap closure) | Pending |
+| SEC-04 | Phase 9 (gap closure) | Complete |
 
 **Coverage:**
 - v1.2 requirements: 12 total
