@@ -58,10 +58,10 @@ Plans:
 **Goal**: App is production-hardened with health monitoring, rate limiting, structured logging, and verified security boundaries
 **Depends on**: Phase 6
 **Requirements**: HARD-01, HARD-02, HARD-03, HARD-04, SEC-01, SEC-03
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
-- [ ] 07-01-PLAN.md — Health check endpoint, startup env validation, rate limiting (HARD-01, HARD-02, HARD-03)
-- [ ] 07-02-PLAN.md — Structured JSON logging, PII masking, slow request detection (HARD-04)
+- [x] 07-01-PLAN.md — Health check endpoint, startup env validation, rate limiting (HARD-01, HARD-02, HARD-03)
+- [x] 07-02-PLAN.md — Structured JSON logging, PII masking, slow request detection (HARD-04)
 - [ ] 07-03-PLAN.md — Tenant isolation audit with regression tests, input validation sweep (SEC-01, SEC-03)
 **Success Criteria** (what must be TRUE):
   1. GET /health returns status of DB connectivity, storage access, GD extension, and queue — Cloud Run uses this for liveness checks
@@ -90,5 +90,5 @@ Plans:
 | 4. Image Optimization | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 5. Menu Themes | v1.1 | 2/2 | Complete | 2026-03-21 |
 | 6. Containerization & Cloud Services | v1.2 | 1/2 | In Progress|  |
-| 7. Hardening & Security | v1.2 | 0/3 | Not started | - |
+| 7. Hardening & Security | v1.2 | 2/3 | In Progress|  |
 | 8. CI/CD & Data Safety | v1.2 | 0/? | Not started | - |
