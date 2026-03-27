@@ -12,7 +12,7 @@ Requirements for production deployment on Google Cloud Run.
 - [x] **DEPLOY-01**: App runs in a multi-stage Docker container with PHP-FPM + Nginx, Composer deps, and Vite-built assets
 - [x] **DEPLOY-02**: App connects to Cloud SQL MySQL 8.0 via Cloud SQL Auth Proxy with proper connection config
 - [x] **DEPLOY-03**: Product images and file uploads use Google Cloud Storage filesystem driver instead of local disk
-- [ ] **DEPLOY-04**: GitHub Actions workflow runs tests, builds Docker image, pushes to Artifact Registry, and deploys to Cloud Run on push to main
+- [x] **DEPLOY-04**: GitHub Actions workflow runs tests, builds Docker image, pushes to Artifact Registry, and deploys to Cloud Run on push to main
 
 ### Production Hardening
 
@@ -54,7 +54,7 @@ Requirements for production deployment on Google Cloud Run.
 | DEPLOY-01 | Phase 6 | Complete |
 | DEPLOY-02 | Phase 6 | Complete |
 | DEPLOY-03 | Phase 6 | Complete |
-| DEPLOY-04 | Phase 8 | Pending |
+| DEPLOY-04 | Phase 8 | Complete |
 | HARD-01 | Phase 7 | Complete |
 | HARD-02 | Phase 7 | Complete |
 | HARD-03 | Phase 7 | Complete |
