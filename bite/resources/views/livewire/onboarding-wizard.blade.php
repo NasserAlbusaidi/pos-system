@@ -198,9 +198,6 @@
                                 <p class="text-sm text-alert">
                                     {{ __('admin.' . $errorKey) }}
                                 </p>
-                                @if (config('app.debug') && $extractionDebug)
-                                    <p class="text-xs text-alert/70 mt-2 font-mono break-all">{{ $extractionDebug }}</p>
-                                @endif
                             </div>
                         @endif
 

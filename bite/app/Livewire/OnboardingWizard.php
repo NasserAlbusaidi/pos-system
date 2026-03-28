@@ -56,8 +56,6 @@ class OnboardingWizard extends Component
 
     public string $extractionError = '';
 
-    public string $extractionDebug = '';
-
     // ── Step 4: Staff PINs ──────────────────────────────────
     public array $staffMembers = [];
 
@@ -268,14 +266,10 @@ class OnboardingWizard extends Component
         } catch (MenuExtractionException $e) {
             report($e);
             $this->extractionError = $e->reason;
-            $this->extractionDebug = $e->getMessage()
-                .' | images_sent='.count($images)
-                .collect($images)->map(fn ($img, $i) => " | img{$i}: mime={$img['mime_type']} b64_len=".strlen($img['data']))->implode('');
             $this->menuMode = 'choose';
         } catch (\Throwable $e) {
             report($e);
             $this->extractionError = 'api_error';
-            $this->extractionDebug = get_class($e).': '.$e->getMessage();
             $this->menuMode = 'choose';
         }
     }
