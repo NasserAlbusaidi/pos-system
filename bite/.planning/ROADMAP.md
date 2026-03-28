@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Sourdough Demo** — Phases 1-2 (shipped 2026-03-21)
 - ✅ **v1.1 Customization & Polish** — Phases 3-5 (shipped 2026-03-21)
-- 🚧 **v1.2 Production Readiness** — Phases 6-9 (in progress)
+- ✅ **v1.2 Production Readiness** — Phases 6-9 (shipped 2026-03-28, SEC-04 deferred)
 
 ## Phases
 
@@ -29,7 +29,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 
 </details>
 
-### 🚧 v1.2 Production Readiness
+### ✅ v1.2 Production Readiness
 
 **Milestone Goal:** Deploy Bite-POS to Google Cloud Run with production-grade infrastructure, hardening, and security — ready for Sourdough Oman as first live customer.
 
