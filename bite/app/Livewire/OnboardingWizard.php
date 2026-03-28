@@ -237,9 +237,19 @@ class OnboardingWizard extends Component
             foreach ($this->menuPhotos as $photo) {
                 $ext = strtolower(pathinfo($photo->getClientOriginalName(), PATHINFO_EXTENSION));
                 $mime = $extensionMimes[$ext] ?? 'image/jpeg';
+
+                // Read file content — try configured disk, fall back to local
+                $contents = $photo->get();
+                if (empty($contents)) {
+                    $livewireDir = config('livewire.temporary_file_upload.directory') ?: 'livewire-tmp';
+                    $filename = basename($photo->getFilename());
+                    $contents = \Illuminate\Support\Facades\Storage::disk('local')
+                        ->get($livewireDir.'/'.$filename);
+                }
+
                 $images[] = [
                     'mime_type' => $mime,
-                    'data' => base64_encode($photo->get()),
+                    'data' => base64_encode($contents),
                 ];
             }
 
