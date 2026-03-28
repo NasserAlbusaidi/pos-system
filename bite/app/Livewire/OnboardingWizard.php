@@ -211,7 +211,6 @@ class OnboardingWizard extends Component
 
         $this->validate([
             'menuPhotos' => 'required|array|min:1|max:4',
-            'menuPhotos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
     }
 
@@ -221,7 +220,6 @@ class OnboardingWizard extends Component
 
         $this->validate([
             'menuPhotos' => 'required|array|min:1|max:4',
-            'menuPhotos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
         $this->menuMode = 'extracting';
@@ -230,9 +228,14 @@ class OnboardingWizard extends Component
         try {
             $images = [];
             foreach ($this->menuPhotos as $photo) {
+                $stream = $photo->readStream();
+                $contents = stream_get_contents($stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
                 $images[] = [
                     'mime_type' => $photo->getMimeType(),
-                    'data' => base64_encode(file_get_contents($photo->getRealPath())),
+                    'data' => base64_encode($contents),
                 ];
             }
 
