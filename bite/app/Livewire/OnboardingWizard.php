@@ -251,15 +251,9 @@ class OnboardingWizard extends Component
 
             $this->extractedItems = $items;
             $this->menuMode = 'review';
-        } catch (MenuExtractionException $e) {
-            report($e);
-            $this->extractionError = $e->reason;
-            $this->menuMode = 'choose';
         } catch (\Throwable $e) {
-            error_log('Snap-to-Menu error: ['.get_class($e).'] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
-            report($e);
-            $this->extractionError = 'api_error';
-            $this->menuMode = 'choose';
+            // Temporarily re-throw to see the full error in browser (APP_DEBUG=true)
+            throw $e;
         }
     }
 
