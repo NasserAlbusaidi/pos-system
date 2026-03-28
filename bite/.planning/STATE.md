@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Production Readiness
-status: verifying
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-03-27T23:06:13.297Z"
-last_activity: 2026-03-27
+status: complete
+stopped_at: Phase 09 complete (SEC-04 deferred to backlog)
+last_updated: "2026-03-28T12:00:00.000Z"
+last_activity: 2026-03-28 -- Phase 09 closed; SEC-04 deferred to backlog
 progress:
   total_phases: 4
-  completed_phases: 4
-  total_plans: 9
+  completed_phases: 3
+  total_plans: 10
   completed_plans: 9
   percent: 62
 ---
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: 09 (production-activation-gap-closure) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-03-27
+Phase: 09 (production-activation-gap-closure) — COMPLETE
+Plan: 3 of 3 (09-03 deferred)
+Status: Phase 09 complete — SEC-04 deferred to backlog
+Last activity: 2026-03-28 -- Phase 09 closed; SEC-04 deferred to backlog
 
 Progress: [██████████░░░░░░] 62% (5/8 phases, 11/11 prior plans done)
 
@@ -89,7 +89,7 @@ Recent decisions affecting current work:
 - [Phase 09-production-activation-gap-closure]: Conditional DB_SOCKET vs DB_HOST based on config('database.connections.mysql.unix_socket') — if non-empty, validate socket path; else validate host
 - [Phase 09-production-activation-gap-closure]: Startup validation uses config() not env() — config:cache makes env() return null in production
 - [Phase 09-production-activation-gap-closure]: GCS bucket bite-pos-storage created in us-central1 — no existing app storage bucket found among 4 Firebase/build buckets
-- [Phase 09-production-activation-gap-closure]: Cloud SQL backup enablement (SEC-04) deferred — new instance has GCP-imposed Free Trial restriction blocking backup config changes; retry on 2026-03-29+
+- [Phase 09-production-activation-gap-closure]: Cloud SQL backup enablement (SEC-04) deferred to backlog — GCP Free Trial restriction still active on 2026-03-28; retry when restriction lifts (no ETA from GCP)
 
 ### Pending Todos
 
