@@ -256,11 +256,7 @@ class OnboardingWizard extends Component
             $this->extractionError = $e->reason;
             $this->menuMode = 'choose';
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::channel('stderr')->error('Snap-to-Menu error', [
-                'class' => get_class($e),
-                'message' => $e->getMessage(),
-                'file' => $e->getFile().':'.$e->getLine(),
-            ]);
+            error_log('Snap-to-Menu error: ['.get_class($e).'] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
             report($e);
             $this->extractionError = 'api_error';
             $this->menuMode = 'choose';
