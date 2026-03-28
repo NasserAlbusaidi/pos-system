@@ -27,7 +27,7 @@ class MenuExtractionService
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $imageMeta = array_map(fn ($img) => ['mime' => $img['mime_type'], 'size' => strlen($img['data'])], $images);
-        error_log('Snap-to-Menu: sending '.count($images).' images to '.$model.': '.json_encode($imageMeta));
+        file_put_contents('php://stdout', 'Snap-to-Menu: sending '.count($images).' images to '.$model.': '.json_encode($imageMeta)."\n");
 
         $parts = $this->buildRequestParts($images);
 
@@ -56,7 +56,7 @@ class MenuExtractionService
                 default => 'api_error',
             };
 
-            error_log("Snap-to-Menu Gemini error: HTTP {$status} — ".$response->body());
+            file_put_contents('php://stdout', "Snap-to-Menu Gemini error: HTTP {$status} — ".$response->body()."\n");
             throw new MenuExtractionException($reason, "Gemini API returned HTTP {$status}");
         }
 
