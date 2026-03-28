@@ -228,14 +228,9 @@ class OnboardingWizard extends Component
         try {
             $images = [];
             foreach ($this->menuPhotos as $photo) {
-                $stream = $photo->readStream();
-                $contents = stream_get_contents($stream);
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
                 $images[] = [
                     'mime_type' => $photo->getMimeType(),
-                    'data' => base64_encode($contents),
+                    'data' => base64_encode($photo->get()),
                 ];
             }
 
