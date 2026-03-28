@@ -53,7 +53,8 @@ class MenuExtractionService
                 default => 'api_error',
             };
 
-            throw new MenuExtractionException($reason, "Gemini API returned HTTP {$status}");
+            $body = substr($response->body(), 0, 500);
+            throw new MenuExtractionException($reason, "Gemini HTTP {$status}: {$body}");
         }
 
         $text = $this->extractTextFromResponse($response->json());

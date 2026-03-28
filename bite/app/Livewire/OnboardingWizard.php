@@ -56,6 +56,8 @@ class OnboardingWizard extends Component
 
     public string $extractionError = '';
 
+    public string $extractionDebug = '';
+
     // ── Step 4: Staff PINs ──────────────────────────────────
     public array $staffMembers = [];
 
@@ -249,10 +251,12 @@ class OnboardingWizard extends Component
         } catch (MenuExtractionException $e) {
             report($e);
             $this->extractionError = $e->reason;
+            $this->extractionDebug = $e->getMessage();
             $this->menuMode = 'choose';
         } catch (\Throwable $e) {
             report($e);
             $this->extractionError = 'api_error';
+            $this->extractionDebug = get_class($e).': '.$e->getMessage();
             $this->menuMode = 'choose';
         }
     }
