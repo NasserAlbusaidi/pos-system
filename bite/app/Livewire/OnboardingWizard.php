@@ -228,10 +228,17 @@ class OnboardingWizard extends Component
         $this->extractionError = '';
 
         try {
+            $extensionMimes = [
+                'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png', 'pdf' => 'application/pdf',
+            ];
+
             $images = [];
             foreach ($this->menuPhotos as $photo) {
+                $ext = strtolower(pathinfo($photo->getClientOriginalName(), PATHINFO_EXTENSION));
+                $mime = $extensionMimes[$ext] ?? 'image/jpeg';
                 $images[] = [
-                    'mime_type' => $photo->getMimeType(),
+                    'mime_type' => $mime,
                     'data' => base64_encode($photo->get()),
                 ];
             }
