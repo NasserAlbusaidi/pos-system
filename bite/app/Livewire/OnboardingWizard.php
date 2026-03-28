@@ -251,9 +251,14 @@ class OnboardingWizard extends Component
 
             $this->extractedItems = $items;
             $this->menuMode = 'review';
+        } catch (MenuExtractionException $e) {
+            report($e);
+            $this->extractionError = $e->reason;
+            $this->menuMode = 'choose';
         } catch (\Throwable $e) {
-            // Temporarily re-throw to see the full error in browser (APP_DEBUG=true)
-            throw $e;
+            report($e);
+            $this->extractionError = 'api_error';
+            $this->menuMode = 'choose';
         }
     }
 

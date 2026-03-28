@@ -26,6 +26,9 @@ class MenuExtractionService
         $model = config('services.gemini.model', 'gemini-2.5-flash');
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
+        $imageMeta = array_map(fn ($img) => ['mime' => $img['mime_type'], 'size' => strlen($img['data'])], $images);
+        error_log('Snap-to-Menu: sending '.count($images).' images to '.$model.': '.json_encode($imageMeta));
+
         $parts = $this->buildRequestParts($images);
 
         try {
