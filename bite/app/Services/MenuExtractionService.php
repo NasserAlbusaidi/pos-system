@@ -27,14 +27,16 @@ class MenuExtractionService
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $imageMeta = array_map(fn ($img) => ['mime' => $img['mime_type'], 'size' => strlen($img['data'])], $images);
-        dd([
-            'model' => $model,
-            'image_count' => count($images),
-            'images' => $imageMeta,
-            'api_key_set' => !empty($apiKey),
-            'api_key_prefix' => substr($apiKey, 0, 10).'...',
-            'url' => $url,
-        ]);
+        if (! app()->runningUnitTests()) {
+            dd([
+                'model' => $model,
+                'image_count' => count($images),
+                'images' => $imageMeta,
+                'api_key_set' => !empty($apiKey),
+                'api_key_prefix' => substr($apiKey, 0, 10).'...',
+                'url' => $url,
+            ]);
+        }
 
         $parts = $this->buildRequestParts($images);
 
