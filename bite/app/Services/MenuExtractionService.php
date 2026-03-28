@@ -53,6 +53,7 @@ class MenuExtractionService
                 default => 'api_error',
             };
 
+            error_log("Snap-to-Menu Gemini error: HTTP {$status} — ".$response->body());
             throw new MenuExtractionException($reason, "Gemini API returned HTTP {$status}");
         }
 
