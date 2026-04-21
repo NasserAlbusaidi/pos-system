@@ -12,11 +12,14 @@ Bite-POS is a multi-tenant SaaS POS system for restaurants and cafes in Oman. Fe
 
 - **Framework:** Laravel 12 + Livewire 3 (full-stack, no separate frontend)
 - **Styling:** Vanilla CSS with CSS custom properties (design tokens). **Do NOT use Tailwind** — the Tailwind deps in `package.json` are from Breeze scaffolding only.
-- **Database:** MySQL 8.0 (production), SQLite in-memory (tests — see `phpunit.xml`)
-- **Billing:** Laravel Cashier with `Shop` as the billable model (configured in `AppServiceProvider`). Stripe webhooks handled in `StripeWebhookController` (payments) and `StripeSubscriptionWebhookController` (subscription lifecycle).
+- **Database:** MySQL 8.0 (production via Cloud SQL Auth Proxy Unix socket), SQLite in-memory (tests — see `phpunit.xml`)
+- **Storage:** Google Cloud Storage via `spatie/laravel-google-cloud-storage` in production, local disk in dev/test
+- **Billing:** Laravel Cashier with `Shop` as the billable model (configured in `AppServiceProvider`). Stripe webhooks handled in `StripeWebhookController` (payments) and `StripeSubscriptionWebhookController` (subscription lifecycle). Thawani Pay is planned for production but not yet integrated.
 - **Auth:** Laravel Breeze (modified) + custom Staff PIN login (`PinLogin.php`)
 - **Build:** Vite with `laravel-vite-plugin`
 - **Error Tracking:** Sentry (`sentry/sentry-laravel`)
+- **Hosting:** Google Cloud Run (single-container Nginx + PHP-FPM + supervisord), deployed via GitHub Actions with Workload Identity Federation
+- **AI:** Gemini API for Snap-to-Menu image extraction (`MenuExtractionService`)
 
 ## Commands
 
@@ -105,6 +108,8 @@ Stripe webhook processing uses a `webhook_events(provider, event_id)` table with
 |---------|---------|
 | `ShopProvisioningService` | Creates shop + owner user in a DB transaction, sets 14-day trial |
 | `BillingService` | Subscription status checks, plan feature gating |
+| `ImageService` | Stream-based image optimization — produces thumb (200px), card (400px), full (800px) WebP variants on upload. GCS-compatible via `Storage::get/put` |
+| `MenuExtractionService` | Snap-to-Menu — sends an uploaded menu photo to Gemini and returns structured categories/products for the onboarding wizard |
 | `PrintNodeService` | Kitchen ticket and receipt printing via PrintNode API |
 | `LoyaltyService` | Phone-based points system (1 point per OMR subtotal) |
 | `WhatsAppService` | Order notification deep links via WhatsApp |
@@ -115,6 +120,14 @@ Stripe webhook processing uses a `webhook_events(provider, event_id)` table with
 - `/track/{trackingToken}` — Guest order tracking (UUID)
 - `/pos/pin/{shop:slug}` — Staff PIN login
 - `/webhooks/stripe` and `/webhooks/stripe/subscription` — Stripe webhooks
+- `/health` — Cloud Run health check (`HealthController`, verifies DB + storage + GD/WebP + queue)
+
+### Production Infra
+
+- **Container:** single-process-group Nginx + PHP-FPM + supervisord; `clear_env=no` in PHP-FPM pool so Cloud Run env vars reach worker processes
+- **Config:** always use `config()` in production code paths, never `env()` — `config:cache` makes `env()` return null
+- **GCS:** `spatie/laravel-google-cloud-storage` driver; `ImageService` and any file I/O must use `Storage::get/put` streams (not `file_put_contents`) to stay disk-agnostic
+- **CI/CD:** GitHub Actions with Workload Identity Federation (no long-lived SA keys); pre-deploy revision capture enables clean rollback
 
 ## Testing
 

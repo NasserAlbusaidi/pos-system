@@ -4,10 +4,11 @@ This guide is the technical source of truth for local development and implementa
 
 ## Stack
 - Laravel 12
-- Livewire 3 + Volt
-- Blade + Tailwind CSS
+- Livewire 3
+- Blade + vanilla CSS with design tokens (no Tailwind — Tailwind deps in `package.json` are leftover from Breeze scaffolding)
 - Vite
-- SQLite/MySQL
+- MySQL 8.0 in production, SQLite in-memory in tests
+- Hosted on Google Cloud Run; Cloud SQL for MySQL; Google Cloud Storage for images/uploads
 
 ## Local Workflow
 1. Install dependencies: `composer install && npm install`
@@ -54,9 +55,13 @@ Additional rules:
 - Repeated completion attempts must not re-consume inventory or reprint receipts
 
 ## Service Boundaries
-- `InventoryService`: stock consumption for completed orders
+- `BillingService`: subscription status checks and plan feature gating
+- `ImageService`: on-upload image optimization — produces thumb/card/full WebP variants (intervention/image v3, GD driver)
 - `LoyaltyService`: loyalty rewards on successful payment transitions
+- `MenuExtractionService`: Snap-to-Menu — extracts categories/products from an uploaded menu photo via Gemini API
 - `PrintNodeService`: kitchen/receipt print dispatch
+- `ShopProvisioningService`: atomic shop + owner user creation with 14-day trial
+- `WhatsAppService`: order notification deep links via WhatsApp
 
 ## Frontend/PWA
 Service worker is restricted to static asset/offline caching. Authenticated dynamic pages and API responses must not be cached.

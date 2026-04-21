@@ -1,90 +1,122 @@
 # Bite-POS Deployment Guide
 
-## Recommended Stack
+Production runs on **Google Cloud Run** (single container: Nginx + PHP-FPM + supervisord), with **Cloud SQL (MySQL 8.0)** for data and **Google Cloud Storage** for product images and Livewire uploads. CI/CD is handled by GitHub Actions with Workload Identity Federation — there are no long-lived service-account keys.
 
-| Component | Recommended | Alternative |
-|-----------|-------------|-------------|
-| Server | Hetzner Cloud VPS (CX22, ~€4/mo) | DigitalOcean, Railway |
-| Manager | Laravel Forge ($12/mo) or Ploi ($8/mo) | Manual setup |
-| Database | MySQL 8.0 | MariaDB 10.6+ |
-| PHP | 8.2+ | 8.3 |
-| Web Server | Nginx | Apache |
-| SSL | Let's Encrypt (auto via Forge/Ploi) | Cloudflare |
-| Mail | Resend or Postmark | Mailgun, SMTP |
-| Storage | Local or S3 (AWS me-south-1 Bahrain) | DigitalOcean Spaces |
-| DNS | Cloudflare (free tier) | Route53 |
+## Infrastructure
 
-## Pre-Deployment Checklist
+| Component | Service | Notes |
+|-----------|---------|-------|
+| Runtime | Cloud Run | Region `us-central1`, single container image, autoscaling |
+| Registry | Artifact Registry | `us-central1-docker.pkg.dev/<project>/cloud-run-source-deploy/bite-pos-demo` |
+| Database | Cloud SQL MySQL 8.0 | Instance `bite`, connected via Cloud SQL Auth Proxy Unix socket |
+| Storage | Cloud Storage | Bucket `bite-pos-storage` (`us-central1`), `spatie/laravel-google-cloud-storage` driver |
+| CI/CD | GitHub Actions | Workflow at `.github/workflows/ci.yml`, WIF auth, pre-deploy revision capture for rollback |
+| Errors | Sentry | `SENTRY_LARAVEL_DSN` + `SENTRY_TRACES_SAMPLE_RATE=0.1` |
+| Mail | Resend | `MAIL_MAILER=resend` in production |
+| SSL / TLS | Cloud Run managed | Automatic HTTPS on the Cloud Run URL; custom domain via domain mapping |
 
-### 1. Domain & DNS
-- [ ] Register domain (e.g. `bitepos.app`, `getbite.om`)
-- [ ] Point DNS A record to server IP
-- [ ] Configure Cloudflare (optional but recommended for GCC latency)
+## Container Shape
 
-### 2. Server Setup
-```bash
-# If using Forge/Ploi, this is automated. For manual setup:
-sudo apt update && sudo apt upgrade -y
-sudo apt install nginx mysql-server php8.2-fpm php8.2-mysql php8.2-mbstring \
-    php8.2-xml php8.2-curl php8.2-zip php8.2-gd php8.2-bcmath php8.2-intl \
-    composer nodejs npm -y
+`Dockerfile` is a multi-stage build:
+
+1. **`frontend` stage** — `node:22-alpine` runs `npm ci && npm run build`, producing the Vite bundle at `public/build/`.
+2. **`app` stage** — `php:8.4-fpm-bookworm` installs Nginx, supervisord, and the GD extension compiled with FreeType / JPEG / WebP. Composer deps are installed with `--no-dev --optimize-autoloader`. Nginx, PHP-FPM, and supervisord configs live in `docker/` and are copied in at build time.
+
+Key container rules (learned the hard way):
+
+- **Single process group only.** Cloud Run kills the container if the root process exits, so supervisord runs Nginx and PHP-FPM as children.
+- **`clear_env=no` in PHP-FPM pool** (`docker/php-fpm.conf`). Without it, Cloud Run env vars never reach PHP worker processes.
+- **Nginx runs as `www-data`** to match the PHP-FPM socket permissions.
+- **Build-time dummy secrets.** `APP_KEY` and `SENTRY_LARAVEL_DSN` are set to throwaway values during `composer install` / `package:discover` so the build doesn't crash. Real secrets are injected at runtime via Cloud Run env vars.
+- **Static assets vs `/livewire`.** The Nginx config uses `location ^~ /livewire` to override the static-asset regex; without the prefix, Livewire AJAX requests get served as static files and 404.
+
+## CI/CD Pipeline (`.github/workflows/ci.yml`)
+
+Triggered on push and PR to `main`. Two jobs:
+
+### `test`
+- PHP 8.4 on Ubuntu, SQLite in-memory tests
+- Composer cache keyed on `composer.lock`
+- Runs `php artisan test` + `./vendor/bin/pint --test`
+- On PR, also runs `docker build --target app` to validate the container
+
+### `deploy` (only on push to `main`)
+- Authenticates to GCP via Workload Identity Federation (`google-github-actions/auth@v3`, `token_format: access_token`)
+- Captures the current live Cloud Run revision for rollback before deploying
+- Builds and pushes the Docker image to Artifact Registry with GitHub Actions cache (`type=gha,mode=max`)
+- Deploys to Cloud Run
+- Waits 30s for cold start, then hits `/health` up to 3 times with 10s backoff
+- On failure, rolls traffic back to the captured revision
+
+### Required GitHub Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `GCP_PROJECT_ID` | Project containing Cloud Run + Cloud SQL |
+| `GCP_REGION` | Cloud Run region (`us-central1`) |
+| `CLOUD_RUN_SERVICE` | Service name (e.g. `bite-pos-demo`) |
+| `WIF_PROVIDER` | Full WIF provider resource name |
+| `WIF_SERVICE_ACCOUNT` | Email of the deploy service account |
+
+## Runtime Configuration
+
+All secrets and per-environment config are set as **Cloud Run env vars**, never in code. Use `config()` everywhere in production — `env()` returns `null` after `config:cache`.
+
+### Required env vars
+
 ```
-
-### 3. Database
-```bash
-mysql -u root -p
-CREATE DATABASE bite_pos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'bite'@'localhost' IDENTIFIED BY 'SECURE_PASSWORD_HERE';
-GRANT ALL PRIVILEGES ON bite_pos.* TO 'bite'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### 4. Application Deployment
-```bash
-cd /home/forge/bitepos.app   # or your deployment path
-git clone <repo-url> .
-cp .env.example .env
-php artisan key:generate
-```
-
-### 5. Production `.env` Configuration
-```env
 APP_NAME="Bite POS"
 APP_ENV=production
 APP_KEY=base64:GENERATED_WITH_php_artisan_key_generate_show
 APP_DEBUG=false
-APP_URL=https://bitepos.app
+APP_URL=https://<your-domain>
+APP_KEY=base64:...
 
+# Database (Cloud SQL Auth Proxy socket)
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_SOCKET=/cloudsql/<project>:<region>:bite
 DB_DATABASE=bite_pos
 DB_USERNAME=bite
-DB_PASSWORD=SECURE_PASSWORD_HERE
+DB_PASSWORD=...
 
-SESSION_DRIVER=database
-SESSION_ENCRYPT=true
-SESSION_SECURE_COOKIE=true
-SESSION_SAME_SITE=lax
+# Storage (GCS)
+FILESYSTEM_DISK=gcs
+GOOGLE_CLOUD_PROJECT_ID=<project>
+GOOGLE_CLOUD_STORAGE_BUCKET=bite-pos-storage
+GOOGLE_CLOUD_STORAGE_API_URI=https://storage.googleapis.com
 
-FILESYSTEM_DISK=local
-QUEUE_CONNECTION=database
-CACHE_STORE=database
+# Queue / cache / session
+QUEUE_CONNECTION=sync       # no worker yet; upgrade to database if needed
+CACHE_STORE=file
+SESSION_DRIVER=file
 
-MAIL_MAILER=resend          # or postmark, mailgun
-MAIL_FROM_ADDRESS=noreply@bitepos.app
+# Observability
+LOG_CHANNEL=stackdriver
+SENTRY_LARAVEL_DSN=https://...
+SENTRY_ENVIRONMENT=production
+SENTRY_TRACES_SAMPLE_RATE=0.10
+
+# Mail
+MAIL_MAILER=resend
+RESEND_KEY=re_...
+MAIL_FROM_ADDRESS=noreply@<your-domain>
 MAIL_FROM_NAME="Bite POS"
-# RESEND_KEY=re_xxxx        # if using Resend
 
-STRIPE_KEY=pk_live_xxxx
-STRIPE_SECRET=sk_live_xxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxx
+# Stripe (payments + subscriptions)
+STRIPE_KEY=pk_live_...
+STRIPE_SECRET=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_SUBSCRIPTION_WEBHOOK_SECRET=whsec_...
 CASHIER_CURRENCY=omr
 CASHIER_CURRENCY_LOCALE=en_OM
-STRIPE_FREE_PRICE_ID=price_xxxx
-STRIPE_PRO_PRICE_ID=price_xxxx
-STRIPE_SUBSCRIPTION_WEBHOOK_SECRET=whsec_xxxx
+STRIPE_FREE_PRICE_ID=price_...
+STRIPE_PRO_PRICE_ID=price_...
 
+# AI (Snap-to-Menu)
+GEMINI_API_KEY=...
+
+# Proxy trust (Cloud Run front-end)
+TRUSTED_PROXIES=*
 FORCE_HTTPS=true
 ```
 
@@ -119,180 +151,106 @@ Do not let the container generate `APP_KEY` in production. A runtime-generated k
 
 If converting an existing service from a plain `APP_KEY` environment variable, copy the exact current value into Secret Manager. Do not generate a replacement key. Deploy the secret-backed revision with 0% or low traffic first, verify it boots, then route 100% traffic to the new revision. The rollback path is the previous Cloud Run revision that still has the plain env var.
 
-### 6. Install & Build
-```bash
-composer install --no-dev --optimize-autoloader
-npm install && npm run build
+### Startup validation
 
-php artisan migrate --force
-php artisan db:seed --class=DatabaseSeeder  # Only on first deploy
-php artisan storage:link
-php artisan optimize
-```
+`AppServiceProvider` runs production startup validation that fails fast on missing critical config. It reads via `config()` (not `env()`) and conditionally validates either `DB_SOCKET` or `DB_HOST` based on which is populated. GCS env vars are only required when `filesystems.default` is `gcs`.
 
-### 7. Queue Worker (Systemd)
-Create `/etc/systemd/system/bite-worker.service`:
-```ini
-[Unit]
-Description=Bite POS Queue Worker
-After=network.target
+## Cloud SQL Auth Proxy
 
-[Service]
-User=forge
-Group=forge
-Restart=always
-RestartSec=3
-WorkingDirectory=/home/forge/bitepos.app
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+Cloud Run's Cloud SQL integration mounts the Auth Proxy socket at `/cloudsql/<connection-name>/`. On the service, attach the Cloud SQL instance under **Connections → Cloud SQL Connections** so the socket is available.
 
-[Install]
-WantedBy=multi-user.target
-```
+## Cloud Storage
+
+Product images, Livewire temp uploads, and Snap-to-Menu source photos all live in `bite-pos-storage`. The `ImageService` is stream-based (`Storage::get` / `Storage::put`) so it works identically on GCS and the local disk. For Livewire temp uploads, the OnboardingWizard falls back to local disk if the GCS temp-file read comes back empty — see `aa9843e`.
+
+## First-Time Setup (from scratch)
 
 ```bash
-sudo systemctl enable bite-worker
-sudo systemctl start bite-worker
-```
+# 1. GCP project + APIs
+gcloud config set project <project>
+gcloud services enable run.googleapis.com sqladmin.googleapis.com \
+  storage.googleapis.com artifactregistry.googleapis.com \
+  iamcredentials.googleapis.com
 
-### 8. Scheduler (Cron)
-```bash
-# Add to crontab (crontab -e)
-* * * * * cd /home/forge/bitepos.app && php artisan schedule:run >> /dev/null 2>&1
-```
+# 2. Cloud SQL MySQL 8.0 instance
+gcloud sql instances create bite \
+  --database-version=MYSQL_8_0 --tier=db-f1-micro --region=us-central1
+gcloud sql databases create bite_pos --instance=bite
+gcloud sql users create bite --instance=bite --password=<strong-password>
 
-### 9. Nginx Configuration
-```nginx
-server {
-    listen 80;
-    listen [::]:80;
-    server_name bitepos.app;
-    return 301 https://$host$request_uri;
-}
+# 3. Cloud Storage bucket
+gcloud storage buckets create gs://bite-pos-storage --location=us-central1
 
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name bitepos.app;
-    root /home/forge/bitepos.app/public;
+# 4. Artifact Registry repo
+gcloud artifacts repositories create cloud-run-source-deploy \
+  --repository-format=docker --location=us-central1
 
-    ssl_certificate /etc/letsencrypt/live/bitepos.app/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/bitepos.app/privkey.pem;
+# 5. Workload Identity Federation (see google-github-actions/auth docs)
+#    Create a pool + provider tied to the GitHub repo, plus a deploy
+#    service account with roles/run.admin, roles/iam.serviceAccountUser,
+#    roles/artifactregistry.writer, roles/cloudsql.client, roles/storage.objectAdmin.
 
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-
-    index index.php;
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_hide_header X-Powered-By;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-
-    # Cache static assets
-    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
-
-### 10. SSL Certificate
-```bash
-# If not using Forge/Ploi auto-SSL:
-sudo certbot --nginx -d bitepos.app
+# 6. First deploy — push to main and let the workflow do the rest.
 ```
 
 ## Post-Deployment Verification
 
-### Functional Checks
-- [ ] Landing page loads at `https://bitepos.app`
-- [ ] Registration flow works (creates shop + redirects to onboarding)
-- [ ] Login works for admin user
-- [ ] Shop dashboard loads with charts
-- [ ] POS terminal is functional (add to cart, pay)
-- [ ] Guest menu loads at `/menu/{slug}`
-- [ ] QR code generation works
-- [ ] Kitchen display shows orders
-- [ ] Order lifecycle: unpaid -> paid -> preparing -> ready -> completed
-- [ ] Shift report renders data correctly
-- [ ] Reports dashboard with charts loads
-- [ ] Settings page saves correctly
-- [ ] Staff CRUD works
-- [ ] PrintNode integration (if configured)
-- [ ] Stripe webhook receives test events
+### Functional
+- [ ] `/health` returns 200 with all checks green
+- [ ] Landing page loads over HTTPS
+- [ ] Registration flow creates shop and redirects to onboarding wizard
+- [ ] Snap-to-Menu uploads a photo and returns structured items
+- [ ] Guest menu at `/menu/<slug>` renders with images served from `storage.googleapis.com/...`
+- [ ] POS + KDS function end-to-end
+- [ ] Stripe test webhook delivers and is idempotent
 
-### Security Checks
-- [ ] `APP_DEBUG=false` confirmed
-- [ ] HTTPS forced (HTTP redirects to HTTPS)
-- [ ] Security headers present (check with `curl -I https://bitepos.app`)
-- [ ] Session cookie has `Secure` and `HttpOnly` flags
-- [ ] No `.env` accessible via browser (`https://bitepos.app/.env` returns 403/404)
-- [ ] Super admin login works
+### Security
+- [ ] `APP_DEBUG=false` in Cloud Run env
+- [ ] HTTPS enforced, HTTP 301s
+- [ ] Security headers present (`curl -I`)
+- [ ] No `.env` file shipped in the container
+- [ ] Rate limits in effect: guest order 10/15m, webhook 60/m, PIN login 5/m
 
-### Performance Checks
-- [ ] `php artisan optimize` run
-- [ ] Static assets cached (check response headers)
-- [ ] Service worker registered and caching
-- [ ] PWA installable from Chrome/Safari
+### Observability
+- [ ] Sentry receives a test error
+- [ ] Stackdriver log channel produces structured JSON with PII masked
+- [ ] Slow-request middleware logs requests >2s
 
-## Stripe Webhook Setup
+## Rollback
 
-1. Go to Stripe Dashboard > Developers > Webhooks
-2. Add endpoint: `https://bitepos.app/webhooks/stripe`
-   - Events: `checkout.session.completed`, `payment_intent.succeeded`
-3. Add endpoint: `https://bitepos.app/webhooks/stripe/subscription`
-   - Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
-4. Copy webhook signing secrets to `.env`
+Rollback is automatic on `/health` failure. Manual rollback:
+
+```bash
+gcloud run revisions list --service=bite-pos-demo --region=us-central1
+gcloud run services update-traffic bite-pos-demo \
+  --region=us-central1 --to-revisions=<revision>=100
+```
 
 ## Backups
 
-### Automated Database Backup
-```bash
-# Add to crontab — daily at 3am
-0 3 * * * mysqldump -u bite -p'PASSWORD' bite_pos | gzip > /home/forge/backups/bite-$(date +\%Y\%m\%d).sql.gz
-# Keep last 30 days
-0 4 * * * find /home/forge/backups/ -name "bite-*.sql.gz" -mtime +30 -delete
-```
-
-### Manual Backup
-```bash
-php artisan down
-mysqldump -u bite -p bite_pos > backup-$(date +%Y%m%d-%H%M).sql
-php artisan up
-```
-
-## Monitoring
-
-- **Uptime:** UptimeRobot or Better Stack (free tier) — monitor `https://bitepos.app/up`
-- **Errors:** Laravel logs in `storage/logs/laravel.log`
-- **Queue:** Check `failed_jobs` table periodically
-
-## Updating
+**Current state:** Cloud SQL automated backups and point-in-time recovery are **disabled** because the instance is on GCP Free Trial (which does not support them). Enable once the instance is upgraded off the free trial:
 
 ```bash
-cd /home/forge/bitepos.app
-php artisan down
-git pull origin main
-composer install --no-dev --optimize-autoloader
-npm install && npm run build
-php artisan migrate --force
-php artisan optimize
-php artisan up
-sudo systemctl restart bite-worker
+gcloud sql instances patch bite \
+  --backup-start-time=02:00 \
+  --retained-backups-count=7 \
+  --enable-bin-log \
+  --retained-transaction-log-days=7
 ```
+
+Tracked in `TODOS.md` under SEC-04.
+
+## Stripe Webhooks
+
+Configure two endpoints in the Stripe dashboard — keep these paths stable:
+
+- `POST https://<your-domain>/webhooks/stripe`
+  Events: `checkout.session.completed`, `payment_intent.succeeded`
+- `POST https://<your-domain>/webhooks/stripe/subscription`
+  Events: `customer.subscription.{created,updated,deleted}`, `invoice.payment_{succeeded,failed}`
+
+Both enforce signature verification and record into `webhook_events(provider,event_id)` for idempotency.
+
+## Notes for the Next Migration
+
+**Thawani Pay** is planned as the production payment processor for the Oman market; Stripe is currently the only integrated provider in code. When migrating, keep the Stripe subscription webhook for Cashier-based subscription billing and add Thawani for payment capture.

@@ -8,11 +8,17 @@ Bite is a Laravel 12 + Livewire 3 point-of-sale system for restaurants and retai
 - Operations/runbook: `docs/OPERATIONS.md`
 
 ## Core Capabilities
-- Guest menu and order tracking
-- POS dashboard and split payments
+- QR-based bilingual (EN/AR) guest menu with cart, group ordering, and token-based order tracking
+- POS dashboard with split payments and cash reconciliation
 - Kitchen display system (KDS)
+- Menu builder with categories, products, modifier groups, and time-based pricing rules
+- Snap-to-Menu AI extraction — upload a menu photo and generate categories + products
+- 5-step onboarding wizard with brand color picker and theme preview
+- Three selectable menu themes (warm / modern / dark) with auto-optimized WebP image variants
+- Phone-based loyalty points (1 point per OMR subtotal)
 - Manager/admin modules for catalog, inventory, reports, and settings
 - Super-admin control plane for multi-shop management
+- Billing with 14-day trial, Free/Pro plans, and Stripe-backed subscription webhooks
 
 ## Security and Integrity Defaults
 - Single-database tenancy with strict `shop_id` scoping
