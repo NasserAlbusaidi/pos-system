@@ -4,8 +4,8 @@ milestone: v1.3
 milestone_name: Brand Consistency
 status: planning
 stopped_at: ""
-last_updated: "2026-04-28T18:08:00.000Z"
-last_activity: 2026-04-28 -- v1.3 roadmap drafted (Phases 10-14, 16 plans)
+last_updated: "2026-04-28T18:13:00.000Z"
+last_activity: 2026-04-28 -- Phase 10 context captured (26 decisions, ready to plan)
 progress:
   total_phases: 5
   completed_phases: 0
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: 10 (Design Tokens) — pending start
+Phase: 10 (Design Tokens) — context gathered
 Plan: —
-Status: Roadmap drafted; awaiting `/gsd-plan-phase 10`
-Last activity: 2026-04-28 — v1.3 roadmap drafted with phases 10–14, 16 plans, full DS-01..DS-16 coverage
+Status: 10-CONTEXT.md committed; awaiting `/gsd-plan-phase 10`
+Last activity: 2026-04-28 — Phase 10 discussion locked 26 decisions across 4 gray areas (type scale, @apply policy, sweep boundary, docs depth)
 
 Progress: [░░░░░░░░░░░░░░░░] 0% (0/5 phases, 0/16 plans)
 
@@ -73,6 +73,12 @@ Recent decisions affecting current work:
 - [v1.3]: Single source of truth for tokens lives in `resources/css/app.css` `:root` block; documented in `docs/design-system.md` (created in Phase 10)
 - [v1.3]: Phase 10 blocks Phases 11–14 — every downstream phase consumes the typography + spacing tokens
 - [v1.3]: Branding injection consolidated to one Blade partial in Phase 13 — replaces duplicate `<style>` blocks across app/admin/super-admin/email/print layouts
+- [Phase 10]: Typography scale = 16px base with rounded whole-px values (xs:12 / sm:14 / base:16 / md:18 / lg:22 / xl:28 / 2xl:34) — anti-aliasing fuzz from sub-pixel sizes on POS hardware ruled out strict 1.25 ratio
+- [Phase 10]: Line-height is two-track — `:root` defines Latin (1.20/1.50/1.70); `[lang="ar"]` overrides with +0.15 leading for IBM Plex Sans Arabic
+- [Phase 10]: Spacing scale = mixed progression on 4px base (4/8/12/16/20/24/32/40/48/64/80/96) — fine at low end for tight UI, geometric at high end for layout sections
+- [Phase 10]: `@apply` calls in app.css component layer (.btn-*, .tag) left untouched — Phase 14 sweep target
+- [Phase 10]: Phase 10 fully sweeps inline styles on 4 verification screens only (guest menu, POS dashboard, admin shop settings, super-admin shop list); other screens deferred to Phase 14
+- [Phase 10]: Tailwind utility audit list (~1,431 occurrences) becomes a planning artifact `.planning/v1.3-tailwind-sweep-targets.md`, NOT a user-facing doc
 
 ### Pending Todos
 
@@ -84,6 +90,6 @@ None — ready to plan Phase 10.
 
 ## Session Continuity
 
-Last session: 2026-04-28T18:08:00.000Z
-Stopped at: Roadmap drafted for v1.3 (Phases 10–14)
-Resume file: .planning/ROADMAP.md → next action `/gsd-plan-phase 10`
+Last session: 2026-04-28T18:13:00.000Z
+Stopped at: Phase 10 context gathered — 26 decisions captured
+Resume file: .planning/phases/10-design-tokens/10-CONTEXT.md → next action `/gsd-plan-phase 10`
