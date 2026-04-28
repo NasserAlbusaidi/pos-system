@@ -28,6 +28,41 @@ Requirements for production deployment on Google Cloud Run.
 - [x] **SEC-03**: Input validation sweep covers all user inputs, form submissions, and file uploads for injection/XSS vulnerabilities
 - [ ] **SEC-04**: Cloud SQL automated backups enabled with retention policy and point-in-time recovery *(blocked by GCP Free Trial restriction — backlog)*
 
+## v1.3 Requirements
+
+Requirements for design system unification and brand consistency. Driver: co-founder review by Mohammed; current audit scores 4/10 cross-screen consistency, 3/10 logo, 4/10 typography, 3/10 spacing, 2/10 one-off styling.
+
+### Design Tokens
+
+- [ ] **DS-01**: Typography scale defined as CSS custom properties (--font-size-xs through --font-size-2xl, --font-weight-regular/medium/semibold/bold) and applied across all blade views
+- [ ] **DS-02**: Spacing scale defined as CSS custom properties (--space-1 through --space-12 on a consistent ratio) and applied across all blade views and component classes
+- [ ] **DS-03**: Single source-of-truth tokens file documented (location, naming convention, ratio rules) so future components can be styled without hardcoding values
+
+### Logo & Brand Identity
+
+- [ ] **DS-04**: x-application-logo Blade component used in all logo placements (guest menu header, admin sidebar, login page, welcome landing, super admin)
+- [ ] **DS-05**: Hardcoded "B" badge replaced with x-application-logo in welcome email template; logo size variants (sm/md/lg) supported via component prop
+- [ ] **DS-06**: Favicon, manifest icons, and PWA icons regenerated from the canonical logo SVG so they match across browsers and home-screen installs
+
+### Theme Cascade
+
+- [ ] **DS-07**: data-theme attribute (warm/modern/dark) applied to <html> in admin, POS, and super-admin layouts (currently only guest menu)
+- [ ] **DS-08**: Admin and POS layouts respond to data-theme — card radius, font weight, accent application, spacing density
+- [ ] **DS-09**: Theme overrides for admin/POS documented in app.css alongside existing guest-menu theme blocks (no parallel theme system)
+
+### Email & Print Token Injection
+
+- [ ] **DS-10**: Welcome email template injects shop branding (paper/ink/crema) instead of hardcoding 25+ hex colors; preview render confirms colors update when shop branding changes
+- [ ] **DS-11**: Receipt print, invoice print, and shift report templates derive colors from shop branding tokens (with a print-safe fallback when branding is absent)
+- [ ] **DS-12**: Shared layout helper for branding injection — single Blade partial used by app.blade.php, admin.blade.php, super-admin layout, email layout, print layout (no duplicate <style> blocks)
+
+### Component Reuse & Style Cleanup
+
+- [ ] **DS-13**: Inline style="..." attributes reduced from 153 to under 30 (allowed only for dynamic computed values like participant colors)
+- [ ] **DS-14**: In-blade <style> blocks consolidated — non-print, non-branding-injection blocks moved to app.css component classes; legal/offline pages use shared CSS
+- [ ] **DS-15**: Reusable component CSS classes (.surface-card, .loading-spinner, .field, .tag) used in shop-settings, pos-dashboard, shift-report instead of copy-pasted inline styling
+- [ ] **DS-16**: Icon style standard documented (outline-only, 1.5px stroke, 24x24 viewBox) and a small set of canonical inline SVG snippets extracted as Blade components for reuse
+
 ## Future Requirements
 
 ### Post-Launch
@@ -46,6 +81,10 @@ Requirements for production deployment on Google Cloud Run.
 | Auto-scaling beyond Cloud Run defaults | Premature optimization for first client |
 | Multi-region deployment | Single region sufficient for Oman market |
 | Kubernetes / GKE | Cloud Run is simpler and sufficient |
+| Dark mode UI (full app dark theme) | v1.3 scope is brand consistency — true dark mode is a separate initiative |
+| Storybook / component documentation site | v1.3 establishes the system; documentation site is v1.4+ |
+| Accessibility audit (WCAG AA) | Worth its own milestone with proper QA |
+| Icon library migration (Heroicons/Lucide) | Inline SVG sufficient with v1.3 standardization; library swap is v1.4 candidate |
 
 ## Traceability
 
@@ -69,6 +108,21 @@ Requirements for production deployment on Google Cloud Run.
 - Mapped to phases: 12
 - Unmapped: 0
 
+### v1.3 Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DS-01, DS-02, DS-03 | Phase 10 | Pending |
+| DS-04, DS-05, DS-06 | Phase 11 | Pending |
+| DS-07, DS-08, DS-09 | Phase 12 | Pending |
+| DS-10, DS-11, DS-12 | Phase 13 | Pending |
+| DS-13, DS-14, DS-15, DS-16 | Phase 14 | Pending |
+
+**Coverage:**
+- v1.3 requirements: 16 total
+- Mapped to phases: 16
+- Unmapped: 0
+
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-28 — SEC-04 deferred to backlog; GCP Free Trial restriction still blocking Cloud SQL backup config on 2026-03-28*
+*Last updated: 2026-04-28 — v1.3 Brand Consistency requirements added (DS-01 through DS-16)*
