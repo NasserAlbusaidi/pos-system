@@ -54,7 +54,13 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 ### Active
 
-- [ ] CI/CD pipeline via GitHub Actions (test → build → deploy to Cloud Run)
+- [ ] Typography scale tokens (--font-size-*, --font-weight-*) used everywhere
+- [ ] Spacing scale tokens (--space-*) replacing inline padding/margin
+- [ ] x-application-logo component used in all logo placements
+- [ ] Theme cascade — admin, POS, super-admin respect data-theme
+- [ ] Email/print templates derive colors from shop branding tokens
+- [ ] Inline style attributes reduced from 153 to <30
+- [ ] In-blade <style> blocks consolidated to layout-level only
 
 ### Validated in Phase 7: Hardening & Security
 
@@ -67,6 +73,11 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - ✓ Tenant isolation audit — all components confirmed scoped, regression tests added — v1.2
 - ✓ Input validation sweep — all Livewire components audited, OrderTracker upgraded — v1.2
 
+### Validated in Phase 8: CI/CD & Data Safety
+
+- ✓ GitHub Actions pipeline: test → build → push → deploy to Cloud Run with auto-rollback — v1.2
+- ✓ Workload Identity Federation (no long-lived SA keys) — v1.2
+
 ### Out of Scope
 
 - Thawani Pay integration — separate initiative, needed before production launch
@@ -76,19 +87,25 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 - Stock management (auto-decrement) — deferred to v2
 - CDN image delivery — deferred to v2
 
-## Current Milestone: v1.2 Production Readiness
+## Current Milestone: v1.3 Brand Consistency
 
-**Goal:** Deploy Bite-POS to Google Cloud Run with production-grade infrastructure, hardening, and security — ready for Sourdough Oman as first live customer.
+**Goal:** Make every screen feel like one unified product by establishing a complete design system — typography/spacing scales, integrated logo, theme cascade across all layouts, and tokenized email/print templates.
 
 **Target features:**
-- Containerization for Cloud Run (Dockerfile, Nginx + PHP-FPM)
-- Cloud SQL managed MySQL 8.0 database
-- Cloud Storage for product images/uploads (GCS filesystem driver)
-- GitHub Actions CI/CD pipeline (test → build → deploy)
-- Production hardening (health checks, env validation, rate limiting, Sentry)
-- Security audit (tenant isolation, CSRF, secrets, input validation, backups)
+- Typography scale (--font-size-*, --font-weight-*) replacing 63 ad-hoc font sizes
+- Spacing scale (--space-*) replacing inline padding/margin and Tailwind arbitrary values
+- Logo integration — x-application-logo component used everywhere (replacing hardcoded "B" text)
+- Theme cascade — admin, POS, and super-admin layouts respect data-theme (currently guest menu only)
+- Email and print template token injection — receipts, invoices, welcome emails derive from shop branding
+- Style cleanup — reduce 153 inline style attributes, consolidate 11 in-blade <style> blocks
 
-**Branch strategy:** All v1.2 work on a dedicated branch, merged to main when complete.
+**Driver:** Co-founder design review with Mohammed; brand consistency audit scored 4/10 on cross-screen consistency, 3/10 on logo usage, 4/10 on typography, 3/10 on spacing, 2/10 on one-off styling.
+
+**Out of scope for v1.3:**
+- Dark mode (separate initiative)
+- Storybook / component documentation site
+- Accessibility audit
+- Icon library migration (candidate for v1.4)
 
 ## Context
 
@@ -154,4 +171,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after v1.2 milestone (Production Readiness) started*
+*Last updated: 2026-04-28 after v1.3 milestone (Brand Consistency) started*
