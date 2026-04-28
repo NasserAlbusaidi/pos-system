@@ -105,8 +105,18 @@ Out of scope for this phase: the inline-style sweep on screens beyond the four v
 
 ### Verification Strategy
 - **D-24:** Verification per ROADMAP success criteria runs on `/menu/sourdough` (guest menu, AR locale toggle), `/dashboard` (POS dashboard), `/admin/shop-settings` (admin shop settings), `/super-admin/shops` (super admin shop list). Both EN and AR locales must render guest menu without overflow at 360px viewport.
-- **D-25:** Token presence verification uses `grep -n '\-\-font-size\-' resources/css/app.css` and `grep -n '\-\-space\-' resources/css/app.css` to confirm 7 + 4 + 12 + 3 = 26 new tokens in `:root`.
-- **D-26:** Inline-style verification uses `grep -rn 'style="font-size\|style="padding\|style="margin\|style="gap' resources/views/livewire/{guest-menu,pos,shop-settings}.blade.php resources/views/super-admin/shops*.blade.php` and expects zero matches after sweep.
+- **D-25:** Token presence verification uses `grep -nE '\-\-font-size-|\-\-space-|\-\-font-weight-|\-\-line-height-' resources/css/app.css` to confirm new tokens in `:root`. Expected counts: 7 `--font-size-*` + 4 `--font-weight-*` + 12 `--space-*` + 3 Latin `--line-height-*` (in `:root`) + 3 Arabic `--line-height-*` (in `[lang="ar"]`) = 29 token occurrences total.
+- **D-26:** Inline-style verification uses a **literal-value** grep that excludes `var(...)` references — it matches only hardcoded numeric values:
+  ```
+  grep -rEn 'style="[^"]*(font-size|padding|margin|gap)\s*:\s*[^v"][^"]*[0-9]+(\.[0-9]+)?(px|rem|em|%)' \
+    resources/views/livewire/guest-menu.blade.php \
+    resources/views/livewire/pos-dashboard.blade.php \
+    resources/views/livewire/shop-settings.blade.php \
+    resources/views/livewire/super-admin/shops/index.blade.php
+  ```
+  This matches `style="...padding: 12px..."` but NOT `style="...padding: var(--space-3)..."` (the `[^v"]` after `:` rejects `var(`). It also naturally excludes `padding: 0` (no unit, no digit) which is fine — zero values don't need tokenization.
+  Expected: zero matches after Plan 10-02 sweep completes.
+- **D-26b:** Rationale — the original property-name grep was incorrect; substituting `var(--token)` for a literal does not remove the property name from the inline style. The literal-value grep above correctly measures whether hardcoded values have been tokenized. This preserves the locked scope (D-14, D-15, D-17): no inline `style=""` extraction to CSS classes; just literal-to-token replacement.
 
 ### Claude's Discretion
 - Exact ordering of new token blocks within `:root` (alphabetical vs grouped — pick whichever reads cleanest)
