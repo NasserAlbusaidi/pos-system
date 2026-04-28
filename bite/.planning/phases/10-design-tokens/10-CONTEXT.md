@@ -106,17 +106,21 @@ Out of scope for this phase: the inline-style sweep on screens beyond the four v
 ### Verification Strategy
 - **D-24:** Verification per ROADMAP success criteria runs on `/menu/sourdough` (guest menu, AR locale toggle), `/dashboard` (POS dashboard), `/admin/shop-settings` (admin shop settings), `/super-admin/shops` (super admin shop list). Both EN and AR locales must render guest menu without overflow at 360px viewport.
 - **D-25:** Token presence verification uses `grep -nE '\-\-font-size-|\-\-space-|\-\-font-weight-|\-\-line-height-' resources/css/app.css` to confirm new tokens in `:root`. Expected counts: 7 `--font-size-*` + 4 `--font-weight-*` + 12 `--space-*` + 3 Latin `--line-height-*` (in `:root`) + 3 Arabic `--line-height-*` (in `[lang="ar"]`) = 29 token occurrences total.
-- **D-26:** Inline-style verification uses a **literal-value** grep that excludes `var(...)` references — it matches only hardcoded numeric values:
-  ```
-  grep -rEn 'style="[^"]*(font-size|padding|margin|gap)\s*:\s*[^v"][^"]*[0-9]+(\.[0-9]+)?(px|rem|em|%)' \
+- **D-26:** Inline-style verification uses a **two-pass property:literal grep** that catches dashed sub-properties (`margin-right`, `padding-top`, etc.), packed values (`gap:4px`), and ignores `var(...)` references. Pass 1 extracts lines containing `style="..."`; Pass 2 checks for any `(prop)\s*:\s*[number][unit]` pair where prop ∈ the locked list:
+  ```bash
+  PROPS='\b(font-size|padding|padding-(top|right|bottom|left)|margin|margin-(top|right|bottom|left)|gap|row-gap|column-gap)\s*:\s*[0-9]+(\.[0-9]+)?(px|rem|em|%)'
+
+  grep -En 'style="[^"]*"' \
     resources/views/livewire/guest-menu.blade.php \
     resources/views/livewire/pos-dashboard.blade.php \
     resources/views/livewire/shop-settings.blade.php \
-    resources/views/livewire/super-admin/shops/index.blade.php
+    resources/views/livewire/super-admin/shops/index.blade.php \
+    | grep -E "$PROPS"
   ```
-  This matches `style="...padding: 12px..."` but NOT `style="...padding: var(--space-3)..."` (the `[^v"]` after `:` rejects `var(`). It also naturally excludes `padding: 0` (no unit, no digit) which is fine — zero values don't need tokenization.
-  Expected: zero matches after Plan 10-02 sweep completes.
-- **D-26b:** Rationale — the original property-name grep was incorrect; substituting `var(--token)` for a literal does not remove the property name from the inline style. The literal-value grep above correctly measures whether hardcoded values have been tokenized. This preserves the locked scope (D-14, D-15, D-17): no inline `style=""` extraction to CSS classes; just literal-to-token replacement.
+  **What this matches:** `padding: 12px`, `margin-top:4px`, `gap:4px`, `font-size: 0.85rem`, packed or spaced values, dashed sub-properties.
+  **What this excludes:** `padding: var(--space-3)` (var() reference), `padding: 0` (no unit), `border-radius: 10px` (not in prop list, so a sibling `border-radius` doesn't trigger the line when the only `padding:` value is `0`).
+  **Verified baseline (2026-04-28):** guest-menu: 5 matches, pos-dashboard: 0, shop-settings: 9, super-admin/shops/index: 0 — total 14 literal-value sites to sweep. Expected after Plan 10-02 sweep: zero matches.
+- **D-26b:** Rationale — the original property-name grep matched the property name regardless of value, so substitution didn't reduce matches. The single-pass `[^v"][^"]*[0-9]+` variant missed dashed sub-properties (`margin-right:`) and zero-whitespace packed values (`gap:4px`). The two-pass approach above is correct: Pass 1 isolates style attributes, Pass 2 checks each candidate property:literal pair directly. This preserves the locked scope (D-14, D-15, D-17): no inline `style=""` extraction to CSS classes; just literal-to-token replacement on the four verification screens.
 
 ### Claude's Discretion
 - Exact ordering of new token blocks within `:root` (alphabetical vs grouped — pick whichever reads cleanest)
