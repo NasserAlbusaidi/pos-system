@@ -4,8 +4,8 @@ milestone: v1.3
 milestone_name: Brand Consistency
 status: planning
 stopped_at: ""
-last_updated: "2026-04-28T18:13:00.000Z"
-last_activity: 2026-04-28 -- Phase 10 context captured (26 decisions, ready to plan)
+last_updated: "2026-04-28T18:42:00.000Z"
+last_activity: 2026-04-28 -- Phase 10 plans created and verified (3 plans, 3 waves, ready to execute)
 progress:
   total_phases: 5
   completed_phases: 0
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: 10 (Design Tokens) — context gathered
-Plan: —
-Status: 10-CONTEXT.md committed; awaiting `/gsd-plan-phase 10`
-Last activity: 2026-04-28 — Phase 10 discussion locked 26 decisions across 4 gray areas (type scale, @apply policy, sweep boundary, docs depth)
+Phase: 10 (Design Tokens) — planned, ready to execute
+Plan: 3 plans in 3 waves
+Status: 10-01-PLAN, 10-02-PLAN, 10-03-PLAN verified after 2 revision iterations; awaiting `/gsd-execute-phase 10`
+Last activity: 2026-04-28 — Phase 10 plans verified PASSED; D-26 verification grep refined twice (single-pass → two-pass) to correctly catch literal-value violations including dashed sub-properties
 
 Progress: [░░░░░░░░░░░░░░░░] 0% (0/5 phases, 0/16 plans)
 
@@ -79,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 10]: `@apply` calls in app.css component layer (.btn-*, .tag) left untouched — Phase 14 sweep target
 - [Phase 10]: Phase 10 fully sweeps inline styles on 4 verification screens only (guest menu, POS dashboard, admin shop settings, super-admin shop list); other screens deferred to Phase 14
 - [Phase 10]: Tailwind utility audit list (~1,431 occurrences) becomes a planning artifact `.planning/v1.3-tailwind-sweep-targets.md`, NOT a user-facing doc
+- [Phase 10]: Plan 10-02 sweep baseline = 14 literal-value sites (5 guest-menu + 9 shop-settings + 0 pos-dashboard + 0 super-admin/shops); target = 0 via two-pass D-26 grep verification
+- [Phase 10]: D-26 verification grep evolved through 2 revisions — original property-name match was mathematically broken; final two-pass form catches dashed sub-properties (`margin-right`, `padding-top`) and packed values (`gap:4px`) while excluding `var(...)` and unit-less zeros
 
 ### Pending Todos
 
@@ -90,6 +92,6 @@ None — ready to plan Phase 10.
 
 ## Session Continuity
 
-Last session: 2026-04-28T18:13:00.000Z
-Stopped at: Phase 10 context gathered — 26 decisions captured
-Resume file: .planning/phases/10-design-tokens/10-CONTEXT.md → next action `/gsd-plan-phase 10`
+Last session: 2026-04-28T18:42:00.000Z
+Stopped at: Phase 10 planned and verified — 3 plans across 3 waves
+Resume file: .planning/phases/10-design-tokens/10-01-PLAN.md → next action `/gsd-execute-phase 10`
