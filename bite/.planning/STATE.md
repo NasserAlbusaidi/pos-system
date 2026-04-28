@@ -4,12 +4,12 @@ milestone: v1.3
 milestone_name: Brand Consistency
 status: planning
 stopped_at: ""
-last_updated: "2026-04-28T18:05:00.000Z"
-last_activity: 2026-04-28 -- Milestone v1.3 started; defining requirements
+last_updated: "2026-04-28T18:08:00.000Z"
+last_activity: 2026-04-28 -- v1.3 roadmap drafted (Phases 10-14, 16 plans)
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 16
   completed_plans: 0
   percent: 0
 ---
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 10 (Design Tokens) — pending start
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-28 — Milestone v1.3 (Brand Consistency) started
+Status: Roadmap drafted; awaiting `/gsd-plan-phase 10`
+Last activity: 2026-04-28 — v1.3 roadmap drafted with phases 10–14, 16 plans, full DS-01..DS-16 coverage
 
-Progress: [░░░░░░░░░░░░░░░░] 0% (0 phases planned)
+Progress: [░░░░░░░░░░░░░░░░] 0% (0/5 phases, 0/16 plans)
 
 ## Performance Metrics
 
@@ -38,7 +38,8 @@ Progress: [░░░░░░░░░░░░░░░░] 0% (0 phases planne
 
 - v1.0: 2 phases, 5 plans
 - v1.1: 3 phases, 6 plans
-- Total: 5 phases, 11 plans shipped
+- v1.2: 4 phases, 9 plans (1 deferred)
+- Total shipped: 9 phases, 19 plans
 
 **By Phase:**
 
@@ -66,42 +67,23 @@ Progress: [░░░░░░░░░░░░░░░░] 0% (0 phases planne
 All decisions logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [v1.2]: Google Cloud Run + Cloud SQL + Cloud Storage as deployment target
-- [v1.2]: GitHub Actions for CI/CD pipeline
-- [v1.2]: All v1.2 work on dedicated branch, not main
-- [v1.2]: intervention/image v3 (GD driver) — needs health check verification in container
-- [Phase 06-containerization-cloud-services]: Nginx + PHP-FPM via supervisord in single container — Cloud Run requires one process group
-- [Phase 06-containerization-cloud-services]: clear_env=no in PHP-FPM pool — Cloud Run env vars must be visible to PHP worker processes
-- [Phase 06-containerization-cloud-services]: MySQL as default DB connection — tests unaffected by phpunit.xml SQLite override
-- [Phase 06-containerization-cloud-services]: spatie/laravel-google-cloud-storage as GCS driver — wraps google/cloud-storage with Laravel filesystem adapter
-- [Phase 06-containerization-cloud-services]: Stream-based ImageService (Storage::get/put) replaces file_put_contents — compatible with GCS and local disks
-- [Phase 06-containerization-cloud-services]: productImage() uses Storage::disk()->url() for disk-aware URLs — /storage/... locally, storage.googleapis.com/... in production
-- [Phase 07-hardening-security]: Stackdriver channel level defaults to error — reduces Cloud Logging costs in production
-- [Phase 07-hardening-security]: PiiMaskingProcessor masks last two IP octets for stronger privacy (192.168.*** not just ***.***)
-- [Phase 07-hardening-security]: Use config() not env() in production health/validation — env() returns null after config:cache
-- [Phase 07-hardening-security]: GCS vars only validated when filesystems.default=gcs — prevents false positives
-- [Phase 07-hardening-security]: Guest rate limit error via orderError (not session flash) for consistent Livewire UX
-- [Phase 07]: findOrFail scoped to shop_id is the correct tenant isolation pattern — throws ModelNotFoundException for cross-tenant IDs, tests wrap in try/catch to verify DB state unchanged
-- [Phase 07]: OrderTracker feedback upgraded from manual bounds check to validate() + strip_tags() — provides Laravel validation errors and XSS sanitization (SEC-03)
-- [Phase 08-ci-cd-data-safety]: WIF keyless auth chosen over SA JSON key — no long-lived credentials
-- [Phase 08-ci-cd-data-safety]: GHA cache backend (type=gha, mode=max) for Docker layers — caches intermediate multi-stage build layers
-- [Phase 08-ci-cd-data-safety]: Pre-deploy revision capture before deploy step — ensures rollback targets correct (old) revision, not new failing one
-- [Phase 09-production-activation-gap-closure]: Conditional DB_SOCKET vs DB_HOST based on config('database.connections.mysql.unix_socket') — if non-empty, validate socket path; else validate host
-- [Phase 09-production-activation-gap-closure]: Startup validation uses config() not env() — config:cache makes env() return null in production
-- [Phase 09-production-activation-gap-closure]: GCS bucket bite-pos-storage created in us-central1 — no existing app storage bucket found among 4 Firebase/build buckets
-- [Phase 09-production-activation-gap-closure]: Cloud SQL backup enablement (SEC-04) deferred to backlog — GCP Free Trial restriction still active on 2026-03-28; retry when restriction lifts (no ETA from GCP)
+- [v1.3]: Build on existing 10 color tokens at `resources/css/app.css:153-166` — add typography + spacing alongside, don't replace
+- [v1.3]: Vanilla CSS only — Tailwind utilities scattered across blade views are a sweep target in Phase 10 (cataloged) and 14 (replaced)
+- [v1.3]: Typography scale must work for both Rubik (Latin) and IBM Plex Sans Arabic — verify EN + AR rendering at every phase
+- [v1.3]: Single source of truth for tokens lives in `resources/css/app.css` `:root` block; documented in `docs/design-system.md` (created in Phase 10)
+- [v1.3]: Phase 10 blocks Phases 11–14 — every downstream phase consumes the typography + spacing tokens
+- [v1.3]: Branding injection consolidated to one Blade partial in Phase 13 — replaces duplicate `<style>` blocks across app/admin/super-admin/email/print layouts
 
 ### Pending Todos
 
-None.
+None — ready to plan Phase 10.
 
 ### Blockers/Concerns
 
-- GD WebP support unverified on production server — Phase 7 health check must verify
-- Thawani Pay integration tracked separately, not part of v1.2
+- None for v1.3. Phase 10 unblocks the rest of the milestone.
 
 ## Session Continuity
 
-Last session: 2026-03-27T23:06:13.295Z
-Stopped at: Completed 09-02-PLAN.md
-Resume file: None
+Last session: 2026-04-28T18:08:00.000Z
+Stopped at: Roadmap drafted for v1.3 (Phases 10–14)
+Resume file: .planning/ROADMAP.md → next action `/gsd-plan-phase 10`
