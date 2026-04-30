@@ -44,13 +44,14 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details
 
 ### 🔵 v1.3 Brand Consistency
 
-**Milestone Goal:** Unify the visual layer of Bite-POS so that every screen — guest menu, POS, KDS, admin, super-admin, emails, and printed documents — pulls from one design token system, one logo component, and one theme cascade. Lift the co-founder consistency audit from 4/10 to 9/10 across cross-screen consistency, logo, typography, spacing, and one-off styling.
+**Milestone Goal:** Unify the visual layer of Bite-POS so that every screen — guest menu, POS, KDS, admin, super-admin, emails, and printed documents — pulls from one design token system, one logo component, and one theme cascade, all aligned with the official Bite brand pack (logos, color scheme, icon library at `resources/brand/`). Lift the co-founder consistency audit from 4/10 to 9/10 across cross-screen consistency, logo, typography, spacing, and one-off styling.
 
 - [ ] **Phase 10: Design Tokens** - Establish typography + spacing tokens as CSS custom properties on top of existing color tokens; document the system as the single source of truth
-- [ ] **Phase 11: Logo & Brand Identity** - One canonical `<x-application-logo>` Blade component used everywhere; favicons + PWA icons regenerated from the same SVG
+- [ ] **Phase 10.5: Brand Color Migration** - Replace warm cream/orange platform palette with Bite brand greens (60/30/10 ratio); preserve per-shop branding override mechanism on tenant-facing screens
+- [ ] **Phase 11: Logo & Brand Identity** - One canonical `<x-application-logo>` Blade component, locale-aware variant auto-pick (mark / Latin wordmark / Arabic wordmark / bilingual lockup), favicons + PWA icons regenerated from the brand-pack SVG
 - [ ] **Phase 12: Theme Cascade** - `data-theme` (warm/modern/dark) extended from guest menu to admin, POS, and super-admin layouts with documented overrides in app.css
 - [ ] **Phase 13: Email & Print Token Injection** - Welcome email, receipts, invoices, and shift reports inject shop branding via a single shared partial — no more duplicated `<style>` blocks or hardcoded hex colors
-- [ ] **Phase 14: Component Reuse & Style Cleanup** - Inline styles cut from 153 → <30, reusable component classes (`.surface-card`, `.field`, `.tag`, `.loading-spinner`) in use, icon standard documented and applied
+- [ ] **Phase 14: Component Reuse & Style Cleanup** - Inline styles cut from 153 → <30, reusable component classes (`.surface-card`, `.field`, `.tag`, `.loading-spinner`) in use, brand-pack icons (Cake, Chef hat, Chicken, Cookbook, Cookware, Olive Oil, Phone, Skiller, Timer) traced from PNG to SVG and shipped as Blade components
 
 ## Phase Details
 
@@ -133,21 +134,39 @@ Plans:
   5. Both `App::setLocale('en')` and `App::setLocale('ar')` render guest menu typography without overflow or clipping at 360px viewport — Rubik and IBM Plex Sans Arabic both honor the scale
 **Plans:** TBD
 
+### Phase 10.5: Brand Color Migration
+**Goal**: Replace the legacy warm cream/orange platform palette (`--paper`, `--ink`, `--crema`, `--canvas`, `--panel`, `--signal`, `--alert`, `--focus`) with the official Bite brand greens from `resources/brand/color scheme.pdf` — Primary `#004225` (60%), Secondary `#0B6B2E` (30%), Accent split `#37B34A` / `#7AC70C` / `#B7C40D` (10%) — applied as platform chrome on super-admin, admin, billing, login, and welcome flows; per-shop branding override mechanism preserved on tenant-facing routes (guest menu, POS, KDS, receipts) so shops like Sourdough still display their own colors on customer-facing screens
+**Depends on**: Phase 10 (typography + spacing tokens shipped first; this phase adds color tokens to the same `:root` block)
+**Requirements**: DS-17, DS-18, DS-19
+**Plans:** 0/3 plans estimated
+Plans:
+- [ ] 10.5-01-PLAN.md — Define new brand color tokens (`--brand-primary`, `--brand-secondary`, `--brand-accent-1/2/3`) in the `:root` block alongside the platform tokens; update legacy platform tokens (`--paper`, `--ink`, etc.) to brand-derived values where they appear in platform chrome (super-admin, admin layouts, billing, login, welcome) (DS-17)
+- [ ] 10.5-02-PLAN.md — Verify per-shop branding overrides still take effect on tenant-facing routes (`/menu/*`, POS, KDS) — `Shop::branding` JSON continues to override `--paper`/`--ink`/`--crema` via the existing `data-theme` injection on the body element. Add a regression test that asserts a shop's branding wins over platform tokens on its menu page (DS-18)
+- [ ] 10.5-03-PLAN.md — Append a "Color" section to `docs/design-system.md` documenting the 60/30/10 ratio, brand vs platform vs per-shop layering, and an "do/don't" example showing how a new component picks the right color token (DS-19)
+**Success Criteria** (what must be TRUE):
+  1. `resources/css/app.css` `:root` block defines `--brand-primary: #004225;`, `--brand-secondary: #0B6B2E;`, `--brand-accent-1: #37B34A;`, `--brand-accent-2: #7AC70C;`, `--brand-accent-3: #B7C40D;` — verifiable via `grep -E '\-\-brand-(primary|secondary|accent-[123])' resources/css/app.css`
+  2. Super-admin shop list (`/super-admin/shops`), admin dashboard (`/dashboard`), billing screens, login page, and welcome landing page all render Bite green as the dominant color (verifiable via DOM spot-check + computed-style sampling on `body` and primary surface elements)
+  3. A shop with `branding.paper = "#FFE4D6"` rendering its guest menu (`/menu/sourdough`) still shows the shop's brown/cream palette on `body`, NOT Bite green — per-shop branding wins on tenant-facing routes
+  4. `docs/design-system.md` "Color" section documents brand vs platform vs per-shop token layering with one do/don't pair
+  5. Phase 10's typography + spacing tokens are unaffected — `grep -cE '\-\-(font-size|space)-' resources/css/app.css` returns the same count as after Phase 10 (no regression)
+**Plans:** TBD
+
 ### Phase 11: Logo & Brand Identity
-**Goal**: A single `<x-application-logo>` Blade component is the only way the Bite-POS logo appears anywhere in the product — guest menu header, admin sidebar, login page, welcome landing, super admin, welcome email, and PWA install — and favicons/manifest icons all regenerate from the same canonical SVG
-**Depends on**: Phase 10 (uses spacing tokens for size variants)
+**Goal**: A single `<x-application-logo>` Blade component is the only way the Bite logo appears anywhere in the product — guest menu header, admin sidebar, login page, welcome landing, super admin, welcome email, and PWA install. The component auto-picks the right variant by locale and size: mark only at `size="sm"`; locale-appropriate wordmark (Latin "Bite" or Arabic "بايت") at `size="md|lg"`; bilingual stacked lockup when `variant="bilingual"` is explicit (login page, welcome email). Source assets traced from `resources/brand/bite logos*.png` into a single canonical SVG, with favicons and PWA manifest icons regenerated from the same SVG
+**Depends on**: Phase 10.5 (brand colors locked) and Phase 10 (spacing tokens for size variants)
 **Requirements**: DS-04, DS-05, DS-06
 **Plans:** 0/3 plans executed
 Plans:
-- [ ] 11-01-PLAN.md — Audit every existing logo placement; refactor `x-application-logo` to accept `size` prop (sm/md/lg) and `variant` prop (mark/wordmark) with sizes derived from `--space-*` tokens; replace inline `<img>` and hardcoded `<span class="logo-badge">B</span>` with the component in all admin/POS/super-admin layouts and login/welcome pages (DS-04)
-- [ ] 11-02-PLAN.md — Replace hardcoded "B" badge in `resources/views/emails/welcome.blade.php` with inlined `x-application-logo` SVG (email-safe, no external assets); render the component at sm/md/lg in a preview blade and visually verify in Mailtrap or local mail log (DS-05)
-- [ ] 11-03-PLAN.md — Regenerate favicon (`favicon.ico`, `favicon-32x32.png`, `apple-touch-icon.png`) and PWA manifest icons (192x192, 512x512, maskable variants) from the canonical logo SVG; commit assets to `public/` and update `manifest.webmanifest` (DS-06)
+- [ ] 11-01-PLAN.md — Trace `resources/brand/bite logos.png` (mark), `bite logos-03.png` (Latin wordmark), `bite logos-02.png` (Arabic wordmark), and `bite logos-01.png` (bilingual stacked) into a single canonical SVG file `resources/brand/bite-logo.svg` with named symbols (`#bite-mark`, `#bite-wordmark-latin`, `#bite-wordmark-arabic`, `#bite-bilingual`). Refactor `x-application-logo` to accept `size` prop (sm/md/lg, sizes from `--space-*`) and `variant` prop (mark/wordmark/bilingual, defaults to locale-appropriate auto-pick — `wordmark-latin` when `App::getLocale() == 'en'`, `wordmark-arabic` when `'ar'`, `mark` when `size === 'sm'`); replace every existing `<img>` and `<span class="logo-badge">B</span>` with the component in admin/POS/super-admin layouts and login/welcome pages (DS-04)
+- [ ] 11-02-PLAN.md — Replace hardcoded "B" badge in `resources/views/emails/welcome.blade.php` with inlined `x-application-logo` SVG (email-safe, no external assets, mark at sm + bilingual at lg breakpoints); render the component at all three sizes in a preview blade and visually verify in Mailtrap or local mail log (DS-05)
+- [ ] 11-03-PLAN.md — Regenerate favicon (`favicon.ico`, `favicon-32x32.png`, `apple-touch-icon.png`) and PWA manifest icons (192x192, 512x512, maskable variants) from `resources/brand/bite-logo.svg` (mark variant); commit assets to `public/` and update `manifest.webmanifest` (DS-06)
 **Success Criteria** (what must be TRUE):
   1. `grep -r "logo-badge\|>B<\|application-logo.png" resources/views` returns zero results outside `x-application-logo.blade.php` itself
   2. Guest menu header, admin sidebar, login page, welcome landing, super admin shell, and welcome email all render via `<x-application-logo>` — verifiable by visiting each route and inspecting DOM
-  3. `<x-application-logo size="sm" />`, `size="md"`, and `size="lg"` produce three distinct heights driven by `--space-*` tokens (no hardcoded `width="40"`)
+  3. `<x-application-logo size="sm" />`, `size="md"`, and `size="lg"` produce three distinct heights driven by `--space-*` tokens (no hardcoded `width="40"`); component auto-renders Latin wordmark when locale is `en` and Arabic wordmark when locale is `ar` at md/lg, falls back to mark at sm
   4. Favicon visible in Chrome/Safari tab, "Add to Home Screen" on iOS shows the correct logo, and Lighthouse PWA audit reports no manifest icon errors
-  5. Welcome email opened in Gmail/Apple Mail shows the new logo (not "B") at all three breakpoints (mobile, desktop, dark mode)
+  5. Welcome email opened in Gmail/Apple Mail shows the bilingual lockup (not "B") at desktop breakpoint and the mark at mobile breakpoint
+  6. `resources/brand/bite-logo.svg` exists with four named symbols (`#bite-mark`, `#bite-wordmark-latin`, `#bite-wordmark-arabic`, `#bite-bilingual`); all rendered logos pull from this file
 **Plans:** TBD
 **UI hint**: yes
 
@@ -195,12 +214,12 @@ Plans:
 - [ ] 14-01-PLAN.md — Inline-style sweep: catalogue all 153 `style="…"` occurrences (`grep -rn 'style="' resources/views`), categorise as "dynamic-required" vs "extractable-to-class", refactor extractable ones into component classes, target ≤30 remaining (DS-13)
 - [ ] 14-02-PLAN.md — In-blade `<style>` block consolidation: identify every blade view with a `<style>` block (excluding email/print branding partials), extract rules to `resources/css/app.css` under named component classes, leave only print-related and dynamic branding-injection blocks in views (DS-14)
 - [ ] 14-03-PLAN.md — Reusable component class library: define `.surface-card`, `.field`, `.tag`, `.loading-spinner` (and any other recurring patterns surfaced in 14-01) in `app.css`; refactor `shop-settings.blade.php`, `pos-dashboard.blade.php`, and `shift-report.blade.php` to use these classes; sweep remaining Tailwind utility class clusters and replace with vanilla equivalents (DS-15)
-- [ ] 14-04-PLAN.md — Icon standardization: document the standard (outline-only, 1.5px stroke, 24x24 viewBox) in `docs/design-system.md`; extract the most-reused inline SVGs (cart, search, close, check, chevron, user, settings) as Blade components in `resources/views/components/icons/`; refactor at least three Livewire views to consume them (DS-16)
+- [ ] 14-04-PLAN.md — Icon standardization + brand-pack icon library: document the standard (outline-only, 1.5px stroke, 24x24 viewBox) in `docs/design-system.md`; trace the 9 brand-pack PNG icons (`resources/brand/Cake.png`, `Chef hat.png`, `Chicken.png`, `Cook Book.png`, `cookware.png`, `Olive Oil.png`, `Phone.png`, `skiller.png`, `Timer.png`) into stroke-based SVGs that respect `currentColor` for theming, and ship them as Blade components in `resources/views/components/icons/` (`<x-icons.cake />`, `<x-icons.chef-hat />`, etc.); also extract the most-reused UI icons (cart, search, close, check, chevron, user, settings) as Blade components; refactor at least three Livewire views to consume them (DS-16)
 **Success Criteria** (what must be TRUE):
   1. `grep -rEn 'style="[^"]+"' resources/views | wc -l` returns ≤ 30 (down from 153) — and a brief comment in code or docs justifies each remaining instance as a dynamic computed value
   2. `grep -rln "<style>" resources/views/livewire resources/views/dashboard resources/views/admin` returns only files that use the branding-injection partial (legal, offline, and ad-hoc per-page `<style>` blocks have been moved to `app.css` component classes)
   3. `.surface-card`, `.field`, `.tag`, and `.loading-spinner` each appear in at least three different blade views (verifiable via `grep -rl "surface-card" resources/views` etc.) — replacing copy-pasted inline styling
-  4. `resources/views/components/icons/` exists and contains at least seven canonical inline-SVG components; at least three Livewire views (e.g. `pos-dashboard`, `guest-menu`, `kds`) consume them via `<x-icons.cart />` style tags
+  4. `resources/views/components/icons/` exists and contains at least 16 canonical inline-SVG components — the 9 brand-pack icons (cake, chef-hat, chicken, cook-book, cookware, olive-oil, phone, skiller, timer) plus 7 UI icons (cart, search, close, check, chevron, user, settings); at least three Livewire views (e.g. `pos-dashboard`, `guest-menu`, `kds`) consume them via `<x-icons.cart />` style tags; brand-pack icons all render `stroke="currentColor"` so they pick up the active `data-theme` accent
   5. `docs/design-system.md` "Icons" section documents the outline/1.5px-stroke/24x24 standard with one positive and one negative example, and a CI/grep sanity check confirms no `<svg>` in views uses `fill="currentColor"` without conforming to the standard (or has been audited and exempted)
   6. Tailwind utility-class sweep: count of Tailwind utility classes (e.g. `class="… p-4 …"` `flex` `gap-`) in `resources/views` reduced by ≥80% from the v1.3 baseline captured in 10-03; remaining usages are documented or scheduled for v1.4 cleanup
 **Plans:** TBD
@@ -220,6 +239,7 @@ Plans:
 | 8. CI/CD & Data Safety | v1.2 | 2/2 | Complete | 2026-03-27 |
 | 9. Production Activation & Gap Closure | v1.2 | 2/3 | Complete (SEC-04 deferred) | 2026-03-28 |
 | 10. Design Tokens | v1.3 | 0/3 | Pending | — |
+| 10.5. Brand Color Migration | v1.3 | 0/3 | Pending | — |
 | 11. Logo & Brand Identity | v1.3 | 0/3 | Pending | — |
 | 12. Theme Cascade | v1.3 | 0/3 | Pending | — |
 | 13. Email & Print Token Injection | v1.3 | 0/3 | Pending | — |

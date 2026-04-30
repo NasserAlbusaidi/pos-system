@@ -89,17 +89,19 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 
 ## Current Milestone: v1.3 Brand Consistency
 
-**Goal:** Make every screen feel like one unified product by establishing a complete design system — typography/spacing scales, integrated logo, theme cascade across all layouts, and tokenized email/print templates.
+**Goal:** Make every screen feel like one unified product by establishing a complete design system — typography/spacing scales, brand color migration to the official Bite green palette, integrated locale-aware logo, theme cascade across all layouts, and tokenized email/print templates.
 
 **Target features:**
 - Typography scale (--font-size-*, --font-weight-*) replacing 63 ad-hoc font sizes
 - Spacing scale (--space-*) replacing inline padding/margin and Tailwind arbitrary values
-- Logo integration — x-application-logo component used everywhere (replacing hardcoded "B" text)
+- Brand color migration — replace warm cream/orange platform palette with official Bite greens (`#004225` primary, 60/30/10 ratio); preserve per-shop branding overrides on tenant-facing routes
+- Logo integration — x-application-logo component with locale-aware variant auto-pick (mark / Latin wordmark "Bite" / Arabic wordmark "بايت" / bilingual stacked)
 - Theme cascade — admin, POS, and super-admin layouts respect data-theme (currently guest menu only)
 - Email and print template token injection — receipts, invoices, welcome emails derive from shop branding
 - Style cleanup — reduce 153 inline style attributes, consolidate 11 in-blade <style> blocks
+- Brand icon library — 9 brand-pack icons (Cake, Chef hat, Chicken, Cookbook, Cookware, Olive Oil, Phone, Skiller, Timer) traced from PNG to stroke-based SVGs as Blade components
 
-**Driver:** Co-founder design review with Mohammed; brand consistency audit scored 4/10 on cross-screen consistency, 3/10 on logo usage, 4/10 on typography, 3/10 on spacing, 2/10 on one-off styling.
+**Driver:** Co-founder design review with Mohammed; brand consistency audit scored 4/10 on cross-screen consistency, 3/10 on logo usage, 4/10 on typography, 3/10 on spacing, 2/10 on one-off styling. Brand pack (logos + 5-color green palette + 9 icons) delivered 2026-04-30 and stored at `resources/brand/`.
 
 **Out of scope for v1.3:**
 - Dark mode (separate initiative)
@@ -151,6 +153,10 @@ Customers can scan a QR code, browse a beautiful digital menu with photos, and p
 | Theme tokens outside @layer | @layer has lower specificity than inline branding styles | ✓ Good — fixed cascade conflict |
 | Warm theme preserves object-contain | Sourdough cut-out photos look wrong with cover crop | ✓ Good — modern/dark use cover appropriately |
 | Drop custom fonts from v1.1 | Three preset font pairings provide sufficient variety | ✓ Good — reduced scope, faster ship |
+| Insert Phase 10.5 for brand color migration | Phase 10 (typography + spacing) already verified; brand pack arrived after Phase 10 was planned. Inserting a decimal phase keeps the verified Phase 10 plans intact and isolates the color refactor as its own deliverable | Pending — 2026-04-30 decision |
+| Bite green = platform chrome only; per-shop branding owns tenant-facing routes | Multi-tenant white-label promise — shops like Sourdough must keep their own brand on customer-facing screens. Bite brand surfaces in super-admin, admin sidebar, billing, login, welcome flows | Pending — Phase 10.5 |
+| Logo component auto-picks variant by locale + size | Avoids verbose `variant="..."` in every callsite; keeps templates clean (`<x-application-logo size="md" />` does the right thing in en + ar) | Pending — Phase 11 |
+| Trace brand-pack PNG icons to SVG (not use as `<img>`) | SVG respects `currentColor` — themes can recolor icons; smaller payload; inline rendering. PNG `<img>` would bake the lime green, breaking dark theme + per-shop accents | Pending — Phase 14 |
 
 ---
 ## Evolution
@@ -171,4 +177,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 after v1.3 milestone (Brand Consistency) started*
+*Last updated: 2026-04-30 — brand pack received from Mohammed; Phase 10.5 inserted; v1.3 scope expanded to 6 phases / 19 plans*

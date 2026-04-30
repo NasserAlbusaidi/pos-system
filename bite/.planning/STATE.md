@@ -4,12 +4,12 @@ milestone: v1.3
 milestone_name: Brand Consistency
 status: planning
 stopped_at: ""
-last_updated: "2026-04-28T18:42:00.000Z"
-last_activity: 2026-04-28 -- Phase 10 plans created and verified (3 plans, 3 waves, ready to execute)
+last_updated: "2026-04-30T12:14:00.000Z"
+last_activity: 2026-04-30 -- Brand pack received; Phase 10.5 (Brand Color Migration) inserted, Phase 11 + 14 amended for new logo variants and icon library
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 0
-  total_plans: 16
+  total_plans: 19
   completed_plans: 0
   percent: 0
 ---
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 Phase: 10 (Design Tokens) — planned, ready to execute
 Plan: 3 plans in 3 waves
 Status: 10-01-PLAN, 10-02-PLAN, 10-03-PLAN verified after 2 revision iterations; awaiting `/gsd-execute-phase 10`
-Last activity: 2026-04-28 — Phase 10 plans verified PASSED; D-26 verification grep refined twice (single-pass → two-pass) to correctly catch literal-value violations including dashed sub-properties
+Last activity: 2026-04-30 — Brand pack from Mohammed dropped at `resources/brand/` (4 logo variants, 5-color green palette, 9 icons); Phase 10.5 (Brand Color Migration) inserted; Phase 11 + 14 plan descriptions amended for locale-aware logo + brand-pack icon library; DS-17/DS-18/DS-19 added; milestone now 6 phases / 19 plans
 
-Progress: [░░░░░░░░░░░░░░░░] 0% (0/5 phases, 0/16 plans)
+Progress: [░░░░░░░░░░░░░░░░] 0% (0/6 phases, 0/19 plans)
 
 ## Performance Metrics
 
@@ -81,6 +81,11 @@ Recent decisions affecting current work:
 - [Phase 10]: Tailwind utility audit list (~1,431 occurrences) becomes a planning artifact `.planning/v1.3-tailwind-sweep-targets.md`, NOT a user-facing doc
 - [Phase 10]: Plan 10-02 sweep baseline = 14 literal-value sites (5 guest-menu + 9 shop-settings + 0 pos-dashboard + 0 super-admin/shops); target = 0 via two-pass D-26 grep verification
 - [Phase 10]: D-26 verification grep evolved through 2 revisions — original property-name match was mathematically broken; final two-pass form catches dashed sub-properties (`margin-right`, `padding-top`) and packed values (`gap:4px`) while excluding `var(...)` and unit-less zeros
+- [v1.3]: Brand pack received 2026-04-30 — 4 logo variants (mark / Latin wordmark / Arabic wordmark / bilingual stacked), 5-color green palette (`#004225` primary → `#B7C40D` lime accent), 9 PNG icons, color scheme PDF — all stored at `resources/brand/`
+- [v1.3]: Brand color migration scoped as new Phase 10.5 (between Phase 10 and 11) — keeps verified Phase 10 plans intact; brand colors layer on top
+- [v1.3]: Color ownership decision — Bite green is platform chrome (super-admin, admin, billing, login, welcome); per-shop branding (`Shop::branding` JSON) preserves override on tenant-facing routes (`/menu/*`, POS, KDS, receipts) so Sourdough still reads brown/cream on customer-facing screens
+- [Phase 11]: Logo component auto-picks variant by locale + size — mark at sm, Latin/Arabic wordmark at md/lg based on `App::getLocale()`, explicit `variant="bilingual"` for login/email
+- [Phase 14]: Icon library trace strategy — 9 brand-pack PNGs converted to stroke-based SVGs respecting `currentColor` for theming; shipped as Blade components in `resources/views/components/icons/`
 
 ### Pending Todos
 

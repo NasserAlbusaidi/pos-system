@@ -38,11 +38,17 @@ Requirements for design system unification and brand consistency. Driver: co-fou
 - [ ] **DS-02**: Spacing scale defined as CSS custom properties (--space-1 through --space-12 on a consistent ratio) and applied across all blade views and component classes
 - [ ] **DS-03**: Single source-of-truth tokens file documented (location, naming convention, ratio rules) so future components can be styled without hardcoding values
 
+### Brand Color Migration
+
+- [ ] **DS-17**: Bite brand color tokens defined in `:root` — `--brand-primary: #004225`, `--brand-secondary: #0B6B2E`, `--brand-accent-1: #37B34A`, `--brand-accent-2: #7AC70C`, `--brand-accent-3: #B7C40D` — sourced from `resources/brand/color scheme.pdf`
+- [ ] **DS-18**: Platform palette tokens (`--paper`, `--ink`, `--crema`, etc.) re-mapped to Bite brand greens at the platform-chrome level (super-admin, admin, billing, login, welcome); per-shop branding override mechanism preserved on tenant-facing routes (`/menu/*`, POS, KDS, receipts) so shops continue to control their own color experience
+- [ ] **DS-19**: `docs/design-system.md` extended with a "Color" section documenting the 60/30/10 palette ratio, brand-vs-platform-vs-per-shop layering, and a do/don't example for picking the right color token in a new component
+
 ### Logo & Brand Identity
 
-- [ ] **DS-04**: x-application-logo Blade component used in all logo placements (guest menu header, admin sidebar, login page, welcome landing, super admin)
-- [ ] **DS-05**: Hardcoded "B" badge replaced with x-application-logo in welcome email template; logo size variants (sm/md/lg) supported via component prop
-- [ ] **DS-06**: Favicon, manifest icons, and PWA icons regenerated from the canonical logo SVG so they match across browsers and home-screen installs
+- [ ] **DS-04**: x-application-logo Blade component used in all logo placements (guest menu header, admin sidebar, login page, welcome landing, super admin); variant auto-picks by locale (Latin wordmark for `en`, Arabic wordmark for `ar`) with explicit `variant="bilingual|mark|wordmark-latin|wordmark-arabic"` override; source SVG canonicalized at `resources/brand/bite-logo.svg` with named symbols traced from the brand-pack PNGs
+- [ ] **DS-05**: Hardcoded "B" badge replaced with x-application-logo in welcome email template (mark variant on mobile breakpoint, bilingual lockup on desktop); logo size variants (sm/md/lg) supported via component prop with sizes from `--space-*` tokens
+- [ ] **DS-06**: Favicon, manifest icons, and PWA icons regenerated from `resources/brand/bite-logo.svg` (mark variant) so they match across browsers and home-screen installs
 
 ### Theme Cascade
 
@@ -61,7 +67,7 @@ Requirements for design system unification and brand consistency. Driver: co-fou
 - [ ] **DS-13**: Inline style="..." attributes reduced from 153 to under 30 (allowed only for dynamic computed values like participant colors)
 - [ ] **DS-14**: In-blade <style> blocks consolidated — non-print, non-branding-injection blocks moved to app.css component classes; legal/offline pages use shared CSS
 - [ ] **DS-15**: Reusable component CSS classes (.surface-card, .loading-spinner, .field, .tag) used in shop-settings, pos-dashboard, shift-report instead of copy-pasted inline styling
-- [ ] **DS-16**: Icon style standard documented (outline-only, 1.5px stroke, 24x24 viewBox) and a small set of canonical inline SVG snippets extracted as Blade components for reuse
+- [ ] **DS-16**: Icon style standard documented (outline-only, 1.5px stroke, 24x24 viewBox); the 9 brand-pack PNG icons (Cake, Chef hat, Chicken, Cookbook, Cookware, Olive Oil, Phone, Skiller, Timer at `resources/brand/`) traced into stroke-based SVGs respecting `currentColor` and shipped as Blade components in `resources/views/components/icons/`; UI icons (cart, search, close, check, chevron, user, settings) extracted from existing inline usage as additional Blade components
 
 ## Future Requirements
 
@@ -113,16 +119,17 @@ Requirements for design system unification and brand consistency. Driver: co-fou
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DS-01, DS-02, DS-03 | Phase 10 | Pending |
+| DS-17, DS-18, DS-19 | Phase 10.5 | Pending |
 | DS-04, DS-05, DS-06 | Phase 11 | Pending |
 | DS-07, DS-08, DS-09 | Phase 12 | Pending |
 | DS-10, DS-11, DS-12 | Phase 13 | Pending |
 | DS-13, DS-14, DS-15, DS-16 | Phase 14 | Pending |
 
 **Coverage:**
-- v1.3 requirements: 16 total
-- Mapped to phases: 16
+- v1.3 requirements: 19 total
+- Mapped to phases: 19
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-04-28 — v1.3 Brand Consistency requirements added (DS-01 through DS-16)*
+*Last updated: 2026-04-30 — Brand pack received from co-founder; Phase 10.5 inserted with DS-17/DS-18/DS-19 (color migration); DS-04 + DS-16 amended to reference brand-pack assets at `resources/brand/`*
