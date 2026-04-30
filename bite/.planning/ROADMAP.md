@@ -138,7 +138,7 @@ Plans:
 **Goal**: Replace the legacy warm cream/orange platform palette (`--paper`, `--ink`, `--crema`, `--canvas`, `--panel`, `--signal`, `--alert`, `--focus`) with the official Bite brand greens from `resources/brand/color scheme.pdf` — Primary `#004225` (60%), Secondary `#0B6B2E` (30%), Accent split `#37B34A` / `#7AC70C` / `#B7C40D` (10%) — applied as platform chrome on super-admin, admin, billing, login, and welcome flows; per-shop branding override mechanism preserved on tenant-facing routes (guest menu, POS, KDS, receipts) so shops like Sourdough still display their own colors on customer-facing screens
 **Depends on**: Phase 10 (typography + spacing tokens shipped first; this phase adds color tokens to the same `:root` block)
 **Requirements**: DS-17, DS-18, DS-19
-**Plans:** 0/3 plans estimated
+**Plans:** 3 plans estimated
 Plans:
 - [ ] 10.5-01-PLAN.md — Define new brand color tokens (`--brand-primary`, `--brand-secondary`, `--brand-accent-1/2/3`) in the `:root` block alongside the platform tokens; update legacy platform tokens (`--paper`, `--ink`, etc.) to brand-derived values where they appear in platform chrome (super-admin, admin layouts, billing, login, welcome) (DS-17)
 - [ ] 10.5-02-PLAN.md — Verify per-shop branding overrides still take effect on tenant-facing routes (`/menu/*`, POS, KDS) — `Shop::branding` JSON continues to override `--paper`/`--ink`/`--crema` via the existing `data-theme` injection on the body element. Add a regression test that asserts a shop's branding wins over platform tokens on its menu page (DS-18)
@@ -149,7 +149,6 @@ Plans:
   3. A shop with `branding.paper = "#FFE4D6"` rendering its guest menu (`/menu/sourdough`) still shows the shop's brown/cream palette on `body`, NOT Bite green — per-shop branding wins on tenant-facing routes
   4. `docs/design-system.md` "Color" section documents brand vs platform vs per-shop token layering with one do/don't pair
   5. Phase 10's typography + spacing tokens are unaffected — `grep -cE '\-\-(font-size|space)-' resources/css/app.css` returns the same count as after Phase 10 (no regression)
-**Plans:** TBD
 
 ### Phase 11: Logo & Brand Identity
 **Goal**: A single `<x-application-logo>` Blade component is the only way the Bite logo appears anywhere in the product — guest menu header, admin sidebar, login page, welcome landing, super admin, welcome email, and PWA install. The component auto-picks the right variant by locale and size: mark only at `size="sm"`; locale-appropriate wordmark (Latin "Bite" or Arabic "بايت") at `size="md|lg"`; bilingual stacked lockup when `variant="bilingual"` is explicit (login page, welcome email). Source assets traced from `resources/brand/bite logos*.png` into a single canonical SVG, with favicons and PWA manifest icons regenerated from the same SVG
