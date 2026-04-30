@@ -163,6 +163,37 @@
         --signal: 33 138 111;
         --alert: 186 59 48;
         --focus: 250 129 72;
+
+        /* Typography scale — see docs/design-system.md (added in Phase 10 / DS-03).
+           Rounded whole-px values for crisp rendering on POS hardware (D-06).
+           Base 16px (D-05); 7 t-shirt sizes (D-01). */
+        --font-size-xs: 12px;
+        --font-size-sm: 14px;
+        --font-size-base: 16px;
+        --font-size-md: 18px;
+        --font-size-lg: 22px;
+        --font-size-xl: 28px;
+        --font-size-2xl: 34px;
+
+        /* Font weights — semantic names mapping to CSS weight values (D-07). */
+        --font-weight-regular: 400;
+        --font-weight-medium: 500;
+        --font-weight-semibold: 600;
+        --font-weight-bold: 700;
+
+        /* Line-heights — Latin track (Rubik). Arabic override block follows :root.
+           D-08: two-track system; Arabic gets +0.15 leading for IBM Plex glyph metrics. */
+        --line-height-tight: 1.20;
+        --line-height-normal: 1.50;
+        --line-height-loose: 1.70;
+    }
+
+    /* Arabic line-height override (D-08) — IBM Plex Sans Arabic ascenders are taller
+       than Rubik, so Arabic text needs +0.15 leading at every level to avoid feeling cramped. */
+    [lang="ar"] {
+        --line-height-tight: 1.35;
+        --line-height-normal: 1.65;
+        --line-height-loose: 1.85;
     }
 
     html,
