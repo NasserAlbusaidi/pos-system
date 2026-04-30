@@ -4,8 +4,8 @@ milestone: v1.3
 milestone_name: Brand Consistency
 status: planning
 stopped_at: ""
-last_updated: "2026-04-30T12:14:00.000Z"
-last_activity: 2026-04-30 -- Brand pack received; Phase 10.5 (Brand Color Migration) inserted, Phase 11 + 14 amended for new logo variants and icon library
+last_updated: "2026-04-30T12:30:00.000Z"
+last_activity: 2026-04-30 -- Phase 10.5 context captured; 19 implementation decisions locked across 4 areas (token remap, body bg, admin chrome, hardcoded cleanup)
 progress:
   total_phases: 6
   completed_phases: 0
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: 10 (Design Tokens) — planned, ready to execute
-Plan: 3 plans in 3 waves
-Status: 10-01-PLAN, 10-02-PLAN, 10-03-PLAN verified after 2 revision iterations; awaiting `/gsd-execute-phase 10`
-Last activity: 2026-04-30 — Brand pack from Mohammed dropped at `resources/brand/` (4 logo variants, 5-color green palette, 9 icons); Phase 10.5 (Brand Color Migration) inserted; Phase 11 + 14 plan descriptions amended for locale-aware logo + brand-pack icon library; DS-17/DS-18/DS-19 added; milestone now 6 phases / 19 plans
+Phase: 10.5 (Brand Color Migration) — context captured, ready to plan
+Plan: 3 plans estimated (10.5-01 token def + platform mapping, 10.5-02 regression test, 10.5-03 docs)
+Status: 10.5-CONTEXT.md committed (9a92c11) — 19 decisions locked across token remap, body background, admin chrome, hardcoded cleanup. Awaiting `/gsd-plan-phase 10.5`. Phase 10 plans still verified and ready (`/gsd-execute-phase 10`).
+Last activity: 2026-04-30 — Discussed Phase 10.5: in-place value swap remaps legacy tokens (--paper=#FAFAF7, --crema=#004225, --signal/--focus=#37B34A); body gradient dropped globally; admin.blade.php strips shop-branding injection (admin always Bite green); platform-chrome cleanup limited to 4 theme-color metas + login gradient + admin fallback hex (welcome SVGs/emails/prints/dashboards deferred to Phases 13/14)
 
 Progress: [░░░░░░░░░░░░░░░░] 0% (0/6 phases, 0/19 plans)
 
@@ -86,17 +86,28 @@ Recent decisions affecting current work:
 - [v1.3]: Color ownership decision — Bite green is platform chrome (super-admin, admin, billing, login, welcome); per-shop branding (`Shop::branding` JSON) preserves override on tenant-facing routes (`/menu/*`, POS, KDS, receipts) so Sourdough still reads brown/cream on customer-facing screens
 - [Phase 11]: Logo component auto-picks variant by locale + size — mark at sm, Latin/Arabic wordmark at md/lg based on `App::getLocale()`, explicit `variant="bilingual"` for login/email
 - [Phase 14]: Icon library trace strategy — 9 brand-pack PNGs converted to stroke-based SVGs respecting `currentColor` for theming; shipped as Blade components in `resources/views/components/icons/`
+- [Phase 10.5]: In-place token value swap — legacy names (`--paper`/`--ink`/`--crema`/derived neutrals) keep semantic role; values rebind to brand-derived. ~85 component references auto-inherit. Smallest possible diff
+- [Phase 10.5]: Forest hierarchy — `--crema` = `#004225` (Bite Primary), `--ink` stays near-black, hover/active uses `--brand-accent-1` (`#37B34A`). `.btn-primary:hover` background changes from `--crema` to `--brand-accent-1`
+- [Phase 10.5]: `--paper` = `#FAFAF7` (off-white). Derived neutrals via linear RGB interpolation between paper + ink, same algorithm as `app.blade.php:56-72` shop-branding cascade
+- [Phase 10.5]: `--signal` and `--focus` both rebind to `#37B34A` — single brand-green for success states + focus rings. `--alert` keeps red
+- [Phase 10.5]: `--brand-accent-2` (`#7AC70C`) and `--brand-accent-3` (`#B7C40D`) defined in `:root`, no chrome role in v1.3 (reserved for charts/badges/v1.4)
+- [Phase 10.5]: `--brand-secondary` (`#0B6B2E`) defined in `:root`, no chrome role (reserved for Phase 12 themes)
+- [Phase 10.5]: Body gradient dropped globally — `body { background: rgb(var(--paper)); }` replaces multi-stop radial+linear. `body::before` noise dot pattern preserved. Tenants still feel right because shop branding overrides `--paper`
+- [Phase 10.5]: `admin.blade.php` strips shop-branding inline `<style>` injection (lines 14–41 removed). Admin always shows Bite green. Color picker on `/admin/shop-settings` becomes a SCOPED preview (own inline `<style>` on a wrapper div)
+- [Phase 10.5]: `app.blade.php` shop-branding injection (lines 28–89) UNCHANGED. Tenant routes (`/menu/*`, POS, KDS) keep per-shop cascade
+- [Phase 10.5]: Plan 10.5-02 = Laravel feature test asserting GET `/menu/{slug}` HTML contains shop-specific `<style>` block + GET `/dashboard` does NOT contain shop-branding `<style>` block. Lives in `tests/Feature/BrandingCascadeTest.php`
+- [Phase 10.5]: Hardcoded cleanup scope = platform chrome only — 4 `<meta name="theme-color">` tags `#EC6D2E/#EC692E` → `#004225`, `guest.blade.php` login gradient hardcoded RGBA → brand-derived, `admin.blade.php` fallback hex literals removed (dead code after injection strip). Welcome SVGs (Phase 14), emails (Phase 13), prints (Phase 13), dashboard shadows (Phase 14), reports chart literals (Phase 14) all DEFERRED
 
 ### Pending Todos
 
-None — ready to plan Phase 10.
+None — ready to plan Phase 10.5 (or execute Phase 10 first; the two are independent until 10.5-01 starts editing `:root`).
 
 ### Blockers/Concerns
 
-- None for v1.3. Phase 10 unblocks the rest of the milestone.
+- None for v1.3. Phase 10 unblocks the rest of the milestone. Phase 10.5 depends on Phase 10 shipping first (typography + spacing tokens land in same `:root` block).
 
 ## Session Continuity
 
-Last session: 2026-04-28T18:42:00.000Z
-Stopped at: Phase 10 planned and verified — 3 plans across 3 waves
-Resume file: .planning/phases/10-design-tokens/10-01-PLAN.md → next action `/gsd-execute-phase 10`
+Last session: 2026-04-30T12:30:00.000Z
+Stopped at: Phase 10.5 context captured — 19 decisions locked, ready for planning
+Resume file: .planning/phases/10.5-brand-color-migration/10.5-CONTEXT.md → next action `/gsd-plan-phase 10.5` (or `/gsd-execute-phase 10` first if Phase 10 not yet shipped)
