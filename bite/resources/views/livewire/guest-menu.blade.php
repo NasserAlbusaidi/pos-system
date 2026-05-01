@@ -509,38 +509,14 @@
                                         </p>
                                         <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
                                             {{ $recognizedCustomer['points'] ?? 0 }} {{ __('guest.points_label') }}
-                                            &middot;
-                                            {{ $recognizedCustomer['visit_count'] ?? 0 }} {{ __('guest.visits_label') }}
                                         </p>
                                     </div>
                                 </div>
 
-                                @if(!empty($recognizedCustomer['favorites']))
-                                    <button wire:click="orderUsual" class="btn-secondary mt-3 w-full justify-center !border-crema/40 !bg-crema/10 !text-crema hover:!bg-crema/20">
-                                        {{ __('guest.order_your_usual') }}
-                                    </button>
-                                @endif
+                                <button wire:click="orderUsual" type="button" class="btn-secondary mt-3 w-full justify-center !border-crema/40 !bg-crema/10 !text-crema hover:!bg-crema/20">
+                                    {{ __('guest.order_your_usual') }}
+                                </button>
                             </div>
-
-                            {{-- Recent Order History --}}
-                            @if(!empty($customerOrderHistory))
-                                <div class="mt-3 space-y-2">
-                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.recent_orders') }}</p>
-                                    <div class="divide-y divide-line rounded-lg border border-line bg-panel">
-                                        @foreach($customerOrderHistory as $pastOrder)
-                                            <div class="px-3 py-2">
-                                                <div class="flex items-center justify-between">
-                                                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-soft">{{ $pastOrder['date'] }}</p>
-                                                    <p class="font-mono text-[10px] font-bold uppercase text-ink"><x-price :amount="$pastOrder['total']" :shop="$shop" /></p>
-                                                </div>
-                                                <p class="mt-1 text-xs text-ink-soft">
-                                                    {{ collect($pastOrder['items'])->map(fn($i) => $i['quantity'] . 'x ' . $i['name'])->join(', ') }}
-                                                </p>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
                         @endif
                     </section>
                 </div>
