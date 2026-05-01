@@ -57,17 +57,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('onboarding', OnboardingWizard::class)->name('onboarding');
 });
 
-Route::middleware(['auth', 'subscribed', 'role:server,manager,admin'])->group(function () {
+Route::middleware(['auth', 'subscribed', 'shop.active', 'role:server,manager,admin'])->group(function () {
     Route::get('/pos', PosDashboard::class)->name('pos.dashboard');
     Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('admin.orders.invoice');
     Route::get('/receipt/{order}', [ReceiptController::class, 'show'])->name('receipt.print');
 });
 
-Route::middleware(['auth', 'subscribed', 'role:kitchen,manager,admin'])->group(function () {
+Route::middleware(['auth', 'subscribed', 'shop.active', 'role:kitchen,manager,admin'])->group(function () {
     Route::get('/kds', KitchenDisplay::class)->name('kds.view');
 });
 
-Route::middleware(['auth', 'subscribed', 'role:manager,admin'])->group(function () {
+Route::middleware(['auth', 'subscribed', 'shop.active', 'role:manager,admin'])->group(function () {
     Route::get('/products', ProductManager::class)->name('admin.products');
     Route::get('/menu-builder', MenuBuilder::class)->name('admin.menu-builder');
     Route::get('/modifiers', ModifierManager::class)->name('admin.modifiers');
