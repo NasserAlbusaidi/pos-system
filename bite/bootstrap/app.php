@@ -39,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super_admin' => \App\Http\Middleware\EnsureUserIsSuperAdmin::class,
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
             'subscribed' => \App\Http\Middleware\CheckSubscription::class,
+            'shop.active' => \App\Http\Middleware\EnsureShopActive::class,
         ]);
 
         $middleware->redirectTo(
