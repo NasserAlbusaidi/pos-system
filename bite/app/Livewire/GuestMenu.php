@@ -44,8 +44,6 @@ class GuestMenu extends Component
 
     public $showWelcomeBack = false;
 
-    public $customerOrderHistory = [];
-
     public $orderError = null;
 
     public $locale = 'en';
@@ -588,7 +586,6 @@ class GuestMenu extends Component
         if (strlen($digits) < 8) {
             $this->recognizedCustomer = null;
             $this->showWelcomeBack = false;
-            $this->customerOrderHistory = [];
 
             return;
         }
@@ -598,28 +595,13 @@ class GuestMenu extends Component
 
         if ($customer) {
             $this->recognizedCustomer = [
-                'name' => $customer->name,
+                'name' => $this->firstNameToken($customer->name),
                 'points' => (int) $customer->points,
-                'visit_count' => (int) $customer->visit_count,
-                'favorites' => $customer->getFavorites(),
             ];
             $this->showWelcomeBack = true;
-
-            // Fetch recent order history
-            $orders = $loyaltyService->getOrderHistory($phone, $this->shop->id, 5);
-            $this->customerOrderHistory = $orders->map(fn ($order) => [
-                'id' => $order->id,
-                'total' => (float) $order->total_amount,
-                'date' => $order->created_at->diffForHumans(),
-                'items' => $order->items->map(fn ($item) => [
-                    'name' => $item->product_name_snapshot_en,
-                    'quantity' => $item->quantity,
-                ])->all(),
-            ])->all();
         } else {
             $this->recognizedCustomer = null;
             $this->showWelcomeBack = false;
-            $this->customerOrderHistory = [];
         }
     }
 
@@ -628,11 +610,11 @@ class GuestMenu extends Component
      */
     public function orderUsual(): void
     {
-        if (! $this->recognizedCustomer || empty($this->recognizedCustomer['favorites'])) {
+        if (! $this->recognizedCustomer) {
             return;
         }
 
-        $this->applyFavorite($this->recognizedCustomer['favorites']);
+        $this->applyFavorite();
     }
 
     public function submitOrder()
@@ -837,7 +819,6 @@ class GuestMenu extends Component
         $this->loyaltyError = null;
         $this->recognizedCustomer = null;
         $this->showWelcomeBack = false;
-        $this->customerOrderHistory = [];
 
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
     }
@@ -865,8 +846,25 @@ class GuestMenu extends Component
         session()->flash('message', __('guest.favorite_saved'));
     }
 
+    public function applyFavorite(): void
+    {
+        $customer = app(LoyaltyService::class)->recognize($this->loyaltyPhone, $this->shop->id);
+        if (! $customer) {
+            session()->flash('message', __('guest.favorite_empty'));
+
+            return;
+        }
+
+        $this->applyFavoriteItems($customer->getFavorites());
+    }
+
     #[On('favorite:apply')]
-    public function applyFavorite($items = [])
+    public function applySavedFavorite($items = []): void
+    {
+        $this->applyFavoriteItems($items);
+    }
+
+    protected function applyFavoriteItems($items = []): void
     {
         $items = collect($items)->filter(fn ($item) => isset($item['id']))->values();
         if ($items->isEmpty()) {
@@ -958,6 +956,11 @@ class GuestMenu extends Component
 
         $this->cart = $newCart;
         session()->flash('message', $loadedMessage);
+    }
+
+    protected function firstNameToken(?string $name): string
+    {
+        return Str::of($name ?? '')->squish()->before(' ')->toString();
     }
 
     /**
