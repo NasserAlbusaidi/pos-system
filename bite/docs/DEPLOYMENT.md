@@ -51,6 +51,7 @@ php artisan key:generate
 ```env
 APP_NAME="Bite POS"
 APP_ENV=production
+APP_KEY=base64:GENERATED_WITH_php_artisan_key_generate_show
 APP_DEBUG=false
 APP_URL=https://bitepos.app
 
@@ -86,6 +87,37 @@ STRIPE_SUBSCRIPTION_WEBHOOK_SECRET=whsec_xxxx
 
 FORCE_HTTPS=true
 ```
+
+### Required `APP_KEY`
+`APP_KEY` is a required production secret. Generate it once, store it in the deployment secret store, and keep the same value across every app instance and revision:
+
+```bash
+php artisan key:generate --show
+```
+
+For Cloud Run, store the generated value in Secret Manager and expose it as the `APP_KEY` environment variable. Pin a specific secret version; do not reference `latest` because APP_KEY rotation is destructive.
+
+```bash
+PROJECT_ID="$(gcloud config get-value project)"
+RUNTIME_SA="$(gcloud run services describe bite-pos-demo \
+    --region us-central1 \
+    --format='value(spec.template.spec.serviceAccountName)')"
+
+printf '%s' 'base64:PASTE_GENERATED_KEY_HERE' | gcloud secrets create bite-app-key --data-file=-
+gcloud secrets add-iam-policy-binding bite-app-key \
+    --member="serviceAccount:${RUNTIME_SA}" \
+    --role="roles/secretmanager.secretAccessor"
+
+# The pinned version resource is:
+# projects/${PROJECT_ID}/secrets/bite-app-key/versions/1
+gcloud run services update bite-pos-demo \
+    --region us-central1 \
+    --update-secrets=APP_KEY=projects/${PROJECT_ID}/secrets/bite-app-key:1
+```
+
+Do not let the container generate `APP_KEY` in production. A runtime-generated key can differ between Cloud Run instances, invalidating encrypted sessions and making encrypted stored data unrecoverable.
+
+If converting an existing service from a plain `APP_KEY` environment variable, copy the exact current value into Secret Manager. Do not generate a replacement key. Deploy the secret-backed revision with 0% or low traffic first, verify it boots, then route 100% traffic to the new revision. The rollback path is the previous Cloud Run revision that still has the plain env var.
 
 ### 6. Install & Build
 ```bash
