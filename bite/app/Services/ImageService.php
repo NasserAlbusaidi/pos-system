@@ -45,8 +45,10 @@ class ImageService
      *
      * @throws \Throwable on encode/save failure (original is preserved)
      */
-    public function processUpload(string $storedPath, string $disk = 'public'): string
+    public function processUpload(string $storedPath, ?string $disk = null): string
     {
+        $disk ??= config('filesystems.default');
+
         $contents = Storage::disk($disk)->get($storedPath);
         $ext = $this->supportsWebp() ? 'webp' : 'jpg';
 
@@ -86,8 +88,10 @@ class ImageService
      * Derives baseName by removing the "-full" suffix and extension.
      * Deletes thumb, card, and full variants — no exception on missing files.
      */
-    public function deleteVariants(string $imageUrl, string $disk = 'public'): void
+    public function deleteVariants(string $imageUrl, ?string $disk = null): void
     {
+        $disk ??= config('filesystems.default');
+
         // Match the base name before "-full.ext"
         if (! preg_match('/^(.+)-full(\.[^.]+)$/', $imageUrl, $matches)) {
             return;

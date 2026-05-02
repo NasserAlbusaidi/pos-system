@@ -120,7 +120,7 @@ class ProductManager extends Component
             $oldImageUrl = $product->image_url;
             $imageUrl = $product->image_url;
             if ($this->image) {
-                $rawPath = $this->image->store('products', 'public');
+                $rawPath = $this->image->store('products', config('filesystems.default'));
                 try {
                     $imageService = app(ImageService::class);
                     $imageUrl = $imageService->processUpload($rawPath);
@@ -154,7 +154,7 @@ class ProductManager extends Component
 
         $imageUrl = null;
         if ($this->image) {
-            $rawPath = $this->image->store('products', 'public');
+            $rawPath = $this->image->store('products', config('filesystems.default'));
             try {
                 $imageService = app(ImageService::class);
                 $imageUrl = $imageService->processUpload($rawPath);
