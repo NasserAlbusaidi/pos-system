@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -47,6 +48,17 @@ class Product extends Model
         }
 
         return round((float) ($this->price - $this->discount_value), 3);
+    }
+
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->where('is_visible', true);
+    }
+
+    public function scopeOrderable(Builder $query): Builder
+    {
+        return $query->visible()
+            ->where('is_available', true);
     }
 
     public function shop()
