@@ -81,7 +81,17 @@
                         @foreach($order->items as $item)
                             <li class="flex items-start gap-3 rounded-lg border border-panel/15 bg-panel/10 px-3 py-2.5">
                                 <span class="inline-flex min-w-10 items-center justify-center rounded-md bg-crema px-2 py-1 font-mono text-sm font-bold uppercase text-panel">{{ $item->quantity }}x</span>
-                                <span class="text-lg font-bold uppercase tracking-tight text-panel">{{ $item->translated('product_name_snapshot') }}</span>
+                                <div class="min-w-0">
+                                    <span class="text-lg font-bold uppercase tracking-tight text-panel">{{ $item->translated('product_name_snapshot') }}</span>
+
+                                    @if($item->modifiers->isNotEmpty())
+                                        <ul class="mt-1 space-y-0.5 pl-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-panel/65">
+                                            @foreach($item->modifiers as $modifier)
+                                                <li>+ {{ $modifier->translated('modifier_option_name_snapshot') }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </div>
                             </li>
                         @endforeach
                     </ul>

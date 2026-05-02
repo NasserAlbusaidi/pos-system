@@ -70,7 +70,7 @@ class KitchenDisplay extends Component
     {
         $orders = Order::where('shop_id', Auth::user()->shop_id)
             ->whereIn('status', ['paid', 'preparing'])
-            ->with('items') // Eager load items for KDS
+            ->with('items.modifiers') // Eager load items and modifier snapshots for KDS
             ->oldest() // First in, First out
             ->get();
 
