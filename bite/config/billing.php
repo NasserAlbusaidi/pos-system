@@ -36,6 +36,8 @@ return [
                 'Unlimited Staff',
                 'Unlimited Products',
                 'Reports & Analytics',
+                'Menu Engineering',
+                'Pricing Rules',
                 'Priority Support',
             ],
         ],

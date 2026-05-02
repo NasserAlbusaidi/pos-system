@@ -175,10 +175,16 @@ class BillingService
                 return $shop->products()->count() < $limit;
 
             case 'reports':
-                return in_array('Reports & Analytics', $planConfig['features']);
+                return in_array('Reports & Analytics', $planConfig['features'], true);
+
+            case 'menu_engineering':
+                return in_array('Menu Engineering', $planConfig['features'], true);
+
+            case 'pricing_rules':
+                return in_array('Pricing Rules', $planConfig['features'], true);
 
             default:
-                return true;
+                return false;
         }
     }
 

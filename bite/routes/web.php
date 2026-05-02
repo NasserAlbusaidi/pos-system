@@ -71,14 +71,14 @@ Route::middleware(['auth', 'subscribed', 'shop.active', 'role:manager,admin'])->
     Route::get('/products', ProductManager::class)->name('admin.products');
     Route::get('/menu-builder', MenuBuilder::class)->name('admin.menu-builder');
     Route::get('/modifiers', ModifierManager::class)->name('admin.modifiers');
-    Route::get('/reports', ReportsDashboard::class)->name('admin.reports');
-    Route::get('/reports/export', [ReportsExportController::class, 'orders'])->name('admin.reports.export');
+    Route::get('/reports', ReportsDashboard::class)->middleware('plan:reports')->name('admin.reports');
+    Route::get('/reports/export', [ReportsExportController::class, 'orders'])->middleware('plan:reports')->name('admin.reports.export');
     Route::get('/audit-logs', AuditLogs::class)->name('admin.audit-logs');
     Route::get('/settings', ShopSettings::class)->name('admin.settings');
     Route::get('/shift-report', ShiftReport::class)->name('admin.shift-report');
     Route::get('/cash-reconciliation', CashReconciliation::class)->name('admin.cash-reconciliation');
-    Route::get('/menu-engineering', MenuEngineering::class)->name('admin.menu-engineering');
-    Route::get('/pricing-rules', PricingRules::class)->name('admin.pricing-rules');
+    Route::get('/menu-engineering', MenuEngineering::class)->middleware('plan:menu_engineering')->name('admin.menu-engineering');
+    Route::get('/pricing-rules', PricingRules::class)->middleware('plan:pricing_rules')->name('admin.pricing-rules');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
