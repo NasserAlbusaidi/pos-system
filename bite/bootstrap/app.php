@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
             'subscribed' => \App\Http\Middleware\CheckSubscription::class,
             'shop.active' => \App\Http\Middleware\EnsureShopActive::class,
+            'plan' => \App\Http\Middleware\EnsurePlanFeature::class,
         ]);
 
         $middleware->redirectTo(
