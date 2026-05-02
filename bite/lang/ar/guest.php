@@ -36,6 +36,8 @@ return [
     'optional' => 'اختياري',
     'add_for' => 'أضف بـ :price',
     'select_at_least' => 'اختر على الأقل :count خيار(ات) لـ :group.',
+    'select_at_most' => 'اختر كحد أقصى :count خيار(ات) لـ :group.',
+    'invalid_modifier_selection' => 'اختيار الإضافات غير صحيح.',
     'base_price' => 'أساسي',
 
     // Loyalty

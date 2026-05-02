@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\PricingRule;
+use App\Models\Product;
 use App\Models\Shop;
 use App\Notifications\NewOrderNotification;
 use App\Services\LoyaltyService;
@@ -487,7 +488,7 @@ class GuestMenu extends Component
 
         $product = $this->shop->products()
             ->with('modifierGroups.options')
-            ->where('is_available', true)
+            ->orderable()
             ->find($productId);
 
         if (! $product) {
@@ -504,19 +505,14 @@ class GuestMenu extends Component
             return;
         }
 
-        if ($product->modifierGroups->isNotEmpty()) {
-            $selectedByGroup = $this->normalizeModifierGroups($this->selectedModifiers);
+        $selectedByGroup = $this->normalizeModifierGroups($this->selectedModifiers);
+        if ($product->modifierGroups->isNotEmpty() || ! empty($selectedByGroup)) {
+            $modifierError = $this->validateSelectedModifierGroups($product, $selectedByGroup);
+            if ($modifierError) {
+                $this->modifierError = $modifierError;
+                $this->showModifierModal = true;
 
-            foreach ($product->modifierGroups as $group) {
-                $selected = $selectedByGroup[$group->id] ?? [];
-                $count = count($selected);
-
-                if ($group->min_selection > 0 && $count < $group->min_selection) {
-                    $this->modifierError = __('guest.select_at_least', ['count' => $group->min_selection, 'group' => $group->translated('name')]);
-                    $this->showModifierModal = true;
-
-                    return;
-                }
+                return;
             }
         }
 
@@ -652,7 +648,7 @@ class GuestMenu extends Component
         $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
         $products = $this->shop->products()
             ->with('modifierGroups.options')
-            ->where('is_available', true)
+            ->orderable()
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
@@ -722,6 +718,14 @@ class GuestMenu extends Component
             $modifiersData = [];
 
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
+            $modifierError = $this->validateCartModifierIds($product, $modifierIds);
+            if ($modifierError) {
+                $this->orderError = $modifierError;
+                $this->showReviewModal = true;
+
+                return;
+            }
+
             $validOptions = $this->getValidModifierOptions($product, $modifierIds);
 
             foreach ($validOptions as $opt) {
@@ -877,8 +881,7 @@ class GuestMenu extends Component
         $products = $this->shop->products()
             ->with('modifierGroups.options')
             ->whereIn('id', $productIds)
-            ->where('is_visible', true)
-            ->where('is_available', true)
+            ->orderable()
             ->get()
             ->keyBy('id');
 
@@ -980,6 +983,103 @@ class GuestMenu extends Component
             ->whereIn('id', $modifierIds);
     }
 
+    protected function validateSelectedModifierGroups(Product $product, array $selectedByGroup): ?string
+    {
+        $groups = $product->modifierGroups->keyBy('id');
+
+        foreach ($selectedByGroup as $groupId => $selectedIds) {
+            $group = $groups->get((int) $groupId);
+            if (! $group) {
+                return __('guest.invalid_modifier_selection');
+            }
+
+            $selectedIds = $this->normalizeModifierIds($selectedIds);
+            if ($this->hasDuplicateModifierIds($selectedIds)) {
+                return __('guest.invalid_modifier_selection');
+            }
+
+            $allowedIds = $group->options
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            if (collect($selectedIds)->diff($allowedIds)->isNotEmpty()) {
+                return __('guest.invalid_modifier_selection');
+            }
+        }
+
+        foreach ($groups as $group) {
+            $selectedIds = $this->normalizeModifierIds($selectedByGroup[$group->id] ?? []);
+            $count = count($selectedIds);
+
+            if ($group->min_selection > 0 && $count < $group->min_selection) {
+                return __('guest.select_at_least', [
+                    'count' => $group->min_selection,
+                    'group' => $group->translated('name'),
+                ]);
+            }
+
+            if ($group->max_selection > 0 && $count > $group->max_selection) {
+                return __('guest.select_at_most', [
+                    'count' => $group->max_selection,
+                    'group' => $group->translated('name'),
+                ]);
+            }
+        }
+
+        return null;
+    }
+
+    protected function validateCartModifierIds(Product $product, array $modifierIds): ?string
+    {
+        if ($this->hasDuplicateModifierIds($modifierIds)) {
+            return __('guest.invalid_modifier_selection');
+        }
+
+        $groups = $product->modifierGroups;
+        $allowedIds = $groups
+            ->pluck('options')
+            ->flatten()
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (collect($modifierIds)->diff($allowedIds)->isNotEmpty()) {
+            return __('guest.invalid_modifier_selection');
+        }
+
+        foreach ($groups as $group) {
+            $groupOptionIds = $group->options
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $count = collect($modifierIds)
+                ->intersect($groupOptionIds)
+                ->count();
+
+            if ($group->min_selection > 0 && $count < $group->min_selection) {
+                return __('guest.select_at_least', [
+                    'count' => $group->min_selection,
+                    'group' => $group->translated('name'),
+                ]);
+            }
+
+            if ($group->max_selection > 0 && $count > $group->max_selection) {
+                return __('guest.select_at_most', [
+                    'count' => $group->max_selection,
+                    'group' => $group->translated('name'),
+                ]);
+            }
+        }
+
+        return null;
+    }
+
+    protected function hasDuplicateModifierIds(array $modifierIds): bool
+    {
+        return count($modifierIds) !== count(array_unique($modifierIds));
+    }
+
     /**
      * Sum price adjustments for valid modifiers on a product.
      */
@@ -1040,7 +1140,7 @@ class GuestMenu extends Component
     {
         $categories = $this->shop->categories()
             ->with(['products' => function ($query) {
-                $query->where('is_visible', true)
+                $query->visible()
                     ->with('modifierGroups.options')
                     ->orderBy('sort_order');
             }])

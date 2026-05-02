@@ -36,6 +36,8 @@ return [
     'optional' => 'Optional',
     'add_for' => 'Add for :price',
     'select_at_least' => 'Select at least :count option(s) for :group.',
+    'select_at_most' => 'Select at most :count option(s) for :group.',
+    'invalid_modifier_selection' => 'Invalid modifier selection.',
     'base_price' => 'Base',
 
     // Loyalty
