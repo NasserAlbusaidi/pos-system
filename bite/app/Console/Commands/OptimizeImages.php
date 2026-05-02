@@ -19,6 +19,7 @@ class OptimizeImages extends Command
         $processed = 0;
         $skipped = 0;
         $failed = 0;
+        $disk = config('filesystems.default');
 
         $this->info("Found {$products->count()} products with images.");
 
@@ -32,7 +33,7 @@ class OptimizeImages extends Command
             }
 
             // Skip if source file doesn't exist on disk
-            if (! Storage::disk('public')->exists($product->image_url)) {
+            if (! Storage::disk($disk)->exists($product->image_url)) {
                 $failed++;
                 $this->warn("  MISS: {$product->name_en} — file not found: {$product->image_url}");
 

@@ -15,6 +15,13 @@ class OptimizeImagesCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['filesystems.default' => 'public']);
+    }
+
     /**
      * Test 1: Command processes a product with an unoptimized image.
      * After running, the product's image_url is updated to the -full.webp path.

@@ -26,6 +26,9 @@ class ProductManagerImageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['filesystems.default' => 'public']);
+
         $this->shop = Shop::factory()->create();
         $this->user = User::factory()->create(['shop_id' => $this->shop->id]);
         $this->category = Category::factory()->create(['shop_id' => $this->shop->id]);

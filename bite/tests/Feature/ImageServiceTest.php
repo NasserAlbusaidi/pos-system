@@ -9,6 +9,13 @@ use Tests\TestCase;
 
 class ImageServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['filesystems.default' => 'public']);
+    }
+
     public function test_process_upload_creates_three_webp_variants(): void
     {
         Storage::fake('public');
@@ -143,8 +150,10 @@ class ImageServiceTest extends TestCase
                 return true;
             }
 
-            public function processUpload(string $storedPath, string $disk = 'public'): string
+            public function processUpload(string $storedPath, ?string $disk = null): string
             {
+                $disk ??= config('filesystems.default');
+
                 $contents = \Illuminate\Support\Facades\Storage::disk($disk)->get($storedPath);
                 $ext = 'webp';
                 $baseName = preg_replace('/\.[^.]+$/', '', $storedPath);
