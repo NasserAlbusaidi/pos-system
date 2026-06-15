@@ -27,6 +27,21 @@ class BrandingUrl
             return null;
         }
 
+        // Reject embedded control characters (tab/CR/LF/NUL/etc.). Browsers
+        // strip these from URLs *before* interpreting the scheme, so a value
+        // like "java\tscript:alert(1)" would otherwise slip past the scheme
+        // check below as "no scheme" and then execute as javascript:.
+        if (preg_match('/[\x00-\x1F\x7F]/', $trimmed)) {
+            return null;
+        }
+
+        // Reject protocol-relative URLs ("//host/..."). Branding URLs must be
+        // an absolute http(s) URL or a rooted/relative path — never inherit the
+        // page scheme from an attacker-controlled host.
+        if (str_starts_with($trimmed, '//')) {
+            return null;
+        }
+
         // Relative or root-relative path with no scheme — safe.
         if (! preg_match('#^[a-zA-Z][a-zA-Z0-9+.-]*:#', $trimmed)) {
             return $trimmed;
