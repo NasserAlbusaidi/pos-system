@@ -59,6 +59,14 @@ class GuestMenu extends Component
 
     public $orderError = null;
 
+    // Per-checkout idempotency token (Phase 7a, #28). Set when the review sheet
+    // opens and sent with submitOrder. A double-click / network retry / replayed
+    // Livewire request carries the SAME token, so the order insert collides on
+    // the orders.idempotency_key UNIQUE index and we redirect to the existing
+    // order instead of creating a duplicate. Regenerated after a successful
+    // order so the next checkout is distinct.
+    public ?string $idempotencyKey = null;
+
     public $locale = 'en';
 
     // Whether the full-screen language gate should block the menu.
@@ -487,6 +495,14 @@ class GuestMenu extends Component
     public function toggleReview()
     {
         $this->showReviewModal = ! $this->showReviewModal;
+
+        // Mint a per-checkout idempotency token when the review sheet opens so
+        // every submit attempt for this checkout (including a double-click) is
+        // tied to one token. Only mint if absent, so re-opening the sheet does
+        // not reset a token already in flight.
+        if ($this->showReviewModal && $this->idempotencyKey === null) {
+            $this->idempotencyKey = (string) Str::uuid();
+        }
     }
 
     /**
@@ -704,7 +720,7 @@ class GuestMenu extends Component
 
         $rateLimitKey = 'guest-order:'.request()->ip();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
-            $this->orderError = "You're ordering too quickly. Please wait a moment and try again.";
+            $this->orderError = __('guest.rate_limit_error');
             $this->showReviewModal = true;
 
             return;
@@ -713,6 +729,34 @@ class GuestMenu extends Component
 
         $this->orderError = null;
         $this->loyaltyError = null;
+
+        // Idempotency (Phase 7a, #28). Ensure a token exists even if submit is
+        // reached without the review sheet having opened (defence in depth), so
+        // every order created here is tied to a UNIQUE key.
+        if ($this->idempotencyKey === null) {
+            $this->idempotencyKey = (string) Str::uuid();
+        }
+
+        // If this exact token already produced an order (double-click, network
+        // retry, replayed request), short-circuit to that order's tracker
+        // instead of creating a duplicate. Scoped to this shop.
+        $existing = Order::where('shop_id', $this->shop->id)
+            ->where('idempotency_key', $this->idempotencyKey)
+            ->first();
+        if ($existing) {
+            return $this->redirectToOrder($existing);
+        }
+
+        // Caps (Phase 7a, #28): reject oversized / abusive carts early, before
+        // any order is created. Treat the cart as untrusted (the group-cart JSON
+        // especially). The total cap is checked later, once the server-side
+        // re-priced total is known.
+        if (! $this->passesQuantityAndLineCaps($cartItems)) {
+            $this->orderError = __('guest.cart_too_large');
+            $this->showReviewModal = true;
+
+            return;
+        }
 
         // Fetch fresh product data to prevent price tampering and verify availability
         $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
@@ -853,46 +897,74 @@ class GuestMenu extends Component
             return;
         }
 
+        // Total cap (Phase 7a, #28): use the server-side re-priced total, never
+        // the client-sent prices, so a tampered cart cannot slip past.
+        $totalAmount = round($subtotalAmount + $taxAmount, 3);
+        if ($totalAmount > (float) config('ordering.max_order_total', 1000)) {
+            $this->orderError = __('guest.order_total_too_high');
+            $this->showReviewModal = true;
+
+            return;
+        }
+
         // Sanitize the untrusted order-level note before it touches the DB.
         $orderNote = $this->sanitizeOrderNote($this->orderNote);
 
-        $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems) {
-            $order = Order::forceCreate([
-                'shop_id' => $this->shop->id,
-                'status' => 'unpaid',
-                'customer_name' => $customerName,
-                'loyalty_phone' => $loyaltyPhone,
-                'order_note' => $orderNote,
-                'subtotal_amount' => $subtotalAmount,
-                'tax_amount' => round($taxAmount, 3),
-                'total_amount' => round($subtotalAmount + $taxAmount, 3),
-                'tracking_token' => (string) Str::uuid(),
-                'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
-            ]);
+        $idempotencyKey = $this->idempotencyKey;
 
-            foreach ($orderItems as $item) {
-                $orderItem = OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'product_name_snapshot_en' => $item['product_name_snapshot_en'],
-                    'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
-                    'price_snapshot' => $item['price_snapshot'],
-                    'quantity' => $item['quantity'],
-                    'note' => $item['note'],
+        try {
+            $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems, $idempotencyKey) {
+                $order = Order::forceCreate([
+                    'shop_id' => $this->shop->id,
+                    'status' => 'unpaid',
+                    'customer_name' => $customerName,
+                    'loyalty_phone' => $loyaltyPhone,
+                    'order_note' => $orderNote,
+                    'subtotal_amount' => $subtotalAmount,
+                    'tax_amount' => round($taxAmount, 3),
+                    'total_amount' => $totalAmount,
+                    'tracking_token' => (string) Str::uuid(),
+                    'idempotency_key' => $idempotencyKey,
+                    'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
                 ]);
 
-                foreach ($item['modifiers'] as $mod) {
-                    OrderItemModifier::create([
-                        'order_item_id' => $orderItem->id,
-                        'modifier_option_name_snapshot_en' => $mod['name_en'],
-                        'modifier_option_name_snapshot_ar' => $mod['name_ar'],
-                        'price_adjustment_snapshot' => $mod['price'],
+                foreach ($orderItems as $item) {
+                    $orderItem = OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['product_id'],
+                        'product_name_snapshot_en' => $item['product_name_snapshot_en'],
+                        'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
+                        'price_snapshot' => $item['price_snapshot'],
+                        'quantity' => $item['quantity'],
+                        'note' => $item['note'],
                     ]);
+
+                    foreach ($item['modifiers'] as $mod) {
+                        OrderItemModifier::create([
+                            'order_item_id' => $orderItem->id,
+                            'modifier_option_name_snapshot_en' => $mod['name_en'],
+                            'modifier_option_name_snapshot_ar' => $mod['name_ar'],
+                            'price_adjustment_snapshot' => $mod['price'],
+                        ]);
+                    }
                 }
+
+                return $order;
+            });
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Race: a concurrent request with the same token inserted first and
+            // won the UNIQUE index. Redirect to that order rather than erroring
+            // or duplicating. Scoped to this shop.
+            $existing = Order::where('shop_id', $this->shop->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($existing) {
+                return $this->redirectToOrder($existing);
             }
 
-            return $order;
-        });
+            throw $e;
+        }
 
         // Save current cart as customer's favorites for "Order your usual"
         if ($loyaltyPhone) {
@@ -926,7 +998,43 @@ class GuestMenu extends Component
         $this->recognizedCustomer = null;
         $this->showWelcomeBack = false;
 
+        // Regenerate the idempotency token so a fresh checkout creates a new,
+        // distinct order rather than colliding with the one just placed.
+        $this->idempotencyKey = (string) Str::uuid();
+
+        return $this->redirectToOrder($order);
+    }
+
+    /**
+     * Redirect the guest to an order's public tracker. Centralised so the
+     * happy path and both idempotent-replay paths behave identically.
+     */
+    protected function redirectToOrder(Order $order)
+    {
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
+    }
+
+    /**
+     * Enforce the per-line quantity cap and the distinct-line-count cap on an
+     * untrusted cart (Phase 7a, #28). The total cap is enforced separately
+     * against the server-side re-priced total. Returns false if either cap is
+     * exceeded so the caller can reject before any order is created.
+     */
+    protected function passesQuantityAndLineCaps(array $cartItems): bool
+    {
+        $maxLines = (int) config('ordering.max_lines_per_order', 50);
+        if (count($cartItems) > $maxLines) {
+            return false;
+        }
+
+        $maxQty = (int) config('ordering.max_quantity_per_line', 99);
+        foreach ($cartItems as $item) {
+            if ((int) ($item['quantity'] ?? 0) > $maxQty) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function applyFavorite(): void

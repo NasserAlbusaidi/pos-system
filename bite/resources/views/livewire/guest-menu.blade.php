@@ -190,17 +190,15 @@
                                 $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
                                 $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
                                 $searchName = $searchNames[$product->id] ?? '';
-                                // Shared filter attributes spread onto each theme's <article> so
-                                // client-side search hides non-matching cards without a round-trip.
-                                $filterAttrs = 'data-product data-name="'.e($searchName).'" '
-                                    .'x-bind:hidden="query.trim() !== \'\' && !$el.dataset.name.includes(query.toLowerCase().trim())"';
                             @endphp
 
                             @if($theme === 'modern')
                                 {{-- Modern theme: horizontal card (image left, text right) --}}
                                 <article
                                     class="surface-card menu-product-card menu-card-modern {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                    {!! $filterAttrs !!}
+                                    data-product
+                                    data-name="{{ $searchName }}"
+                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
                                     wire:key="product-{{ $product->id }}"
                                 >
                                     {{-- Sold Out badge --}}
@@ -264,7 +262,9 @@
                                 <article
                                     class="surface-card menu-product-card menu-card-dark {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                     x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
-                                    {!! $filterAttrs !!}
+                                    data-product
+                                    data-name="{{ $searchName }}"
+                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
                                     wire:key="product-{{ $product->id }}"
                                 >
                                     {{-- Sold Out badge --}}
@@ -330,7 +330,9 @@
                                 <article
                                     class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                     x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
-                                    {!! $filterAttrs !!}
+                                    data-product
+                                    data-name="{{ $searchName }}"
+                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
                                     @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
                                     wire:key="product-{{ $product->id }}"
                                 >
