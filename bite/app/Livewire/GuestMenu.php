@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class GuestMenu extends Component
@@ -65,6 +66,11 @@ class GuestMenu extends Component
     // the orders.idempotency_key UNIQUE index and we redirect to the existing
     // order instead of creating a duplicate. Regenerated after a successful
     // order so the next checkout is distinct.
+    //
+    // #[Locked]: server-minted, the client must never mutate it. Without the
+    // lock a guest could $wire.set() it to null (silently defeating idempotency)
+    // or to another order's known key (redirecting to a stranger's tracker).
+    #[Locked]
     public ?string $idempotencyKey = null;
 
     public $locale = 'en';
@@ -832,66 +838,17 @@ class GuestMenu extends Component
             return;
         }
 
-        $pricingRules = $this->loadActivePricingRules();
+        $built = $this->buildOrderItems($cartItems, $products);
+        if ($built['error'] !== null) {
+            $this->orderError = $built['error'];
+            $this->showReviewModal = true;
 
-        $subtotalAmount = 0;
-        $taxAmount = 0;
-        $orderItems = [];
-
-        foreach ($cartItems as $item) {
-            $product = $products->get($item['id']);
-            if (! $product) {
-                continue;
-            }
-
-            $quantity = (int) $item['quantity'];
-            if ($quantity < 1) {
-                continue;
-            }
-
-            $itemPrice = $pricingRules->isNotEmpty()
-                ? $product->getTimePriced($pricingRules)
-                : $product->final_price;
-            $modifiersData = [];
-
-            $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
-            $modifierError = $this->validateCartModifierIds($product, $modifierIds);
-            if ($modifierError) {
-                $this->orderError = $modifierError;
-                $this->showReviewModal = true;
-
-                return;
-            }
-
-            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
-
-            foreach ($validOptions as $opt) {
-                $itemPrice += $opt->price_adjustment;
-                $modifiersData[] = [
-                    'name_en' => $opt->name_en,
-                    'name_ar' => $opt->name_ar,
-                    'price' => $opt->price_adjustment,
-                ];
-            }
-
-            $lineTotal = $itemPrice * $quantity;
-            $subtotalAmount += $lineTotal;
-
-            $taxRate = $product->tax_rate ?? $this->shop->tax_rate ?? 0;
-            if ($taxRate > 0) {
-                $taxAmount += $lineTotal * ($taxRate / 100);
-            }
-
-            $orderItems[] = [
-                'product_id' => $product->id,
-                'product_name_snapshot_en' => $product->name_en,
-                'product_name_snapshot_ar' => $product->name_ar,
-                'price_snapshot' => $itemPrice,
-                'quantity' => $quantity,
-                'note' => $this->sanitizeNote($item['note'] ?? null),
-                'modifiers' => $modifiersData,
-            ];
+            return;
         }
+
+        $orderItems = $built['items'];
+        $subtotalAmount = $built['subtotal'];
+        $taxAmount = $built['tax'];
 
         if (empty($orderItems)) {
             return;
@@ -910,6 +867,30 @@ class GuestMenu extends Component
         // Sanitize the untrusted order-level note before it touches the DB.
         $orderNote = $this->sanitizeOrderNote($this->orderNote);
 
+        $persisted = $this->persistOrder($orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+
+        // Race-replay: a concurrent request with the same token won the UNIQUE
+        // index. Redirect to that order without re-running side effects — the
+        // winning request already did them.
+        if (! $persisted['created']) {
+            return $this->redirectToOrder($persisted['order']);
+        }
+
+        $this->finalizeOrderState($persisted['order'], $cartItems, $loyaltyPhone);
+
+        return $this->redirectToOrder($persisted['order']);
+    }
+
+    /**
+     * Persist the order and its items inside a transaction. On a unique-key
+     * race (a concurrent request with the same idempotency token inserted
+     * first) the existing order is returned with `created => false` so the
+     * caller redirects without re-running side effects.
+     *
+     * @return array{order: Order, created: bool}
+     */
+    protected function persistOrder(array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
+    {
         $idempotencyKey = $this->idempotencyKey;
 
         try {
@@ -953,19 +934,109 @@ class GuestMenu extends Component
             });
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             // Race: a concurrent request with the same token inserted first and
-            // won the UNIQUE index. Redirect to that order rather than erroring
-            // or duplicating. Scoped to this shop.
+            // won the UNIQUE index. Return that order rather than erroring or
+            // duplicating. Scoped to this shop.
             $existing = Order::where('shop_id', $this->shop->id)
                 ->where('idempotency_key', $idempotencyKey)
                 ->first();
 
             if ($existing) {
-                return $this->redirectToOrder($existing);
+                return ['order' => $existing, 'created' => false];
             }
 
             throw $e;
         }
 
+        return ['order' => $order, 'created' => true];
+    }
+
+    /**
+     * Re-price the untrusted cart server-side and assemble the persisted order
+     * items. Prices are recomputed from fresh product/modifier data (never the
+     * client-sent values) and modifier ids are validated. Returns an `error`
+     * string on the first invalid line so the caller can reject before any
+     * order is created; otherwise returns the items and the re-priced totals.
+     *
+     * @param  array  $cartItems  Untrusted cart lines (POS or group JSON).
+     * @param  \Illuminate\Support\Collection  $products  Fresh products keyed by id.
+     * @return array{error: ?string, items: array, subtotal: float, tax: float}
+     */
+    protected function buildOrderItems(array $cartItems, $products): array
+    {
+        $pricingRules = $this->loadActivePricingRules();
+
+        $subtotalAmount = 0;
+        $taxAmount = 0;
+        $orderItems = [];
+
+        foreach ($cartItems as $item) {
+            $product = $products->get($item['id']);
+            if (! $product) {
+                continue;
+            }
+
+            $quantity = (int) $item['quantity'];
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $itemPrice = $pricingRules->isNotEmpty()
+                ? $product->getTimePriced($pricingRules)
+                : $product->final_price;
+            $modifiersData = [];
+
+            $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
+            $modifierError = $this->validateCartModifierIds($product, $modifierIds);
+            if ($modifierError) {
+                return ['error' => $modifierError, 'items' => [], 'subtotal' => 0, 'tax' => 0];
+            }
+
+            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
+
+            foreach ($validOptions as $opt) {
+                $itemPrice += $opt->price_adjustment;
+                $modifiersData[] = [
+                    'name_en' => $opt->name_en,
+                    'name_ar' => $opt->name_ar,
+                    'price' => $opt->price_adjustment,
+                ];
+            }
+
+            $lineTotal = $itemPrice * $quantity;
+            $subtotalAmount += $lineTotal;
+
+            $taxRate = $product->tax_rate ?? $this->shop->tax_rate ?? 0;
+            if ($taxRate > 0) {
+                $taxAmount += $lineTotal * ($taxRate / 100);
+            }
+
+            $orderItems[] = [
+                'product_id' => $product->id,
+                'product_name_snapshot_en' => $product->name_en,
+                'product_name_snapshot_ar' => $product->name_ar,
+                'price_snapshot' => $itemPrice,
+                'quantity' => $quantity,
+                'note' => $this->sanitizeNote($item['note'] ?? null),
+                'modifiers' => $modifiersData,
+            ];
+        }
+
+        return [
+            'error' => null,
+            'items' => $orderItems,
+            'subtotal' => $subtotalAmount,
+            'tax' => $taxAmount,
+        ];
+    }
+
+    /**
+     * Post-transaction side effects and state reset after an order is created:
+     * save favorites, fire the WhatsApp notification, tear down the group cart,
+     * clear the checkout fields, and regenerate the idempotency token so the
+     * next checkout is distinct.
+     */
+    protected function finalizeOrderState(Order $order, array $cartItems, ?string $loyaltyPhone): void
+    {
         // Save current cart as customer's favorites for "Order your usual"
         if ($loyaltyPhone) {
             $loyaltyService = app(LoyaltyService::class);
@@ -1001,8 +1072,6 @@ class GuestMenu extends Component
         // Regenerate the idempotency token so a fresh checkout creates a new,
         // distinct order rather than colliding with the one just placed.
         $this->idempotencyKey = (string) Str::uuid();
-
-        return $this->redirectToOrder($order);
     }
 
     /**

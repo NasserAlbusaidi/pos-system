@@ -26,44 +26,58 @@ class GuestMenuOrderHardeningTest extends TestCase
     // Idempotency (double-submit guard)
     // ──────────────────────────────────
 
-    public function test_replayed_submit_with_same_token_creates_exactly_one_order(): void
+    public function test_replayed_submit_with_same_token_short_circuits_to_existing_order(): void
     {
         [$shop, $product] = $this->createMenu();
 
+        // Open the review sheet so the component mints its per-checkout token,
+        // then read it. idempotencyKey is #[Locked] — the client (and the test
+        // harness) cannot overwrite it; the only way to learn the token is the
+        // server-minted value, which is exactly what a double-click resends.
         $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
-            ->set('customerName', 'Layla')
+            ->call('toggleReview');
+
+        $token = $component->get('idempotencyKey');
+        $this->assertNotEmpty($token);
+
+        // Simulate the concurrent winner: an order already exists for this exact
+        // token in this shop (the first of two in-flight double-click requests
+        // committed first). The component still holds that same token.
+        $winner = Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'unpaid',
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+            'subtotal_amount' => 2.500,
+            'tax_amount' => 0,
+            'total_amount' => 2.500,
+            'tracking_token' => (string) Str::uuid(),
+            'idempotency_key' => $token,
+            'expires_at' => now()->addMinutes(6),
+        ]);
+
+        $component->set('customerName', 'Layla')
             ->set('loyaltyPhone', '95123456')
-            // Freeze the idempotency token so the replay carries the same value
-            // a double-click / network retry would resend.
-            ->set('idempotencyKey', 'fixed-token-123')
             ->call('submitOrder');
 
+        // The replay did not create a second order — the shop-scoped pre-check
+        // short-circuited to the winner and redirected to its tracker.
         $this->assertSame(1, Order::count());
-        $firstOrder = Order::firstOrFail();
+        $component->assertRedirect(route('guest.track', $winner->tracking_token));
+    }
 
-        // Replay: same token, cart was cleared by the first submit so we re-add.
-        $component->set('cart', [
-            $product->id.'-plain' => [
-                'id' => $product->id,
-                'name' => 'Country Loaf',
-                'price' => 2.500,
-                'quantity' => 1,
-                'selectedModifiers' => [],
-                'modifierNames' => [],
-                'note' => null,
-            ],
-        ])
-            ->set('customerName', 'Layla')
-            ->set('loyaltyPhone', '95123456')
-            ->set('idempotencyKey', 'fixed-token-123')
-            ->call('submitOrder');
+    public function test_idempotency_key_is_locked_against_client_override(): void
+    {
+        [$shop, $product] = $this->createMenu();
 
-        // Still exactly one order — the replay did not duplicate.
-        $this->assertSame(1, Order::count());
+        // #[Locked] must reject any client-driven write to the server-minted
+        // token (defeating idempotency or redirecting to a stranger's order).
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
 
-        // And the replay redirected to the already-created order's tracker.
-        $component->assertRedirect(route('guest.track', $firstOrder->tracking_token));
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('idempotencyKey', 'attacker-supplied');
     }
 
     public function test_successful_submit_regenerates_idempotency_token(): void
@@ -91,14 +105,20 @@ class GuestMenuOrderHardeningTest extends TestCase
     {
         [$shop, $product] = $this->createMenu();
 
-        Livewire::test(GuestMenu::class, ['shop' => $shop])
+        // Token is minted server-side (review sheet) and is #[Locked], so we
+        // read the value rather than setting it, then assert it was persisted.
+        $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
-            ->set('customerName', 'Layla')
+            ->call('toggleReview');
+
+        $token = $component->get('idempotencyKey');
+        $this->assertNotEmpty($token);
+
+        $component->set('customerName', 'Layla')
             ->set('loyaltyPhone', '95123456')
-            ->set('idempotencyKey', 'persist-me')
             ->call('submitOrder');
 
-        $this->assertSame('persist-me', Order::firstOrFail()->idempotency_key);
+        $this->assertSame($token, Order::firstOrFail()->idempotency_key);
     }
 
     // ──────────────────────────────────
