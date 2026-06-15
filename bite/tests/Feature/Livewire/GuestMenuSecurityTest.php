@@ -35,6 +35,8 @@ class GuestMenuSecurityTest extends TestCase
                     'quantity' => 1,
                 ],
             ])
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         // Order should be created with REAL price (10.00), not hacked price (0.01)

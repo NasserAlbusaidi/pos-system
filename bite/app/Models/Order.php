@@ -31,6 +31,7 @@ class Order extends Model
         'expires_at',
         'customer_rating',
         'customer_feedback',
+        'order_note',
     ];
 
     protected $guarded = [

@@ -39,6 +39,37 @@ return [
     'place_order' => 'Place Order',
     'send_to_kitchen' => 'Send order to kitchen?',
 
+    // Cart / review (screen 5) + checkout (screen 6) — Phase 4 (#24)
+    'cart_empty_title' => 'Your order is empty',
+    'cart_empty_body' => 'Browse the menu and tap + to start your order.',
+    'browse_menu' => 'Browse the menu',
+    'continue_to_checkout' => 'Continue to checkout',
+    'counter_pickup_hint' => 'Counter pickup — we’ll call your name.',
+    'pay_at_counter_hint' => 'Pay at the counter when you collect — cash or card. The kitchen starts once payment is confirmed.',
+    'place_order_hint' => 'By placing this order you agree to pay at the counter.',
+
+    // Order-level note (whole order) — Phase 4 (#24)
+    'order_note_label' => 'Note for the kitchen',
+    'order_note_placeholder' => 'Anything for the whole order? Allergy, timing, table…',
+
+    // Checkout contact + payment (screen 6)
+    'almost_there' => 'Almost there',
+    'confirm_your_order' => 'Confirm your order',
+    'your_name' => 'Your name',
+    'name_placeholder' => 'e.g. Layla',
+    'phone_label' => 'Phone',
+    'phone_hint' => 'for order updates & points',
+    'name_required' => 'Please enter your name.',
+    'phone_required' => 'Please enter your phone number.',
+    'payment' => 'Payment',
+    'pay_at_counter' => 'Pay at the counter',
+    'pay_at_counter_desc' => 'Cash or card when you collect',
+
+    // Cart line controls
+    'decrease_qty' => 'Decrease quantity',
+    'increase_qty' => 'Increase quantity',
+    'remove_item' => 'Remove item',
+
     // Totals
     'subtotal' => 'Subtotal',
     'tax' => 'Tax',

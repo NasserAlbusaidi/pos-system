@@ -87,6 +87,8 @@ class GuestMenuTest extends TestCase
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         $this->assertDatabaseHas('orders', [
@@ -158,6 +160,8 @@ class GuestMenuTest extends TestCase
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder')
             ->assertSet('orderError', null);
 

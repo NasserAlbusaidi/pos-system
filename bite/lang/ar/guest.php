@@ -39,6 +39,37 @@ return [
     'place_order' => 'تأكيد الطلب',
     'send_to_kitchen' => 'إرسال الطلب إلى المطبخ؟',
 
+    // Cart / review (screen 5) + checkout (screen 6) — Phase 4 (#24)
+    'cart_empty_title' => 'سلتك فارغة',
+    'cart_empty_body' => 'تصفّح القائمة واضغط + لبدء طلبك.',
+    'browse_menu' => 'تصفّح القائمة',
+    'continue_to_checkout' => 'المتابعة إلى الدفع',
+    'counter_pickup_hint' => 'الاستلام من الكاونتر — سننادي باسمك.',
+    'pay_at_counter_hint' => 'ادفع عند الكاونتر عند الاستلام — نقداً أو بالبطاقة. يبدأ المطبخ بعد تأكيد الدفع.',
+    'place_order_hint' => 'بتأكيد هذا الطلب فإنك توافق على الدفع عند الكاونتر.',
+
+    // Order-level note (whole order) — Phase 4 (#24)
+    'order_note_label' => 'ملاحظة للمطبخ',
+    'order_note_placeholder' => 'أي ملاحظة لكامل الطلب؟ تحسس، توقيت، طاولة…',
+
+    // Checkout contact + payment (screen 6)
+    'almost_there' => 'أوشكت على الانتهاء',
+    'confirm_your_order' => 'أكّد طلبك',
+    'your_name' => 'اسمك',
+    'name_placeholder' => 'مثال: ليلى',
+    'phone_label' => 'الهاتف',
+    'phone_hint' => 'لتحديثات الطلب والنقاط',
+    'name_required' => 'يرجى إدخال اسمك.',
+    'phone_required' => 'يرجى إدخال رقم هاتفك.',
+    'payment' => 'الدفع',
+    'pay_at_counter' => 'الدفع عند الكاونتر',
+    'pay_at_counter_desc' => 'نقداً أو بالبطاقة عند الاستلام',
+
+    // Cart line controls
+    'decrease_qty' => 'إنقاص الكمية',
+    'increase_qty' => 'زيادة الكمية',
+    'remove_item' => 'إزالة العنصر',
+
     // Totals
     'subtotal' => 'المجموع الفرعي',
     'tax' => 'الضريبة',

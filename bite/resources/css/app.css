@@ -420,6 +420,25 @@
         margin-top: 1px;
     }
 
+    /* Guest order-level note on a KDS card (Phase 4). Spans the whole card and
+       uses the signal accent so it reads as an order-wide instruction, distinct
+       from the per-item crema notes above it. */
+    .kds-order-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 8px 10px;
+        border: 1px solid rgb(var(--signal) / 0.5);
+        border-radius: var(--radius-sm);
+        background: rgb(var(--signal) / 0.16);
+        color: rgb(var(--paper));
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+        line-height: 1.375;
+        letter-spacing: 0.04em;
+    }
+
     /* Guest Menu — Card Grid */
     .menu-product-grid {
         display: grid;

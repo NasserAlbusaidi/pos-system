@@ -67,6 +67,15 @@ class PrintNodeService
         }
 
         $lines[] = '-------------------------';
+
+        // Guest order-level note (Phase 4) — one instruction for the whole
+        // order. May carry a shared allergen flag, so it is printed prominently
+        // alongside the per-item notes above.
+        if (filled($order->order_note)) {
+            $lines[] = '** ORDER NOTE: '.$order->order_note;
+            $lines[] = '-------------------------';
+        }
+
         $lines[] = 'Total: '.formatPrice($order->total_amount, $order->shop);
         $lines[] = now()->format('Y-m-d H:i');
 

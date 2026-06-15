@@ -104,6 +104,16 @@
                         @endforeach
                     </ul>
 
+                    {{-- Guest order-level note (Phase 4) — one instruction for the whole
+                         order, may carry a shared allergen flag. Highlighted distinctly
+                         from per-item notes so the kitchen cannot miss it. --}}
+                    @if(filled($order->order_note))
+                        <p class="kds-order-note">
+                            <svg class="kds-note__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"/></svg>
+                            <span>{{ $order->order_note }}</span>
+                        </p>
+                    @endif
+
                     @if($order->status === 'paid')
                         <button wire:click="updateStatus({{ $order->id }}, 'preparing')" class="btn-primary w-full justify-center !bg-crema !border-crema text-base">
                             {{ __('admin.start_preparing') }}

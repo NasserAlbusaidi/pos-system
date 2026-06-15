@@ -29,6 +29,15 @@ class GuestMenu extends Component
 
     public $loyaltyError = null;
 
+    // Checkout contact (Phase 4, #24). Name + phone are required at checkout
+    // for the pay-at-counter pilot. Untrusted: trimmed on submit.
+    public $customerName = '';
+
+    // Guest-supplied order-level note (Phase 4, #24): one note for the whole
+    // order ("table by the window", shared allergen flag). Untrusted: trimmed
+    // + capped on submit. Reaches the kitchen (KDS card + printed ticket).
+    public $orderNote = '';
+
     // Customization state
     public $showModifierModal = false;
 
@@ -624,6 +633,22 @@ class GuestMenu extends Component
     }
 
     /**
+     * Trim and cap the untrusted order-level note. Returns null for blank input
+     * so the column stays NULL rather than an empty string. Capped at 500 to
+     * match the DB text column's practical use (longer than an item note since
+     * it can carry several instructions for the whole order).
+     */
+    protected function sanitizeOrderNote($value): ?string
+    {
+        $note = trim((string) $value);
+        if ($note === '') {
+            return null;
+        }
+
+        return mb_substr($note, 0, 500);
+    }
+
+    /**
      * Called when loyaltyPhone changes. If 8+ digits, look up the customer.
      */
     public function recognizeCustomer(): void
@@ -688,13 +713,6 @@ class GuestMenu extends Component
 
         $this->orderError = null;
         $this->loyaltyError = null;
-        $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
-        if ($this->loyaltyPhone !== '' && ! $loyaltyPhone) {
-            $this->loyaltyError = __('guest.invalid_phone');
-            $this->showReviewModal = true;
-
-            return;
-        }
 
         // Fetch fresh product data to prevent price tampering and verify availability
         $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
@@ -742,6 +760,29 @@ class GuestMenu extends Component
             $this->orderError = __('guest.items_unavailable_removed', [
                 'items' => implode(', ', $unavailableNames),
             ]);
+            $this->showReviewModal = true;
+
+            return;
+        }
+
+        // Pay-at-counter checkout (Phase 4, #24): name + phone are required.
+        // Runs after the availability/price-integrity guard above so a stale or
+        // tampered cart is always caught, regardless of contact entry.
+        $customerName = trim((string) $this->customerName);
+        if ($customerName === '') {
+            $this->orderError = __('guest.name_required');
+            $this->showReviewModal = true;
+
+            return;
+        }
+        $customerName = mb_substr($customerName, 0, 255);
+
+        // Phone is required and validated through the existing loyalty regex.
+        $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
+        if (! $loyaltyPhone) {
+            $this->loyaltyError = trim((string) $this->loyaltyPhone) === ''
+                ? __('guest.phone_required')
+                : __('guest.invalid_phone');
             $this->showReviewModal = true;
 
             return;
@@ -812,11 +853,16 @@ class GuestMenu extends Component
             return;
         }
 
-        $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $loyaltyPhone, $orderItems) {
+        // Sanitize the untrusted order-level note before it touches the DB.
+        $orderNote = $this->sanitizeOrderNote($this->orderNote);
+
+        $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems) {
             $order = Order::forceCreate([
                 'shop_id' => $this->shop->id,
                 'status' => 'unpaid',
+                'customer_name' => $customerName,
                 'loyalty_phone' => $loyaltyPhone,
+                'order_note' => $orderNote,
                 'subtotal_amount' => $subtotalAmount,
                 'tax_amount' => round($taxAmount, 3),
                 'total_amount' => round($subtotalAmount + $taxAmount, 3),
@@ -873,6 +919,8 @@ class GuestMenu extends Component
         }
 
         $this->cart = [];
+        $this->customerName = '';
+        $this->orderNote = '';
         $this->loyaltyPhone = '';
         $this->loyaltyError = null;
         $this->recognizedCustomer = null;

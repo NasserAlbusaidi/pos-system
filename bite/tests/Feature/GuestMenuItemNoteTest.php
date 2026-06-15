@@ -31,6 +31,8 @@ class GuestMenuItemNoteTest extends TestCase
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->set('itemNote', '  No nuts — severe allergy  ')
             ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         $item = OrderItem::firstOrFail();
@@ -46,6 +48,8 @@ class GuestMenuItemNoteTest extends TestCase
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->set('itemNote', $long)
             ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         $item = OrderItem::firstOrFail();
@@ -59,6 +63,8 @@ class GuestMenuItemNoteTest extends TestCase
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->set('itemNote', '   ')
             ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         $item = OrderItem::firstOrFail();
@@ -103,6 +109,8 @@ class GuestMenuItemNoteTest extends TestCase
             ->call('addToCart', $product->id)        // commits
             ->assertSet('showModifierModal', false)
             ->assertSet('itemNote', '')              // reset after add
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         $item = OrderItem::firstOrFail();
@@ -169,7 +177,10 @@ class GuestMenuItemNoteTest extends TestCase
         $groupCart = GroupCart::firstOrFail();
         $this->assertSame('Gluten free if possible', $groupCart->items[0]['note']);
 
-        $component->call('submitOrder');
+        $component
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
+            ->call('submitOrder');
 
         $item = OrderItem::firstOrFail();
         $this->assertSame('Gluten free if possible', $item->note);

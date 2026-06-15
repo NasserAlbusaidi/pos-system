@@ -454,172 +454,236 @@
         </div>
     @endif
 
-    {{-- Review Modal --}}
+    {{-- Cart / review + checkout sheet (mockup screens 5 & 6, #24). Re-skinned
+         onto the guest design system. Pay-at-counter only — no online payment,
+         no service-fee/VAT/voucher line (scope #29). The existing inc/dec/remove
+         methods and the server-side submitOrder() validation are reused as-is.
+         The order is created 'unpaid'; the guest never sets payment_method. --}}
     @if($showReviewModal)
-        <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-            <div class="surface-card flex h-full w-full max-w-2xl flex-col overflow-hidden sm:h-auto sm:max-h-[90vh] sm:rounded-xl">
-                <div class="border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
-                    <h3 class="font-display text-3xl font-extrabold leading-none text-ink">
+        @php
+            $cartIsEmpty = $this->isGroupMode ? empty($groupCartItems) : empty($cart);
+        @endphp
+        <div class="guest-sheet-backdrop">
+            <div class="guest-sheet">
+                <div class="guest-cart__head">
+                    <h3 class="guest-cart__title">
                         @if($this->isGroupMode)
                             {{ __('guest.group_order') }}
                         @else
                             {{ __('guest.your_order') }}
                         @endif
                     </h3>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.review_before_sending') }}</p>
+                    <p class="guest-cart__subtitle">{{ $shop->name }} · {{ __('guest.dine_in') }}</p>
                 </div>
 
-                <div class="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-8">
-                    <section class="space-y-3">
-                        <p class="section-headline">{{ __('guest.items') }}</p>
-
-                        @if($this->isGroupMode)
-                            {{-- Group Cart Items (grouped by participant) --}}
-                            <div class="divide-y divide-line rounded-xl border border-line bg-panel">
-                                @php
-                                    $groupedByParticipant = collect($groupCartItems)->groupBy('participant_id');
-                                @endphp
-                                @foreach($groupedByParticipant as $pid => $items)
-                                    <div class="px-3 py-3 sm:px-4">
-                                        <div class="mb-2 flex items-center gap-2">
-                                            <span class="inline-flex h-2.5 w-2.5 rounded-full" style="background-color: {{ $participantColors[$pid] ?? '#E57373' }}"></span>
-                                            <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                                                @if($pid === $participantId)
-                                                    {{ __('guest.you') }}
-                                                @else
-                                                    {{ __('guest.participant') }} {{ array_search($pid, array_keys($groupedByParticipant->toArray())) + 1 }}
-                                                @endif
-                                            </span>
-                                        </div>
-                                        @foreach($items as $item)
-                                            <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3 {{ !$loop->last ? 'border-b border-line/50' : '' }}">
-                                                <div class="flex items-start gap-3">
-                                                    @if($pid === $participantId)
-                                                        <div class="flex items-center gap-1">
-                                                            <button wire:click="decrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
-                                                            <span class="inline-flex h-9 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
-                                                            <button wire:click="incrementItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
-                                                        </div>
-                                                    @else
-                                                        <span class="inline-flex h-7 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink-soft">{{ $item['quantity'] }}x</span>
-                                                    @endif
-                                                    <div>
-                                                        <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
-                                                        @if(!empty($item['modifierNames']))
-                                                            <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-start gap-2">
-                                                    <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="($item['price'] ?? 0) * ($item['quantity'] ?? 1)" :shop="$shop" /></p>
-                                                    @if($pid === $participantId)
-                                                        <button wire:click="removeItem('{{ $item['itemKey'] ?? '' }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
-                                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                                                        </button>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endforeach
+                <div class="guest-sheet__scroll">
+                    <div class="guest-cart__body">
+                        @if($cartIsEmpty)
+                            {{-- Friendly empty state --}}
+                            <div class="guest-cart__empty">
+                                <svg class="guest-cart__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>
+                                <p class="guest-cart__empty-title">{{ __('guest.cart_empty_title') }}</p>
+                                <p class="guest-cart__empty-body">{{ __('guest.cart_empty_body') }}</p>
+                                <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark" style="flex:none;width:auto;padding-inline:var(--space-6)">
+                                    {{ __('guest.browse_menu') }}
+                                </button>
                             </div>
                         @else
-                            {{-- Solo Cart Items --}}
-                            <div class="divide-y divide-line rounded-xl border border-line bg-panel">
-                                @foreach($cart as $key => $item)
-                                    <div class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4">
-                                        <div class="flex items-start gap-3">
-                                            <div class="flex items-center gap-1">
-                                                <button wire:click="decrementItem('{{ $key }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">-</button>
-                                                <span class="inline-flex h-9 min-w-7 items-center justify-center font-mono text-[10px] font-bold uppercase text-ink">{{ $item['quantity'] }}</span>
-                                                <button wire:click="incrementItem('{{ $key }}')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-muted font-mono text-xs font-bold text-ink transition-colors hover:border-ink">+</button>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $item['name'] }}</p>
+                            <div class="guest-cart__ctx">
+                                <svg class="guest-cart__ctx-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>
+                                <span>{{ __('guest.counter_pickup_hint') }}</span>
+                            </div>
+
+                            @if($this->isGroupMode)
+                                {{-- Group cart lines, grouped by participant --}}
+                                @php $groupedByParticipant = collect($groupCartItems)->groupBy('participant_id'); @endphp
+                                @foreach($groupedByParticipant as $pid => $items)
+                                    <div class="guest-cart__participant">
+                                        <span class="guest-cart__participant-dot" style="background-color: {{ $participantColors[$pid] ?? '#E57373' }}"></span>
+                                        <span class="guest-cart__participant-name">
+                                            @if($pid === $participantId)
+                                                {{ __('guest.you') }}
+                                            @else
+                                                {{ __('guest.participant') }} {{ array_search($pid, array_keys($groupedByParticipant->toArray())) + 1 }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    @foreach($items as $item)
+                                        <div class="guest-cartline">
+                                            <div class="guest-cartline__info">
+                                                <p class="guest-cartline__name">{{ $item['name'] }}</p>
                                                 @if(!empty($item['modifierNames']))
-                                                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ implode(', ', $item['modifierNames']) }}</p>
+                                                    <p class="guest-cartline__mod">{{ implode(' · ', $item['modifierNames']) }}</p>
                                                 @endif
+                                                @if(filled($item['note'] ?? null))
+                                                    <p class="guest-cartline__note">
+                                                        <svg class="guest-cartline__note-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+                                                        <span>{{ $item['note'] }}</span>
+                                                    </p>
+                                                @endif
+                                                <p class="guest-cartline__price"><x-price :amount="($item['price'] ?? 0) * ($item['quantity'] ?? 1)" :shop="$shop" /></p>
                                             </div>
+                                            @if($pid === $participantId)
+                                                <div class="guest-cartline__controls">
+                                                    <div class="guest-ministep">
+                                                        <button wire:click="decrementItem('{{ $item['itemKey'] ?? '' }}')" class="guest-ministep__btn" type="button" aria-label="{{ __('guest.decrease_qty') }}">−</button>
+                                                        <span class="guest-ministep__qty">{{ $item['quantity'] }}</span>
+                                                        <button wire:click="incrementItem('{{ $item['itemKey'] ?? '' }}')" class="guest-ministep__btn" type="button" aria-label="{{ __('guest.increase_qty') }}">+</button>
+                                                    </div>
+                                                    <button wire:click="removeItem('{{ $item['itemKey'] ?? '' }}')" class="guest-cartline__remove" type="button" aria-label="{{ __('guest.remove_item') }}">
+                                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <div class="guest-ministep"><span class="guest-ministep__qty">{{ $item['quantity'] }}×</span></div>
+                                            @endif
                                         </div>
-                                        <div class="flex items-start gap-2">
-                                            <p class="font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
-                                            <button wire:click="removeItem('{{ $key }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-muted font-mono text-[10px] font-bold text-ink-soft transition-colors hover:border-alert hover:bg-alert/10 hover:text-alert" title="Remove item">
-                                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    @endforeach
+                                @endforeach
+                            @else
+                                {{-- Solo cart lines --}}
+                                @foreach($cart as $key => $item)
+                                    <div class="guest-cartline">
+                                        <div class="guest-cartline__info">
+                                            <p class="guest-cartline__name">{{ $item['name'] }}</p>
+                                            @if(!empty($item['modifierNames']))
+                                                <p class="guest-cartline__mod">{{ implode(' · ', $item['modifierNames']) }}</p>
+                                            @endif
+                                            @if(filled($item['note'] ?? null))
+                                                <p class="guest-cartline__note">
+                                                    <svg class="guest-cartline__note-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+                                                    <span>{{ $item['note'] }}</span>
+                                                </p>
+                                            @endif
+                                            <p class="guest-cartline__price"><x-price :amount="$item['price'] * $item['quantity']" :shop="$shop" /></p>
+                                        </div>
+                                        <div class="guest-cartline__controls">
+                                            <div class="guest-ministep">
+                                                <button wire:click="decrementItem('{{ $key }}')" class="guest-ministep__btn" type="button" aria-label="{{ __('guest.decrease_qty') }}">−</button>
+                                                <span class="guest-ministep__qty">{{ $item['quantity'] }}</span>
+                                                <button wire:click="incrementItem('{{ $key }}')" class="guest-ministep__btn" type="button" aria-label="{{ __('guest.increase_qty') }}">+</button>
+                                            </div>
+                                            <button wire:click="removeItem('{{ $key }}')" class="guest-cartline__remove" type="button" aria-label="{{ __('guest.remove_item') }}">
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </div>
                                     </div>
                                 @endforeach
+                            @endif
+
+                            {{-- Order-level note for the whole order (#24) --}}
+                            <div class="guest-note">
+                                <label for="guest-order-note" class="guest-note__label">{{ __('guest.order_note_label') }}</label>
+                                <textarea
+                                    id="guest-order-note"
+                                    wire:model="orderNote"
+                                    maxlength="500"
+                                    class="guest-note__field"
+                                    placeholder="{{ __('guest.order_note_placeholder') }}"></textarea>
                             </div>
-                        @endif
-                    </section>
 
-                    <section class="grid grid-cols-3 gap-2 sm:gap-3">
-                        <div class="rounded-lg border border-line bg-panel px-3 py-2">
-                            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.subtotal') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->subtotal" :shop="$shop" /></p>
-                        </div>
-                        <div class="rounded-lg border border-line bg-panel px-3 py-2">
-                            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.tax') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->tax" :shop="$shop" /></p>
-                        </div>
-                        <div class="rounded-lg border border-line bg-panel px-3 py-2">
-                            <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.total') }}</p>
-                            <p class="mt-1 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$this->total" :shop="$shop" /></p>
-                        </div>
-                    </section>
-
-                    <section class="space-y-2">
-                        <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.loyalty_phone') }}</label>
-                        <input type="tel" wire:model="loyaltyPhone" wire:change.debounce.500ms="recognizeCustomer" class="field w-full font-mono text-sm font-semibold" placeholder="{{ __('guest.loyalty_placeholder') }}">
-                        @if($loyaltyError)
-                            <div class="rounded-lg border border-alert/35 bg-alert/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-alert">
-                                {{ $loyaltyError }}
-                            </div>
-                        @endif
-
-                        {{-- Welcome Back Banner --}}
-                        @if($showWelcomeBack && is_array($recognizedCustomer))
-                            <div class="mt-3 rounded-xl border border-crema/30 bg-crema/5 px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-bold text-ink">
-                                            {{ __('guest.welcome_back') }}
-                                            @if($recognizedCustomer['name'] ?? null)
-                                                {{ $recognizedCustomer['name'] }}
-                                            @endif
-                                        </p>
-                                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
-                                            {{ $recognizedCustomer['points'] ?? 0 }} {{ __('guest.points_label') }}
-                                        </p>
-                                    </div>
+                            {{-- Summary: subtotal / tax / total ONLY (no service fee / VAT / voucher — scope #29) --}}
+                            <div class="guest-summary">
+                                <div class="guest-summary__row">
+                                    <span>{{ __('guest.subtotal') }}</span>
+                                    <span class="guest-summary__amt"><x-price :amount="$this->subtotal" :shop="$shop" /></span>
                                 </div>
+                                <div class="guest-summary__row">
+                                    <span>{{ __('guest.tax') }}</span>
+                                    <span class="guest-summary__amt"><x-price :amount="$this->tax" :shop="$shop" /></span>
+                                </div>
+                                <div class="guest-summary__row guest-summary__row--total">
+                                    <span>{{ __('guest.total') }}</span>
+                                    <span class="guest-summary__amt"><x-price :amount="$this->total" :shop="$shop" /></span>
+                                </div>
+                            </div>
 
-                                <button wire:click="orderUsual" type="button" class="btn-secondary mt-3 w-full justify-center !border-crema/40 !bg-crema/10 !text-crema hover:!bg-crema/20">
-                                    {{ __('guest.order_your_usual') }}
-                                </button>
+                            <div class="guest-cart__hint">
+                                <svg class="guest-cart__hint-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h.01M11 15h2M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2Z"/></svg>
+                                <span>{{ __('guest.pay_at_counter_hint') }}</span>
+                            </div>
+
+                            {{-- Checkout contact (mockup screen 6): name + phone required --}}
+                            <p class="guest-cart__section-title">{{ __('guest.confirm_your_order') }}</p>
+
+                            <div class="guest-field">
+                                <label for="guest-name" class="guest-field__label">{{ __('guest.your_name') }}</label>
+                                <input id="guest-name" type="text" wire:model="customerName" maxlength="255" class="guest-field__input" placeholder="{{ __('guest.name_placeholder') }}" autocomplete="name">
+                            </div>
+
+                            <div class="guest-field">
+                                <label for="guest-phone" class="guest-field__label">
+                                    {{ __('guest.phone_label') }}
+                                    <span class="guest-field__label-hint">· {{ __('guest.phone_hint') }}</span>
+                                </label>
+                                <input id="guest-phone" type="tel" wire:model="loyaltyPhone" wire:change.debounce.500ms="recognizeCustomer" class="guest-field__input" placeholder="{{ __('guest.loyalty_placeholder') }}" autocomplete="tel" inputmode="tel">
+                                @if($loyaltyError)
+                                    <div class="guest-cart__error">{{ $loyaltyError }}</div>
+                                @endif
+
+                                {{-- Welcome-back / order-your-usual (loyalty recognition preserved) --}}
+                                @if($showWelcomeBack && is_array($recognizedCustomer))
+                                    <div class="guest-cart__hint" style="margin-top:var(--space-3);color:rgb(var(--ink))">
+                                        <span>
+                                            {{ __('guest.welcome_back') }}
+                                            @if($recognizedCustomer['name'] ?? null){{ $recognizedCustomer['name'] }}@endif
+                                            · {{ $recognizedCustomer['points'] ?? 0 }} {{ __('guest.points_label') }}
+                                        </span>
+                                    </div>
+                                    <button wire:click="orderUsual" type="button" class="guest-addbtn" style="margin-top:var(--space-3);background:rgb(var(--crema) / 0.12);color:rgb(var(--crema));box-shadow:none">
+                                        {{ __('guest.order_your_usual') }}
+                                    </button>
+                                @endif
+                            </div>
+
+                            {{-- Payment: pay at counter ONLY — no dropdown, no online payment --}}
+                            <div class="guest-field">
+                                <label class="guest-field__label">{{ __('guest.payment') }}</label>
+                                <div class="guest-paysel">
+                                    <span class="guest-paysel__ic">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+                                    </span>
+                                    <span class="guest-paysel__t">
+                                        <b>{{ __('guest.pay_at_counter') }}</b>
+                                        <small>{{ __('guest.pay_at_counter_desc') }}</small>
+                                    </span>
+                                    <span class="guest-paysel__tick">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="m5 13 4 4L19 7"/></svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            @if($orderError)
+                                <div class="guest-cart__error">{{ $orderError }}</div>
+                            @endif
+
+                            <div class="guest-cart__hint">
+                                <svg class="guest-cart__hint-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z"/></svg>
+                                <span>{{ __('guest.place_order_hint') }}</span>
                             </div>
                         @endif
-                    </section>
+                    </div>
                 </div>
 
-                @if($orderError)
-                    <div class="mx-4 mb-0 mt-0 rounded-lg border border-alert/35 bg-alert/10 px-4 py-3 font-mono text-[11px] font-semibold leading-relaxed text-alert sm:mx-8">
-                        {{ $orderError }}
-                    </div>
-                @endif
-
-                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-4 sm:p-8">
-                    <button wire:click="toggleReview" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
-                    <button x-on:click="$dispatch('confirm-action', {
-                                title: '{{ __('guest.place_order') }}',
-                                message: '{{ $this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen') }}',
-                                action: 'submitOrder',
-                                componentId: $wire.id,
-                                destructive: false,
-                            })"
-                            class="btn-primary w-full justify-center">
-                        {{ __('guest.place_order') }}
-                    </button>
+                {{-- Action bar: cancel + place order (or just close when empty) --}}
+                <div class="guest-actionbar">
+                    @if($cartIsEmpty)
+                        <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark">{{ __('guest.cancel') }}</button>
+                    @else
+                        <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark" style="flex:0 0 auto;background:rgb(var(--panel));color:rgb(var(--ink));box-shadow:none;border:1px solid rgb(var(--line))">{{ __('guest.cancel') }}</button>
+                        <button x-on:click="$dispatch('confirm-action', {
+                                    title: '{{ __('guest.place_order') }}',
+                                    message: '{{ $this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen') }}',
+                                    action: 'submitOrder',
+                                    componentId: $wire.id,
+                                    destructive: false,
+                                })"
+                                type="button"
+                                class="guest-addbtn">
+                            {{ __('guest.place_order') }}
+                            <span class="guest-addbtn__price"><x-price :amount="$this->total" :shop="$shop" /></span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

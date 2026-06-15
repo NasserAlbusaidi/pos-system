@@ -99,6 +99,8 @@ class GuestMenuRateLimitTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
                 ->call('addToCart', $product->id)
+                ->set('customerName', 'Layla')
+                ->set('loyaltyPhone', '95123456')
                 ->call('submitOrder');
 
             // Should not be rate limited
