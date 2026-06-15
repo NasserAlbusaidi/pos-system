@@ -165,4 +165,24 @@ return [
     'submit_feedback' => 'Submit Feedback',
     'thank_you_feedback' => 'Thank you for your feedback!',
     'feedback_placeholder' => 'Any comments? (optional)',
+
+    // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_show_counter' => 'Show this at the counter',
+    'items_count' => '{0}No items|{1}:count item|[2,*]:count items',
+    'rating_stars' => '{1}:count star|[2,*]:count stars',
+    'track_step_received' => 'Order received',
+    'track_step_received_hint' => 'We have your order.',
+    'track_step_accepted' => 'Confirmed',
+    'track_step_accepted_hint' => 'Payment confirmed at the counter — the kitchen has started.',
+    'track_step_preparing' => 'Preparing',
+    'track_step_preparing_hint' => 'The kitchen is making your order.',
+    'track_step_ready' => 'Ready for pickup',
+    'track_step_ready_hint' => 'Your order is ready — collect it at the counter.',
+    'track_cancelled_title' => 'Order cancelled',
+
+    // Post-order review invite (screen 7, #25)
+    'rate_on_google' => 'Rate us on Google',
+    'rate_on_google_hint' => 'Opens our Google listing',
+    'follow_on_instagram' => 'Follow on Instagram',
+    'follow_on_instagram_hint' => 'New bakes and offers',
 ];

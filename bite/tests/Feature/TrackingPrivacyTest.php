@@ -25,9 +25,13 @@ class TrackingPrivacyTest extends TestCase
             'tracking_token' => (string) Str::uuid(),
         ]);
 
+        // Re-skin (screen 7, #25) replaces the "Order #" header with a counter
+        // code card. The prefix is tenant-derived (first 2 slug chars,
+        // uppercased) so each shop gets its own code — slug 'bite' => 'BI-'.
+        $prefix = strtoupper(substr($shop->slug, 0, 2));
         $this->get(route('guest.track', $order->tracking_token))
             ->assertOk()
-            ->assertSee('Order #');
+            ->assertSee($prefix.'-'.str_pad((string) $order->id, 3, '0', STR_PAD_LEFT));
     }
 
     public function test_numeric_tracking_endpoint_is_not_accessible(): void

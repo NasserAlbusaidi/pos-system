@@ -165,4 +165,24 @@ return [
     'submit_feedback' => 'إرسال التقييم',
     'thank_you_feedback' => 'شكراً لتقييمك!',
     'feedback_placeholder' => 'أي ملاحظات؟ (اختياري)',
+
+    // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_show_counter' => 'أظهر هذا عند الكاونتر',
+    'items_count' => '{0}لا عناصر|{1}عنصر واحد|{2}عنصران|[3,10]:count عناصر|[11,*]:count عنصراً',
+    'rating_stars' => '{1}نجمة واحدة|{2}نجمتان|[3,10]:count نجوم|[11,*]:count نجمة',
+    'track_step_received' => 'تم استلام الطلب',
+    'track_step_received_hint' => 'وصلنا طلبك.',
+    'track_step_accepted' => 'تم التأكيد',
+    'track_step_accepted_hint' => 'تم تأكيد الدفع عند الكاونتر — بدأ المطبخ بالتحضير.',
+    'track_step_preparing' => 'قيد التحضير',
+    'track_step_preparing_hint' => 'المطبخ يحضّر طلبك.',
+    'track_step_ready' => 'جاهز للاستلام',
+    'track_step_ready_hint' => 'طلبك جاهز — استلمه من الكاونتر.',
+    'track_cancelled_title' => 'تم إلغاء الطلب',
+
+    // Post-order review invite (screen 7, #25)
+    'rate_on_google' => 'قيّمنا على Google',
+    'rate_on_google_hint' => 'يفتح صفحتنا على Google',
+    'follow_on_instagram' => 'تابعنا على Instagram',
+    'follow_on_instagram_hint' => 'مخبوزات وعروض جديدة',
 ];
