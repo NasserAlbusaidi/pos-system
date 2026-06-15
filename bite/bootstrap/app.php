@@ -12,9 +12,28 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust Cloud Run / load balancer proxies so request()->ip() returns the real client IP.
-        // In production, restrict to GCP load balancer CIDRs for security.
-        $proxies = env('TRUSTED_PROXIES', '*');
+        // Trust proxies so request()->ip() returns the real client IP (used by
+        // rate limiting, loyalty, and abuse controls). Defaulting to "*" lets any
+        // client spoof X-Forwarded-For, so when TRUSTED_PROXIES is unset we fall
+        // back to loopback + RFC1918 private ranges: a same-host nginx reverse
+        // proxy is honored while public clients cannot spoof their IP. Set
+        // TRUSTED_PROXIES to the real proxy IP/CIDR (or "*" for a managed front
+        // end whose app port is unreachable from the public internet).
+        // Read from the environment directly: this middleware closure runs during
+        // bootstrap, before the config repository is loaded, so config() is not yet
+        // available here (it throws "Target [config] is not instantiable"). This is
+        // the one sanctioned env() call outside a config file; trustProxies is the
+        // only consumer, so there is no config/ mirror to drift out of sync with.
+        $configured = env('TRUSTED_PROXIES');
+
+        if ($configured === '*') {
+            $proxies = '*';
+        } elseif (filled($configured)) {
+            $proxies = array_values(array_filter(array_map('trim', explode(',', $configured))));
+        } else {
+            $proxies = ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'];
+        }
+
         $middleware->trustProxies(
             at: $proxies,
             headers: Request::HEADER_X_FORWARDED_FOR
