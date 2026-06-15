@@ -156,6 +156,88 @@ class GuestMenuCheckoutTest extends TestCase
             ->assertSee(__('guest.total'));
     }
 
+    /**
+     * Phase 7b (#29) scope guard: the guest checkout must STRIP — not just hide —
+     * every out-of-scope feature. The pilot excludes online payment / Thawani,
+     * vouchers/promo/coupon codes, a service-fee line, a separate VAT line item,
+     * and waiter-call. This asserts none of those controls render and that the
+     * only payment method offered is pay-at-counter. Legitimate per-product tax
+     * (the summary "Tax" row) is in scope and intentionally NOT asserted absent.
+     */
+    public function test_checkout_strips_all_out_of_scope_features(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('showReviewModal', true);
+
+        // No voucher / promo / coupon / discount-code field.
+        $component->assertDontSee('voucher', false)
+            ->assertDontSee('Voucher')
+            ->assertDontSee('promo', false)
+            ->assertDontSee('Promo')
+            ->assertDontSee('coupon', false)
+            ->assertDontSee('Coupon')
+            ->assertDontSeeHtml('wire:model="voucher')
+            ->assertDontSeeHtml('wire:model="promoCode')
+            ->assertDontSeeHtml('wire:model="couponCode')
+            ->assertDontSeeHtml('applyVoucher');
+
+        // No extra service-fee summary line.
+        $component->assertDontSee('Service fee')
+            ->assertDontSee('Service Fee')
+            ->assertDontSee('service_fee', false)
+            ->assertDontSee('serviceFee', false);
+
+        // No separate VAT summary line item (legitimate per-product Tax row stays).
+        $component->assertDontSee('VAT');
+
+        // No waiter-call control.
+        $component->assertDontSee('waiter', false)
+            ->assertDontSee('Waiter')
+            ->assertDontSee('Call waiter')
+            ->assertDontSeeHtml('callWaiter')
+            ->assertDontSeeHtml('wire:click="callWaiter');
+
+        // No online-payment / Thawani path or guest-set payment method.
+        $component->assertDontSee('Thawani')
+            ->assertDontSee('thawani', false)
+            ->assertDontSee('Pay online')
+            ->assertDontSee('Pay now')
+            ->assertDontSeeHtml('wire:model="paymentMethod')
+            ->assertDontSeeHtml('wire:model="payment_method')
+            ->assertDontSeeHtml('payOnline')
+            ->assertDontSeeHtml('<select');
+
+        // The only payment method shown is pay-at-counter.
+        $component->assertSee(__('guest.pay_at_counter'))
+            ->assertSee(__('guest.subtotal'))
+            ->assertSee(__('guest.tax'))
+            ->assertSee(__('guest.total'));
+    }
+
+    /**
+     * Phase 7b (#29) guard, Arabic side: the same out-of-scope features stay
+     * stripped under RTL/Arabic, and the only payment method is pay-at-counter.
+     */
+    public function test_checkout_strips_out_of_scope_features_in_arabic(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('switchLanguage', 'ar')
+            ->call('addToCart', $product->id)
+            ->set('showReviewModal', true)
+            ->assertDontSee('Thawani')
+            ->assertDontSee('Voucher')
+            ->assertDontSee('Service fee')
+            ->assertDontSee('VAT')
+            ->assertDontSee('Waiter')
+            ->assertDontSeeHtml('<select')
+            ->assertSee(__('guest.pay_at_counter', [], 'ar'));
+    }
+
     public function test_order_note_renders_on_kds(): void
     {
         $shop = Shop::factory()->create();
