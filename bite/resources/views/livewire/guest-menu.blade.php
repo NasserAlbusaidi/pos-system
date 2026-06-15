@@ -1,5 +1,31 @@
 <div class="guest-menu-bg relative flex min-h-full flex-col overflow-x-hidden"
      @if($this->isGroupMode) wire:poll.3s @endif>
+
+    {{-- Language gate (mockup screen 1) — full-screen, blocks menu until a language is picked --}}
+    @if($showLanguageGate)
+        <div class="guest-gate" role="dialog" aria-modal="true">
+            <div class="guest-gate__panel">
+                <div class="guest-gate__crest">
+                    @php
+                        $gateLogoUrl = \App\Support\BrandingUrl::safe($shop->branding['logo_url'] ?? null);
+                    @endphp
+                    @if($gateLogoUrl)
+                        <img src="{{ $gateLogoUrl }}" alt="{{ $shop->name }}" class="guest-gate__crest-img">
+                    @else
+                        <span class="guest-gate__crest-mark">{{ Str::of($shop->name)->trim()->substr(0, 1)->upper() }}</span>
+                    @endif
+                </div>
+                <div class="guest-gate__word">{{ $shop->name }}</div>
+                <p class="guest-gate__ask">{{ __('guest.choose_language') }}</p>
+                <div class="guest-gate__langs">
+                    <button type="button" wire:click="chooseLanguage('en')" class="guest-gate__lang guest-gate__lang--primary">English</button>
+                    <button type="button" wire:click="chooseLanguage('ar')" class="guest-gate__lang guest-gate__lang--alt">العربية</button>
+                </div>
+            </div>
+            <div class="guest-powered">{{ __('guest.powered_by') }} <b>Bite</b></div>
+        </div>
+    @endif
+
     <header class="sticky top-0 z-50 border-b border-line/80 bg-panel/85 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -63,6 +89,36 @@
             </div>
         </div>
     @endif
+
+    @php
+        $guestBranding = $shop->branding ?? [];
+        $guestCoverUrl = \App\Support\BrandingUrl::safe($guestBranding['cover_url'] ?? null);
+        $guestLogoUrl = \App\Support\BrandingUrl::safe($guestBranding['logo_url'] ?? null);
+    @endphp
+
+    {{-- Hero shell (mockup screens 2 / 2b) — cover, logo, name, open pill, dine-in chip --}}
+    <section class="guest-hero {{ $guestCoverUrl ? '' : 'guest-hero--placeholder' }}">
+        @if($guestCoverUrl)
+            <img src="{{ $guestCoverUrl }}" alt="{{ $shop->name }}" class="guest-hero__cover" loading="eager">
+        @endif
+        <div class="guest-hero__scrim"></div>
+        <div class="guest-hero__meta">
+            <div class="guest-hero__logo">
+                @if($guestLogoUrl)
+                    <img src="{{ $guestLogoUrl }}" alt="{{ $shop->name }}" class="guest-hero__logo-img">
+                @else
+                    <span class="guest-hero__wordmark">{{ Str::of($shop->name)->trim()->substr(0, 1)->upper() }}</span>
+                @endif
+            </div>
+            <h2 class="guest-hero__name">{{ $shop->name }}</h2>
+            <div class="guest-hero__sub">
+                <span class="guest-hero__pill">
+                    <span class="guest-hero__dot"></span>{{ __('guest.status_open') }}
+                </span>
+                <span class="guest-hero__chip">{{ __('guest.dine_in') }}</span>
+            </div>
+        </div>
+    </section>
 
     <main class="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-6 pb-32 sm:px-6">
         <section class="surface-card p-5 sm:p-6">
@@ -687,4 +743,21 @@
             </div>
         </div>
     @endif
+
+    {{-- Powered by Bite — guest experience footer --}}
+    <footer class="guest-powered guest-powered--page">{{ __('guest.powered_by') }} <b>Bite</b></footer>
 </div>
+
+{{-- Flip <html dir>/lang immediately on language switch. SetLocale middleware
+     only runs on full page loads; Livewire updates are AJAX partials, so the
+     gate's language pick would otherwise show Arabic text in an LTR layout
+     until the next reload. --}}
+@script
+<script>
+    $wire.on('guest-locale-changed', ({ direction }) => {
+        const dir = direction === 'rtl' ? 'rtl' : 'ltr';
+        document.documentElement.setAttribute('dir', dir);
+        document.documentElement.setAttribute('lang', dir === 'rtl' ? 'ar' : 'en');
+    });
+</script>
+@endscript

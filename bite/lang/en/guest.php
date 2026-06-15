@@ -5,6 +5,14 @@ return [
     'guest_ordering' => 'Guest Ordering',
     'mobile_checkout' => 'Mobile Checkout',
 
+    // Language gate (screen 1)
+    'choose_language' => 'Choose your language · اختر لغتك',
+    'powered_by' => 'Powered by',
+
+    // Hero (screen 2)
+    'status_open' => 'Open now',
+    'dine_in' => 'Dine-in',
+
     // Menu
     'guest_experience' => 'Guest Experience',
     'build_your_order' => 'Build Your Order',

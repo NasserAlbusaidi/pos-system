@@ -49,6 +49,10 @@ class GuestMenu extends Component
 
     public $locale = 'en';
 
+    // Whether the full-screen language gate should block the menu.
+    // True only when the visitor has NOT yet chosen a language this session.
+    public bool $showLanguageGate = false;
+
     // Group ordering state
     public $groupToken = null;
 
@@ -63,6 +67,11 @@ class GuestMenu extends Component
         // Determine locale: session override > shop default > 'en'
         $branding = $shop->branding ?? [];
         $this->locale = session('guest_locale', $branding['language'] ?? 'en');
+
+        // Show the language gate only when the visitor has not yet chosen a
+        // language this session. The rendering default above ('en' / shop
+        // default) is distinct from an explicit choice stored under 'guest_locale'.
+        $this->showLanguageGate = ! session()->has('guest_locale');
 
         // Generate or retrieve a stable participant ID for this browser session
         $this->participantId = session('guest_participant_id');
@@ -84,6 +93,21 @@ class GuestMenu extends Component
         $this->locale = $lang;
         session()->put('guest_locale', $lang);
         App::setLocale($lang);
+
+        // The <html dir> attribute is set by SetLocale middleware on full page
+        // loads only. Livewire updates are AJAX partials, so push the new
+        // direction to the browser immediately to keep RTL/LTR layout in sync.
+        $this->dispatch('guest-locale-changed', direction: $lang === 'ar' ? 'rtl' : 'ltr');
+    }
+
+    /**
+     * Handle a language pick from the full-screen gate: persist the choice via
+     * the existing switchLanguage() and dismiss the gate so the menu is shown.
+     */
+    public function chooseLanguage(string $lang): void
+    {
+        $this->switchLanguage($lang);
+        $this->showLanguageGate = false;
     }
 
     // ──────────────────────────────────

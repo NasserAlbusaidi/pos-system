@@ -5,6 +5,14 @@ return [
     'guest_ordering' => 'طلب الضيوف',
     'mobile_checkout' => 'الدفع عبر الجوال',
 
+    // Language gate (screen 1)
+    'choose_language' => 'اختر لغتك · Choose your language',
+    'powered_by' => 'مدعوم بواسطة',
+
+    // Hero (screen 2)
+    'status_open' => 'مفتوح الآن',
+    'dine_in' => 'تناول في المطعم',
+
     // Menu
     'guest_experience' => 'تجربة الضيف',
     'build_your_order' => 'أنشئ طلبك',
