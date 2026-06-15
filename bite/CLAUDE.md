@@ -125,6 +125,7 @@ Stripe webhook processing uses a `webhook_events(provider, event_id)` table with
 ### Production Infra
 
 - **Container:** single-process-group Nginx + PHP-FPM + supervisord; `clear_env=no` in PHP-FPM pool so Cloud Run env vars reach worker processes
+- **Scheduler:** runs as supervisord `[program:scheduler]` (`php artisan schedule:work`) — **one per container**. Tasks (`Order::cancelExpired()` everyMinute, `GroupCart::cleanExpired()` hourly) fire from every running instance. Safe at one instance (pilot VPS); if you ever scale to >1 app instance, scheduled tasks run concurrently — keep them idempotent or add a single-runner lock before enabling autoscaling.
 - **Config:** always use `config()` in production code paths, never `env()` — `config:cache` makes `env()` return null
 - **GCS:** `spatie/laravel-google-cloud-storage` driver; `ImageService` and any file I/O must use `Storage::get/put` streams (not `file_put_contents`) to stay disk-agnostic
 - **CI/CD:** GitHub Actions with Workload Identity Federation (no long-lived SA keys); pre-deploy revision capture enables clean rollback
