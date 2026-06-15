@@ -14,7 +14,9 @@
             sync();
             const ro = new ResizeObserver(sync);
             ro.observe($el);
-            $cleanup(() => ro.disconnect());
+            // $cleanup isn't exposed in x-init on this Alpine build — guard it so
+            // we still disconnect where available without throwing where it isn't.
+            if (typeof $cleanup === 'function') $cleanup(() => ro.disconnect());
         "
     >
         <div class="guest-header__inner">
