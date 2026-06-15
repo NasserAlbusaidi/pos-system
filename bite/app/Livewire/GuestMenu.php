@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class GuestMenu extends Component
@@ -851,29 +850,6 @@ class GuestMenu extends Component
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
     }
 
-    public function saveFavorite()
-    {
-        $cartItems = $this->getActiveCartItems();
-
-        if (empty($cartItems)) {
-            session()->flash('message', __('guest.favorite_add_first'));
-
-            return;
-        }
-
-        $items = collect($cartItems)
-            ->values()
-            ->map(fn ($item) => [
-                'id' => $item['id'],
-                'quantity' => (int) ($item['quantity'] ?? 1),
-                'selectedModifiers' => $item['selectedModifiers'] ?? [],
-            ])
-            ->all();
-
-        $this->dispatch('favorite:save', items: $items, shop: $this->shop->id);
-        session()->flash('message', __('guest.favorite_saved'));
-    }
-
     public function applyFavorite(): void
     {
         $customer = app(LoyaltyService::class)->recognize($this->loyaltyPhone, $this->shop->id);
@@ -884,12 +860,6 @@ class GuestMenu extends Component
         }
 
         $this->applyFavoriteItems($customer->getFavorites());
-    }
-
-    #[On('favorite:apply')]
-    public function applySavedFavorite($items = []): void
-    {
-        $this->applyFavoriteItems($items);
     }
 
     protected function applyFavoriteItems($items = []): void
@@ -1200,8 +1170,12 @@ class GuestMenu extends Component
             ? $this->shop->branding['theme']
             : 'warm';
 
+        $popularProducts = $this->buildPopularProducts($categories);
+
         return view('livewire.guest-menu', [
             'categories' => $categories,
+            'popularProducts' => $popularProducts,
+            'searchNames' => $this->buildSearchNames($categories),
             'locale' => $this->locale,
             'isRtl' => $this->locale === 'ar',
             'groupCartItems' => $groupCartItems,
@@ -1209,5 +1183,48 @@ class GuestMenu extends Component
             'pricingRules' => $pricingRules,
             'theme' => $theme,
         ])->layout('layouts.app', ['shop' => $this->shop]);
+    }
+
+    /**
+     * Lowercased "name + description" search string per product, keyed by id.
+     *
+     * Computed once per render so the client-side search index (the <main>
+     * allNames list, each section's names list, and every card's data-name
+     * attribute) reads from one map instead of re-resolving translated() and
+     * lowercasing the same product three times in the view.
+     */
+    protected function buildSearchNames(\Illuminate\Support\Collection $categories): array
+    {
+        return $categories
+            ->flatMap(fn ($category) => $category->products)
+            ->mapWithKeys(fn ($product) => [
+                $product->id => Str::lower(
+                    $product->translated('name').' '.($product->translated('description') ?? '')
+                ),
+            ])
+            ->all();
+    }
+
+    /**
+     * Owner-highlighted "Popular today" rail (mockup screen 2/2b/3).
+     *
+     * There is no dedicated featured flag on products, so we derive the rail
+     * from already-loaded, shop-scoped categories: on-sale items first (the
+     * owner's active promotions), then the leading orderable items by
+     * sort order. Sold-out items are excluded from the rail.
+     */
+    protected function buildPopularProducts(\Illuminate\Support\Collection $categories): \Illuminate\Support\Collection
+    {
+        $orderable = $categories
+            ->flatMap(fn ($category) => $category->products)
+            ->filter(fn ($product) => $product->is_available);
+
+        $onSale = $orderable->filter(fn ($product) => $product->is_on_sale);
+        $rest = $orderable->reject(fn ($product) => $product->is_on_sale);
+
+        return $onSale->concat($rest)
+            ->unique('id')
+            ->take(8)
+            ->values();
     }
 }

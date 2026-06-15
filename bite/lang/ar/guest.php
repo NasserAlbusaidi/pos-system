@@ -22,6 +22,12 @@ return [
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
 
+    // Browse (screen 2b / 3) — search, tabs, popular rail
+    'popular_today' => 'الأكثر طلباً',
+    'search_menu' => 'ابحث في القائمة…',
+    'category_all' => 'الكل',
+    'no_search_results' => 'لا توجد عناصر تطابق بحثك.',
+
     // Cart
     'add_to_order' => 'أضف إلى الطلب',
     'review_order' => 'مراجعة الطلب',

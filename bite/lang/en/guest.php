@@ -22,6 +22,12 @@ return [
     'flash_sale' => 'Flash Sale',
     'limited_offer' => 'Limited Offer',
 
+    // Browse (screen 2b / 3) — search, tabs, popular rail
+    'popular_today' => 'Popular today',
+    'search_menu' => 'Search the menu…',
+    'category_all' => 'All',
+    'no_search_results' => 'No items match your search.',
+
     // Cart
     'add_to_order' => 'Add to Order',
     'review_order' => 'Review Order',

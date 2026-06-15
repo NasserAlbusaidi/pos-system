@@ -120,26 +120,114 @@
         </div>
     </section>
 
-    <main class="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-6 pb-32 sm:px-6">
-        <section class="surface-card p-5 sm:p-6">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="section-headline">{{ __('guest.guest_experience') }}</p>
-                    <h2 class="mt-1 text-3xl font-extrabold leading-none text-ink">{{ __('guest.build_your_order') }}</h2>
+    {{-- Browse skin (mockup screens 2b / 3): sticky search + category tabs, then
+         the Popular rail and the full category list. Search and tab filtering are
+         client-side over the already-rendered, server-validated menu — no extra
+         Livewire round-trips. Sale / limited-offer / sold-out states and the three
+         themes are preserved by the existing card markup below. --}}
+    <main
+        x-data="{
+            query: '',
+            activeCategory: 'all',
+            allNames: @js(array_values($searchNames)),
+            get hasMatches() {
+                const q = this.query.toLowerCase().trim();
+                return q === '' || this.allNames.some(n => n.includes(q));
+            },
+        }"
+        class="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 sm:px-6"
+    >
+        {{-- Pinned bar: search + horizontal category tabs --}}
+        <div class="guest-pinbar">
+            <label class="guest-search">
+                <svg class="guest-search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input
+                    type="search"
+                    x-model="query"
+                    class="guest-search__input"
+                    placeholder="{{ __('guest.search_menu') }}"
+                    aria-label="{{ __('guest.search_menu') }}"
+                >
+            </label>
+
+            @if($categories->isNotEmpty())
+                <div class="guest-tabs" role="tablist">
+                    <button
+                        type="button"
+                        @click="activeCategory = 'all'"
+                        class="guest-tab"
+                        :class="{ 'guest-tab--on': activeCategory === 'all' }"
+                    >{{ __('guest.category_all') }}</button>
+                    @foreach($categories as $category)
+                        <button
+                            type="button"
+                            @click="activeCategory = '{{ $category->id }}'"
+                            class="guest-tab"
+                            :class="{ 'guest-tab--on': activeCategory === '{{ $category->id }}' }"
+                        >{{ $category->translated('name') }}</button>
+                    @endforeach
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <button type="button" onclick="window.biteFavorites.load({{ $shop->id }})" class="btn-secondary !px-3 !py-2">
-                        {{ __('guest.load_favorite') }}
-                    </button>
-                    <button type="button" wire:click="saveFavorite" class="btn-primary !px-3 !py-2">
-                        {{ __('guest.save_favorite') }}
-                    </button>
+            @endif
+        </div>
+
+        {{-- Popular today rail (mockup screen 2/2b/3). Hidden while searching or
+             when a single category is selected, since the list below covers it. --}}
+        @if($popularProducts->isNotEmpty())
+            <section class="guest-popular" x-show="query === '' && activeCategory === 'all'">
+                <div class="guest-popular__head">
+                    <h3 class="guest-popular__title">{{ __('guest.popular_today') }}</h3>
                 </div>
-            </div>
-        </section>
+                <div class="guest-popular__rail">
+                    @foreach($popularProducts as $product)
+                        @php
+                            $popTimePriced = $pricingRules->isNotEmpty()
+                                ? $product->getTimePriced($pricingRules)
+                                : null;
+                            $popHasTimeDiscount = $popTimePriced !== null && $popTimePriced < $product->final_price;
+                            $popDisplayPrice = $popHasTimeDiscount ? $popTimePriced : ($product->is_on_sale ? $product->final_price : $product->price);
+                        @endphp
+                        <article class="guest-pcard" wire:key="popular-{{ $product->id }}">
+                            <button
+                                type="button"
+                                wire:click="addToCart({{ $product->id }})"
+                                class="guest-pcard__tile"
+                                aria-label="Add {{ $product->translated('name') }} to order"
+                            >
+                                @if(productImage($product, 'card'))
+                                    <img src="{{ productImage($product, 'card') }}" alt="{{ $product->translated('name') }}" class="guest-pcard__img" loading="lazy">
+                                @else
+                                    <svg class="guest-pcard__placeholder" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                    </svg>
+                                @endif
+                                @if($product->is_on_sale)
+                                    <span class="guest-pcard__flag">{{ __('guest.flash_sale') }}</span>
+                                @elseif($popHasTimeDiscount)
+                                    <span class="guest-pcard__flag">{{ __('guest.limited_offer') }}</span>
+                                @endif
+                            </button>
+                            <p class="guest-pcard__name">{{ $product->translated('name') }}</p>
+                            <span class="menu-product-price guest-pcard__price">
+                                @if($popHasTimeDiscount || $product->is_on_sale)
+                                    <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
+                                @endif
+                                <x-price :amount="$popDisplayPrice" :shop="$shop" />
+                            </span>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        {{-- Empty-search hint (shown only when search hides every item) --}}
+        <p class="guest-noresults" x-show="query.trim() !== '' && !hasMatches" x-cloak>
+            {{ __('guest.no_search_results') }}
+        </p>
 
         {{-- Skeleton product cards shown while language switches --}}
-        <div wire:loading wire:target="switchLanguage" class="space-y-10">
+        <div wire:loading wire:target="switchLanguage" class="space-y-10 pt-4">
             @for($s = 0; $s < 2; $s++)
                 <section class="space-y-4">
                     <div class="skeleton h-5 w-32">&nbsp;</div>
@@ -161,7 +249,18 @@
         {{-- Actual menu content hidden during language switch --}}
         <div wire:loading.remove wire:target="switchLanguage">
             @forelse($categories as $category)
-                <section>
+                @php
+                    $categoryNames = $category->products
+                        ->map(fn ($p) => $searchNames[$p->id] ?? '')
+                        ->values()
+                        ->all();
+                @endphp
+                <section
+                    data-category-section="{{ $category->id }}"
+                    x-data="{ names: @js($categoryNames) }"
+                    x-show="(activeCategory === 'all' || activeCategory === '{{ $category->id }}')
+                        && (query.trim() === '' || names.some(n => n.includes(query.toLowerCase().trim())))"
+                >
                     <h3 class="menu-category-header">{{ $category->translated('name') }}</h3>
 
                     <div x-data="{ expanded: null }" class="menu-product-grid">
@@ -172,12 +271,18 @@
                                     : null;
                                 $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
                                 $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
+                                $searchName = $searchNames[$product->id] ?? '';
+                                // Shared filter attributes spread onto each theme's <article> so
+                                // client-side search hides non-matching cards without a round-trip.
+                                $filterAttrs = 'data-product data-name="'.e($searchName).'" '
+                                    .'x-bind:hidden="query.trim() !== \'\' && !$el.dataset.name.includes(query.toLowerCase().trim())"';
                             @endphp
 
                             @if($theme === 'modern')
                                 {{-- Modern theme: horizontal card (image left, text right) --}}
                                 <article
                                     class="surface-card menu-product-card menu-card-modern {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
+                                    {!! $filterAttrs !!}
                                     wire:key="product-{{ $product->id }}"
                                 >
                                     {{-- Sold Out badge --}}
@@ -241,6 +346,7 @@
                                 <article
                                     class="surface-card menu-product-card menu-card-dark {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                     x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
+                                    {!! $filterAttrs !!}
                                     wire:key="product-{{ $product->id }}"
                                 >
                                     {{-- Sold Out badge --}}
@@ -306,6 +412,7 @@
                                 <article
                                     class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                     x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
+                                    {!! $filterAttrs !!}
                                     @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
                                     wire:key="product-{{ $product->id }}"
                                 >
@@ -639,35 +746,6 @@
             </div>
         </div>
     @endif
-
-    @once
-        <script>
-            document.addEventListener('livewire:initialized', () => {
-                window.addEventListener('favorite:save', (event) => {
-                    const items = event.detail.items || [];
-                    const shop = event.detail.shop || 'default';
-                    const key = `bite_favorite_${shop}`;
-                    localStorage.setItem(key, JSON.stringify(items));
-                });
-
-                window.biteFavorites = window.biteFavorites || {};
-                window.biteFavorites.load = (shop) => {
-                    const key = `bite_favorite_${shop}`;
-                    let items = [];
-                    try {
-                        const raw = localStorage.getItem(key);
-                        items = raw ? JSON.parse(raw) : [];
-                    } catch (error) {
-                        items = [];
-                    }
-
-                    if (window.Livewire) {
-                        window.Livewire.dispatch('favorite:apply', { items });
-                    }
-                };
-            });
-        </script>
-    @endonce
 
     @if($showModifierModal && $customizingProduct)
         <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">

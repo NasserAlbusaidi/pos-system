@@ -1,0 +1,469 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot CSS — extracted from app.css to keep app.css under the
+   800-line project ceiling. Imported by app.css. Guest-only selectors
+   (language gate, hero shell, browse skin: pinbar/search/tabs/popular).
+   Mobile-first, RTL-aware. Tokens only (paper/ink/crema + space/radius/shadow).
+   ────────────────────────────────────────────────────────────── */
+
+/* Language gate (screen 1) — full-screen overlay, blocks the menu */
+.guest-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8) var(--space-6);
+    text-align: center;
+    color: rgb(var(--paper));
+    background:
+        radial-gradient(circle at 12% 0%, rgb(var(--crema) / 0.22), transparent 42%),
+        linear-gradient(170deg, rgb(var(--ink)) 0%, rgb(var(--ink) / 0.96) 60%, rgb(var(--crema) / 0.28) 100%);
+    overflow-y: auto;
+}
+
+.guest-gate__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+    margin: auto;
+}
+
+.guest-gate__crest {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--paper) / 0.08);
+    border: 1px solid rgb(var(--paper) / 0.18);
+    overflow: hidden;
+}
+
+.guest-gate__crest-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-gate__crest-mark {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: rgb(var(--paper));
+}
+
+.guest-gate__word {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+}
+
+.guest-gate__ask {
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: rgb(var(--paper) / 0.72);
+}
+
+.guest-gate__langs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+    margin-top: var(--space-8);
+}
+
+.guest-gate__lang {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-4);
+    border: 0;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.guest-gate__lang--primary {
+    background: rgb(var(--crema));
+    color: rgb(var(--paper));
+    box-shadow: 0 10px 22px rgb(var(--crema) / 0.32);
+}
+
+.guest-gate__lang--alt {
+    background: rgb(var(--paper) / 0.1);
+    border: 1px solid rgb(var(--paper) / 0.22);
+    color: rgb(var(--paper));
+}
+
+.guest-gate__lang:hover {
+    transform: translateY(-1px);
+}
+
+.guest-gate__lang:active {
+    transform: translateY(0);
+}
+
+/* Hero shell (screens 2 / 2b) */
+.guest-hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    color: rgb(var(--paper));
+}
+
+.guest-hero--placeholder {
+    background:
+        radial-gradient(circle at 18% 18%, rgb(var(--crema) / 0.30), transparent 55%),
+        linear-gradient(150deg, rgb(var(--crema) / 0.20), rgb(var(--signal) / 0.14) 60%, rgb(var(--ink) / 0.20));
+}
+
+.guest-hero__cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 28%, rgb(var(--ink) / 0.68));
+}
+
+.guest-hero__meta {
+    position: absolute;
+    inset-inline: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 1;
+}
+
+.guest-hero__logo {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-sm);
+    background: rgb(var(--paper));
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.guest-hero__logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-hero__wordmark {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: rgb(var(--ink));
+}
+
+.guest-hero__name {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: rgb(var(--paper));
+}
+
+.guest-hero__sub {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.guest-hero__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    background: rgb(var(--signal) / 0.92);
+    color: rgb(var(--paper));
+}
+
+.guest-hero__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+.guest-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    background: rgb(var(--paper) / 0.16);
+    color: rgb(var(--paper) / 0.92);
+}
+
+/* Powered by Bite — gate footer + page footer */
+.guest-powered {
+    flex: none;
+    padding: var(--space-3);
+    text-align: center;
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.02em;
+    color: rgb(var(--paper) / 0.7);
+}
+
+.guest-powered b {
+    color: rgb(var(--crema));
+    font-weight: var(--font-weight-semibold);
+}
+
+.guest-powered--page {
+    color: rgb(var(--ink-soft));
+    padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+/* RTL — mirror text alignment for the gate; logical props handle the hero */
+[dir="rtl"] .guest-gate,
+[dir="rtl"] .guest-hero__meta {
+    text-align: right;
+}
+
+[dir="rtl"] .guest-gate__panel {
+    align-items: center;
+}
+
+[dir="rtl"] .guest-gate__word,
+[dir="rtl"] .guest-gate__crest-mark,
+[dir="rtl"] .guest-hero__name {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}
+
+@media (min-width: 640px) {
+    .guest-hero {
+        height: 260px;
+    }
+
+    .guest-hero__meta {
+        inset-inline: var(--space-6);
+        bottom: var(--space-6);
+    }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot — Menu browse: search, category tabs, popular rail
+   (Phase 2, #22). Mockup screens 2b / 3. Tokens only, RTL-aware.
+   Search + tab filtering is client-side (Alpine) over the
+   server-rendered, server-validated menu.
+   ────────────────────────────────────────────────────────────── */
+
+/* Sticky bar: search box + horizontal category tabs */
+.guest-pinbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    margin-inline: calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    background: rgb(var(--paper) / 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgb(var(--line) / 0.5);
+}
+
+.guest-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--panel));
+    border: 1px solid rgb(var(--line));
+    color: rgb(var(--ink-soft));
+}
+
+.guest-search__icon {
+    flex: none;
+    color: rgb(var(--ink-soft));
+}
+
+.guest-search__input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: rgb(var(--ink));
+    outline: none;
+}
+
+.guest-search__input::placeholder {
+    color: rgb(var(--ink-soft));
+}
+
+/* Hide the native clear button for a consistent look */
+.guest-search__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.guest-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.guest-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.guest-tab {
+    flex: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgb(var(--line) / 0.7);
+    background: rgb(var(--panel));
+    color: rgb(var(--ink-soft));
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.guest-tab--on {
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+    border-color: transparent;
+}
+
+/* Popular today rail */
+.guest-popular {
+    padding-top: var(--space-5);
+}
+
+.guest-popular__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.guest-popular__title {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: rgb(var(--ink));
+}
+
+.guest-popular__rail {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.guest-popular__rail::-webkit-scrollbar {
+    display: none;
+}
+
+.guest-pcard {
+    flex: none;
+    width: 138px;
+}
+
+.guest-pcard__tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 104px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    background:
+        linear-gradient(150deg, rgb(var(--crema) / 0.16), rgb(var(--signal) / 0.10));
+    box-shadow: var(--shadow-sm);
+    color: rgb(var(--ink) / 0.55);
+    transition: transform 150ms ease;
+}
+
+.guest-pcard__tile:hover {
+    transform: translateY(-2px);
+}
+
+.guest-pcard__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-pcard__placeholder {
+    color: rgb(var(--ink) / 0.4);
+}
+
+.guest-pcard__flag {
+    position: absolute;
+    top: var(--space-2);
+    inset-inline-start: var(--space-2);
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: rgb(var(--alert));
+    color: rgb(var(--paper));
+    font-size: 9px;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.guest-pcard__name {
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    color: rgb(var(--ink));
+}
+
+.guest-pcard__price {
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+}
+
+/* Empty-search hint */
+.guest-noresults {
+    padding: var(--space-12) var(--space-4);
+    text-align: center;
+    color: rgb(var(--ink-soft));
+    font-size: var(--font-size-sm);
+}
+
+/* RTL — logical properties handle most flips; tab/rail scroll direction
+   follows the document direction automatically. */
+[dir="rtl"] .guest-popular__title {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}
