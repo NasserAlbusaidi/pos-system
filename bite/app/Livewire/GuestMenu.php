@@ -538,6 +538,34 @@ class GuestMenu extends Component
         }
     }
 
+    /**
+     * Open the product-detail sheet for ANY product, with or without modifiers
+     * (Phase 7e, #23-followup). The sheet is the only place the per-item note
+     * textarea lives, so on a modifier-less bakery menu it must still be
+     * reachable for allergen-safety requests. Tapping a product card calls this;
+     * the '+' button stays a quick-add via addToCart().
+     *
+     * The product is loaded shop-scoped + orderable() so a foreign or
+     * unavailable product id can never populate the sheet (tenant isolation).
+     */
+    public function openProductSheet(int $productId): void
+    {
+        $product = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->orderable()
+            ->find($productId);
+
+        if (! $product) {
+            return;
+        }
+
+        $this->customizingProduct = $product;
+        $this->selectedModifiers = [];
+        $this->itemNote = '';
+        $this->modifierError = null;
+        $this->showModifierModal = true;
+    }
+
     public function addToCart($productId)
     {
         if (! $this->ensureGroupCartValid()) {
@@ -557,6 +585,7 @@ class GuestMenu extends Component
         if ($product->modifierGroups->isNotEmpty() && ! $this->showModifierModal) {
             $this->customizingProduct = $product;
             $this->selectedModifiers = [];
+            $this->itemNote = '';
             $this->modifierError = null;
             $this->showModifierModal = true;
 

@@ -21,6 +21,7 @@ return [
     'no_items_available' => 'لا توجد عناصر متاحة',
     'no_items_hint' => 'تحقق قريباً — يتم تحديث القائمة.',
     'add_item_aria' => 'أضف :name إلى الطلب',
+    'view_details_aria' => 'عرض تفاصيل :name',
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
 

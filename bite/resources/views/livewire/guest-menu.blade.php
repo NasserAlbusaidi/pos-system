@@ -215,8 +215,19 @@
                                         <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
                                     @endif
 
-                                    {{-- Horizontal layout: image left, content right --}}
-                                    <div class="menu-card-modern-inner">
+                                    {{-- Horizontal layout: image left, content right.
+                                         Tapping the card body opens the detail sheet
+                                         (Phase 7e, #23-followup) so a per-item note is
+                                         reachable on every product. The '+' button keeps
+                                         wire:click.stop so it stays a quick-add. --}}
+                                    <div class="menu-card-modern-inner"
+                                         @if($product->is_available)
+                                             wire:click="openProductSheet({{ $product->id }})"
+                                             role="button"
+                                             tabindex="0"
+                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
+                                         @endif
+                                    >
                                         <div class="menu-card-modern-image"
                                              x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }">
                                             @if(productImage($product, 'card'))
@@ -281,8 +292,17 @@
                                         <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
                                     @endif
 
-                                    {{-- Hero image with overlay --}}
-                                    <div class="menu-product-image-area">
+                                    {{-- Hero image with overlay. Tapping the image/text
+                                         opens the detail sheet (Phase 7e, #23-followup);
+                                         the '+' button keeps wire:click.stop as quick-add. --}}
+                                    <div class="menu-product-image-area"
+                                         @if($product->is_available)
+                                             wire:click="openProductSheet({{ $product->id }})"
+                                             role="button"
+                                             tabindex="0"
+                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
+                                         @endif
+                                    >
                                         <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
                                         @if(productImage($product, 'card'))
                                             <img src="{{ productImage($product, 'card') }}"
@@ -328,14 +348,20 @@
                                 </article>
 
                             @else
-                                {{-- Warm theme (default): vertical card, 2-column grid --}}
+                                {{-- Warm theme (default): vertical card, 2-column grid.
+                                     Tapping the image/body opens the detail sheet
+                                     (Phase 7e, #23-followup); the '+' button keeps
+                                     wire:click.stop as quick-add. Sold-out products
+                                     keep the inline accordion (no sheet to open). --}}
                                 <article
                                     class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
                                     x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
                                     data-product
                                     data-name="{{ $searchName }}"
                                     x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
-                                    @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
+                                    @if(! $product->is_available)
+                                        @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
+                                    @endif
                                     wire:key="product-{{ $product->id }}"
                                 >
                                     {{-- Sale/Discount badge --}}
@@ -352,8 +378,16 @@
                                         </div>
                                     @endif
 
-                                    {{-- Image area: fixed height, shimmer while loading --}}
-                                    <div class="menu-product-image-area">
+                                    {{-- Image area: fixed height, shimmer while loading.
+                                         Opens the detail sheet on tap (available items). --}}
+                                    <div class="menu-product-image-area"
+                                         @if($product->is_available)
+                                             wire:click="openProductSheet({{ $product->id }})"
+                                             role="button"
+                                             tabindex="0"
+                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
+                                         @endif
+                                    >
                                         {{-- Shimmer skeleton (shown while image loads) --}}
                                         <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
 
@@ -382,8 +416,14 @@
                                         </div>
                                     </div>
 
-                                    {{-- Name + price + quick-add --}}
-                                    <div class="menu-product-body">
+                                    {{-- Name + price + quick-add. Tapping the body opens
+                                         the detail sheet (available items); the '+' keeps
+                                         wire:click.stop as quick-add. --}}
+                                    <div class="menu-product-body"
+                                         @if($product->is_available)
+                                             wire:click="openProductSheet({{ $product->id }})"
+                                         @endif
+                                    >
                                         <p class="menu-product-name">{{ $product->translated('name') }}</p>
                                         <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
                                             <span class="menu-product-price">
