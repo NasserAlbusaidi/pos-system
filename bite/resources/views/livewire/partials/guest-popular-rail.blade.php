@@ -22,7 +22,7 @@
                         type="button"
                         wire:click="addToCart({{ $product->id }})"
                         class="guest-pcard__tile"
-                        aria-label="Add {{ $product->translated('name') }} to order"
+                        aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}"
                     >
                         @if(productImage($product, 'card'))
                             <img src="{{ productImage($product, 'card') }}" alt="{{ $product->translated('name') }}" class="guest-pcard__img" loading="lazy">

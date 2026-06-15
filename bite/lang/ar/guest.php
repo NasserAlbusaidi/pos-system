@@ -19,6 +19,8 @@ return [
     'load_favorite' => 'تحميل المفضلة',
     'save_favorite' => 'حفظ المفضلة',
     'no_items_available' => 'لا توجد عناصر متاحة',
+    'no_items_hint' => 'تحقق قريباً — يتم تحديث القائمة.',
+    'add_item_aria' => 'أضف :name إلى الطلب',
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
 

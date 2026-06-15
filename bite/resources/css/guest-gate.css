@@ -1,0 +1,125 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot — Language gate (screen 1). Full-screen overlay that
+   blocks the menu until a language is chosen. Extracted from
+   guest-browse.css to keep each unit under the 800-line project
+   ceiling. Imported by app.css. Tokens only, RTL-aware.
+   ────────────────────────────────────────────────────────────── */
+
+/* Language gate (screen 1) — full-screen overlay, blocks the menu */
+.guest-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8) var(--space-6);
+    text-align: center;
+    color: rgb(var(--paper));
+    background:
+        radial-gradient(circle at 12% 0%, rgb(var(--crema) / 0.22), transparent 42%),
+        linear-gradient(170deg, rgb(var(--ink)) 0%, rgb(var(--ink) / 0.96) 60%, rgb(var(--crema) / 0.28) 100%);
+    overflow-y: auto;
+}
+
+.guest-gate__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+    margin: auto;
+}
+
+.guest-gate__crest {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--paper) / 0.08);
+    border: 1px solid rgb(var(--paper) / 0.18);
+    overflow: hidden;
+}
+
+.guest-gate__crest-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-gate__crest-mark {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: rgb(var(--paper));
+}
+
+.guest-gate__word {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+}
+
+.guest-gate__ask {
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: rgb(var(--paper) / 0.72);
+}
+
+.guest-gate__langs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+    margin-top: var(--space-8);
+}
+
+.guest-gate__lang {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-4);
+    border: 0;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.guest-gate__lang--primary {
+    background: rgb(var(--crema));
+    color: rgb(var(--paper));
+    box-shadow: 0 10px 22px rgb(var(--crema) / 0.32);
+}
+
+.guest-gate__lang--alt {
+    background: rgb(var(--paper) / 0.1);
+    border: 1px solid rgb(var(--paper) / 0.22);
+    color: rgb(var(--paper));
+}
+
+.guest-gate__lang:hover {
+    transform: translateY(-1px);
+}
+
+.guest-gate__lang:active {
+    transform: translateY(0);
+}
+
+/* RTL — gate stays centered (matches mockup). */
+[dir="rtl"] .guest-gate__panel {
+    align-items: center;
+}
+
+[dir="rtl"] .guest-gate__word,
+[dir="rtl"] .guest-gate__crest-mark {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}

@@ -19,6 +19,8 @@ return [
     'load_favorite' => 'Load Favorite',
     'save_favorite' => 'Save Favorite',
     'no_items_available' => 'No items available',
+    'no_items_hint' => 'Check back soon — the menu is being updated.',
+    'add_item_aria' => 'Add :name to order',
     'flash_sale' => 'Flash Sale',
     'limited_offer' => 'Limited Offer',
 

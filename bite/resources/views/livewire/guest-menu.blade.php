@@ -252,7 +252,7 @@
                                                     <x-price :amount="$displayPrice" :shop="$shop" />
                                                 </span>
                                                 @if($product->is_available)
-                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="Add {{ $product->translated('name') }} to order">+</button>
+                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}">+</button>
                                                 @endif
                                             </div>
                                         </div>
@@ -311,7 +311,7 @@
                                                     <x-price :amount="$displayPrice" :shop="$shop" />
                                                 </span>
                                                 @if($product->is_available)
-                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="Add {{ $product->translated('name') }} to order">+</button>
+                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}">+</button>
                                                 @endif
                                             </div>
                                         </div>
@@ -393,7 +393,7 @@
                                                     wire:click.stop="addToCart({{ $product->id }})"
                                                     class="menu-product-add"
                                                     type="button"
-                                                    aria-label="Add {{ $product->translated('name') }} to order"
+                                                    aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}"
                                                 >+</button>
                                             @endif
                                         </div>
@@ -416,7 +416,7 @@
             @empty
                 <section class="surface-card border-dashed p-14 text-center">
                     <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{{ __('guest.no_items_available') }}</p>
-                    <p class="mt-2 text-sm text-ink-soft">Check back soon -- the menu is being updated.</p>
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('guest.no_items_hint') }}</p>
                 </section>
             @endforelse
         </div>
