@@ -59,9 +59,23 @@ class PrintNodeService
                     $lines[] = '  + '.$modifier->modifier_option_name_snapshot_en;
                 }
             }
+            // Guest special request — safety-critical (allergens). Flagged so
+            // kitchen staff cannot miss it on the printed ticket.
+            if (filled($item->note)) {
+                $lines[] = '  ** NOTE: '.$item->note;
+            }
         }
 
         $lines[] = '-------------------------';
+
+        // Guest order-level note (Phase 4) — one instruction for the whole
+        // order. May carry a shared allergen flag, so it is printed prominently
+        // alongside the per-item notes above.
+        if (filled($order->order_note)) {
+            $lines[] = '** ORDER NOTE: '.$order->order_note;
+            $lines[] = '-------------------------';
+        }
+
         $lines[] = 'Total: '.formatPrice($order->total_amount, $order->shop);
         $lines[] = now()->format('Y-m-d H:i');
 

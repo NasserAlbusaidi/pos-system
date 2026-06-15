@@ -26,11 +26,13 @@ class Order extends Model
         'tax_amount',
         'payment_method',
         'tracking_token',
+        'idempotency_key',
         'fulfilled_at',
         'paid_at',
         'expires_at',
         'customer_rating',
         'customer_feedback',
+        'order_note',
     ];
 
     protected $guarded = [

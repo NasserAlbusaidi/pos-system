@@ -35,3 +35,11 @@
 - **Cons:** Minimal — `Storage::delete()` is one line
 - **Context:** In the update path: before storing the new image, check if `$product->image_url` exists and delete it via `Storage::disk('public')->delete($product->image_url)`. Also consider a cleanup command for existing orphans.
 - **Depends on / blocked by:** None
+
+## Refactor: GuestMenu.php exceeds the 800-line file ceiling
+- **What:** Split `app/Livewire/GuestMenu.php` (~1,230 lines) below the 800-line project limit in `CLAUDE.md`
+- **Why:** The component bundles five concerns — solo cart, group cart, totals/pricing, loyalty/favorites, and order submission. It was already over-limit before the browse re-skin and keeps accreting.
+- **How:** Extract cohesive seams into traits or services, e.g. a `HandlesGroupCart` trait (createGroup/joinGroup/leaveGroup/ensureGroupCartValid/removeGroupItem), a `CartTotals`/pricing concern (calculateTotals + the modifier helpers), and a loyalty/favorites concern (recognizeCustomer/orderUsual/applyFavorite/applyFavoriteItems). Keep server-side price recompute and tenant isolation intact — they are the security boundary.
+- **Pros:** Brings the file under the ceiling, isolates the financial/tenant-safety code for focused review
+- **Cons:** Touches a large, security-sensitive component; needs the existing Guest test suite green before/after
+- **Depends on / blocked by:** None. Pure refactor — schedule independently of feature work.

@@ -5,14 +5,31 @@ return [
     'guest_ordering' => 'Guest Ordering',
     'mobile_checkout' => 'Mobile Checkout',
 
+    // Language gate (screen 1)
+    'choose_language' => 'Choose your language · اختر لغتك',
+    'powered_by' => 'Powered by',
+
+    // Hero (screen 2)
+    'status_open' => 'Open now',
+    'dine_in' => 'Dine-in',
+
     // Menu
     'guest_experience' => 'Guest Experience',
     'build_your_order' => 'Build Your Order',
     'load_favorite' => 'Load Favorite',
     'save_favorite' => 'Save Favorite',
     'no_items_available' => 'No items available',
+    'no_items_hint' => 'Check back soon — the menu is being updated.',
+    'add_item_aria' => 'Add :name to order',
+    'view_details_aria' => 'View details for :name',
     'flash_sale' => 'Flash Sale',
     'limited_offer' => 'Limited Offer',
+
+    // Browse (screen 2b / 3) — search, tabs, popular rail
+    'popular_today' => 'Popular today',
+    'search_menu' => 'Search the menu…',
+    'category_all' => 'All',
+    'no_search_results' => 'No items match your search.',
 
     // Cart
     'add_to_order' => 'Add to Order',
@@ -24,6 +41,40 @@ return [
     'cancel' => 'Cancel',
     'place_order' => 'Place Order',
     'send_to_kitchen' => 'Send order to kitchen?',
+
+    // Cart / review (screen 5) + checkout (screen 6) — Phase 4 (#24)
+    'cart_empty_title' => 'Your order is empty',
+    'cart_empty_body' => 'Browse the menu and tap + to start your order.',
+    'browse_menu' => 'Browse the menu',
+    'continue_to_checkout' => 'Continue to checkout',
+    'counter_pickup_hint' => 'Counter pickup — we’ll call your name.',
+    'pay_at_counter_hint' => 'Pay at the counter when you collect — cash or card. The kitchen starts once payment is confirmed.',
+    'place_order_hint' => 'By placing this order you agree to pay at the counter.',
+
+    // Order-level note (whole order) — Phase 4 (#24)
+    'order_note_label' => 'Note for the kitchen',
+    'order_note_placeholder' => 'Anything for the whole order? Allergy, timing, table…',
+
+    // Checkout contact + payment (screen 6)
+    'almost_there' => 'Almost there',
+    'confirm_your_order' => 'Confirm your order',
+    'your_name' => 'Your name',
+    'name_placeholder' => 'e.g. Layla',
+    'phone_label' => 'Phone',
+    'phone_hint' => 'for order updates & points',
+    'name_required' => 'Please enter your name.',
+    'phone_required' => 'Please enter your phone number.',
+    'cart_too_large' => 'Your order is too large to place. Please reduce the quantities or split it into a smaller order.',
+    'order_total_too_high' => 'Your order total is too high to place online. Please order at the counter or split it into a smaller order.',
+    'rate_limit_error' => "You're ordering too quickly. Please wait a moment and try again.",
+    'payment' => 'Payment',
+    'pay_at_counter' => 'Pay at the counter',
+    'pay_at_counter_desc' => 'Cash or card when you collect',
+
+    // Cart line controls
+    'decrease_qty' => 'Decrease quantity',
+    'increase_qty' => 'Increase quantity',
+    'remove_item' => 'Remove item',
 
     // Totals
     'subtotal' => 'Subtotal',
@@ -39,6 +90,13 @@ return [
     'select_at_most' => 'Select at most :count option(s) for :group.',
     'invalid_modifier_selection' => 'Invalid modifier selection.',
     'base_price' => 'Base',
+    'included' => 'Included',
+    'add_ons' => 'Add-ons',
+    'up_to' => 'up to :count',
+
+    // Item note (allergen / special request) — pilot safety feature
+    'item_note_label' => 'Special request',
+    'item_note_placeholder' => 'Less salt, no nuts, allergy note…',
 
     // Loyalty
     'loyalty_phone' => 'Loyalty Phone (Optional)',
@@ -113,4 +171,24 @@ return [
     'submit_feedback' => 'Submit Feedback',
     'thank_you_feedback' => 'Thank you for your feedback!',
     'feedback_placeholder' => 'Any comments? (optional)',
+
+    // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_show_counter' => 'Show this at the counter',
+    'items_count' => '{0}No items|{1}:count item|[2,*]:count items',
+    'rating_stars' => '{1}:count star|[2,*]:count stars',
+    'track_step_received' => 'Order received',
+    'track_step_received_hint' => 'We have your order.',
+    'track_step_accepted' => 'Confirmed',
+    'track_step_accepted_hint' => 'Payment confirmed at the counter — the kitchen has started.',
+    'track_step_preparing' => 'Preparing',
+    'track_step_preparing_hint' => 'The kitchen is making your order.',
+    'track_step_ready' => 'Ready for pickup',
+    'track_step_ready_hint' => 'Your order is ready — collect it at the counter.',
+    'track_cancelled_title' => 'Order cancelled',
+
+    // Post-order review invite (screen 7, #25)
+    'rate_on_google' => 'Rate us on Google',
+    'rate_on_google_hint' => 'Opens our Google listing',
+    'follow_on_instagram' => 'Follow on Instagram',
+    'follow_on_instagram_hint' => 'New bakes and offers',
 ];

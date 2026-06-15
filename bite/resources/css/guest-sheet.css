@@ -1,0 +1,333 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot — Product detail SHEET (Phase 3, #23). Mockup screen 4.
+   Re-skins the modifier modal: image hero, name/price, choice chips,
+   add-ons, special-request note, sticky action bar. Extracted from
+   guest-browse.css to keep each unit under the 800-line project
+   ceiling. Imported by app.css. Tokens only, RTL-aware. Modifier
+   min/max validation is unchanged server-side — this is presentation
+   only.
+   ────────────────────────────────────────────────────────────── */
+
+/* Sheet shell: full-screen on mobile, centered card on >= sm. */
+.guest-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgb(var(--ink) / 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.guest-sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 520px;
+    max-height: 92vh;
+    overflow: hidden;
+    background: rgb(var(--paper));
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-lg);
+}
+
+.guest-sheet__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Image hero with close button */
+.guest-sheet__hero {
+    position: relative;
+    height: 200px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% 18%, rgb(var(--crema) / 0.20), transparent 55%),
+        linear-gradient(150deg, rgb(var(--crema) / 0.16), rgb(var(--signal) / 0.10) 60%, rgb(var(--ink) / 0.12));
+    color: rgb(var(--ink) / 0.4);
+}
+
+.guest-sheet__hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-sheet__close {
+    position: absolute;
+    top: var(--space-3);
+    inset-inline-end: var(--space-3);
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgb(var(--line) / 0.7);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--paper) / 0.92);
+    color: rgb(var(--ink));
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.guest-sheet__close:hover {
+    background: rgb(var(--paper));
+}
+
+.guest-sheet__body {
+    padding: var(--space-5) var(--space-4) var(--space-2);
+}
+
+.guest-sheet__name {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: rgb(var(--ink));
+}
+
+.guest-sheet__price {
+    margin-top: var(--space-2);
+    font-size: var(--font-size-lg);
+    color: rgb(var(--crema));
+    font-weight: var(--font-weight-semibold);
+}
+
+.guest-sheet__desc {
+    margin-top: var(--space-3);
+    font-size: var(--font-size-sm);
+    line-height: 1.55;
+    color: rgb(var(--ink-soft));
+}
+
+.guest-sheet__error {
+    margin: var(--space-3) var(--space-4) 0;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid rgb(var(--alert) / 0.35);
+    border-radius: var(--radius-sm);
+    background: rgb(var(--alert) / 0.1);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: rgb(var(--alert));
+}
+
+/* Modifier group */
+.guest-mgroup {
+    margin-top: var(--space-5);
+}
+
+.guest-mgroup__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.guest-mgroup__title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: rgb(var(--ink));
+}
+
+.guest-mgroup__req {
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    background: rgb(var(--crema) / 0.12);
+    color: rgb(var(--crema));
+    font-size: 10px;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.guest-mgroup__opt {
+    margin-inline-start: auto;
+    font-size: 10px;
+    font-weight: var(--font-weight-semibold);
+    color: rgb(var(--ink-soft));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Option row — choice chip styled as a full-width selectable row */
+.guest-opt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    margin: 0;
+    padding: var(--space-3) 0;
+    border: 0;
+    border-top: 1px solid rgb(var(--line) / 0.5);
+    background: transparent;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: rgb(var(--ink));
+    text-align: start;
+    cursor: pointer;
+}
+
+/* The real radio/checkbox is visually hidden but kept in the DOM so the
+   existing wire:click + @checked validation flow is untouched. */
+.guest-opt__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.guest-opt__mark {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgb(var(--line));
+    border-radius: var(--radius-pill);
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.guest-opt__mark--sq {
+    border-radius: 6px;
+}
+
+.guest-opt__input:checked + .guest-opt__mark {
+    border-color: rgb(var(--crema));
+    background: rgb(var(--crema));
+    box-shadow: inset 0 0 0 3px rgb(var(--paper));
+}
+
+.guest-opt__input:focus-visible + .guest-opt__mark {
+    outline: 2px solid rgb(var(--crema));
+    outline-offset: 2px;
+}
+
+.guest-opt__name {
+    flex: 1;
+    min-width: 0;
+    font-weight: var(--font-weight-medium);
+}
+
+.guest-opt__price {
+    flex: none;
+    font-size: var(--font-size-xs);
+    color: rgb(var(--ink-soft));
+    font-variant-numeric: tabular-nums;
+}
+
+.guest-opt__price--add {
+    color: rgb(var(--crema));
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Special-request note */
+.guest-note {
+    margin-top: var(--space-5);
+}
+
+.guest-note__label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(var(--ink));
+}
+
+.guest-note__field {
+    width: 100%;
+    min-height: 64px;
+    padding: var(--space-3) var(--space-3);
+    border: 1px solid rgb(var(--line));
+    border-radius: var(--radius-md);
+    background: rgb(var(--panel));
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    color: rgb(var(--ink));
+    resize: vertical;
+}
+
+.guest-note__field::placeholder {
+    color: rgb(var(--ink-soft));
+}
+
+.guest-note__field:focus {
+    outline: none;
+    border-color: rgb(var(--crema));
+    box-shadow: 0 0 0 3px rgb(var(--crema) / 0.15);
+}
+
+/* Sticky action bar */
+.guest-actionbar {
+    flex: none;
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid rgb(var(--line) / 0.5);
+    background: rgb(var(--paper) / 0.96);
+    backdrop-filter: blur(8px);
+}
+
+.guest-addbtn {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: rgb(var(--crema));
+    color: rgb(var(--paper));
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgb(var(--crema) / 0.28);
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.guest-addbtn:hover {
+    transform: translateY(-1px);
+}
+
+.guest-addbtn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+.guest-addbtn__price {
+    margin-inline-start: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+    .guest-sheet-backdrop {
+        align-items: center;
+        padding: var(--space-6);
+    }
+
+    .guest-sheet {
+        border-radius: var(--radius-lg);
+    }
+}
+
+/* RTL — display font swap for the bakery wordmark/name. */
+[dir="rtl"] .guest-sheet__name {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}

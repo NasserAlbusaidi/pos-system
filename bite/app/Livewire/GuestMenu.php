@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\On;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class GuestMenu extends Component
@@ -30,6 +30,15 @@ class GuestMenu extends Component
 
     public $loyaltyError = null;
 
+    // Checkout contact (Phase 4, #24). Name + phone are required at checkout
+    // for the pay-at-counter pilot. Untrusted: trimmed on submit.
+    public $customerName = '';
+
+    // Guest-supplied order-level note (Phase 4, #24): one note for the whole
+    // order ("table by the window", shared allergen flag). Untrusted: trimmed
+    // + capped on submit. Reaches the kitchen (KDS card + printed ticket).
+    public $orderNote = '';
+
     // Customization state
     public $showModifierModal = false;
 
@@ -39,6 +48,10 @@ class GuestMenu extends Component
 
     public $selectedModifiers = [];
 
+    // Guest-supplied special request for the line being customized (allergen
+    // safety in the bakery pilot). Untrusted: trimmed + capped on add-to-cart.
+    public $itemNote = '';
+
     public $modifierError = null;
 
     public $recognizedCustomer = null;
@@ -47,7 +60,24 @@ class GuestMenu extends Component
 
     public $orderError = null;
 
+    // Per-checkout idempotency token (Phase 7a, #28). Set when the review sheet
+    // opens and sent with submitOrder. A double-click / network retry / replayed
+    // Livewire request carries the SAME token, so the order insert collides on
+    // the orders.idempotency_key UNIQUE index and we redirect to the existing
+    // order instead of creating a duplicate. Regenerated after a successful
+    // order so the next checkout is distinct.
+    //
+    // #[Locked]: server-minted, the client must never mutate it. Without the
+    // lock a guest could $wire.set() it to null (silently defeating idempotency)
+    // or to another order's known key (redirecting to a stranger's tracker).
+    #[Locked]
+    public ?string $idempotencyKey = null;
+
     public $locale = 'en';
+
+    // Whether the full-screen language gate should block the menu.
+    // True only when the visitor has NOT yet chosen a language this session.
+    public bool $showLanguageGate = false;
 
     // Group ordering state
     public $groupToken = null;
@@ -63,6 +93,11 @@ class GuestMenu extends Component
         // Determine locale: session override > shop default > 'en'
         $branding = $shop->branding ?? [];
         $this->locale = session('guest_locale', $branding['language'] ?? 'en');
+
+        // Show the language gate only when the visitor has not yet chosen a
+        // language this session. The rendering default above ('en' / shop
+        // default) is distinct from an explicit choice stored under 'guest_locale'.
+        $this->showLanguageGate = ! session()->has('guest_locale');
 
         // Generate or retrieve a stable participant ID for this browser session
         $this->participantId = session('guest_participant_id');
@@ -84,6 +119,21 @@ class GuestMenu extends Component
         $this->locale = $lang;
         session()->put('guest_locale', $lang);
         App::setLocale($lang);
+
+        // The <html dir> attribute is set by SetLocale middleware on full page
+        // loads only. Livewire updates are AJAX partials, so push the new
+        // direction to the browser immediately to keep RTL/LTR layout in sync.
+        $this->dispatch('guest-locale-changed', direction: $lang === 'ar' ? 'rtl' : 'ltr');
+    }
+
+    /**
+     * Handle a language pick from the full-screen gate: persist the choice via
+     * the existing switchLanguage() and dismiss the gate so the menu is shown.
+     */
+    public function chooseLanguage(string $lang): void
+    {
+        $this->switchLanguage($lang);
+        $this->showLanguageGate = false;
     }
 
     // ──────────────────────────────────
@@ -451,6 +501,14 @@ class GuestMenu extends Component
     public function toggleReview()
     {
         $this->showReviewModal = ! $this->showReviewModal;
+
+        // Mint a per-checkout idempotency token when the review sheet opens so
+        // every submit attempt for this checkout (including a double-click) is
+        // tied to one token. Only mint if absent, so re-opening the sheet does
+        // not reset a token already in flight.
+        if ($this->showReviewModal && $this->idempotencyKey === null) {
+            $this->idempotencyKey = (string) Str::uuid();
+        }
     }
 
     /**
@@ -480,6 +538,34 @@ class GuestMenu extends Component
         }
     }
 
+    /**
+     * Open the product-detail sheet for ANY product, with or without modifiers
+     * (Phase 7e, #23-followup). The sheet is the only place the per-item note
+     * textarea lives, so on a modifier-less bakery menu it must still be
+     * reachable for allergen-safety requests. Tapping a product card calls this;
+     * the '+' button stays a quick-add via addToCart().
+     *
+     * The product is loaded shop-scoped + orderable() so a foreign or
+     * unavailable product id can never populate the sheet (tenant isolation).
+     */
+    public function openProductSheet(int $productId): void
+    {
+        $product = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->orderable()
+            ->find($productId);
+
+        if (! $product) {
+            return;
+        }
+
+        $this->customizingProduct = $product;
+        $this->selectedModifiers = [];
+        $this->itemNote = '';
+        $this->modifierError = null;
+        $this->showModifierModal = true;
+    }
+
     public function addToCart($productId)
     {
         if (! $this->ensureGroupCartValid()) {
@@ -499,6 +585,7 @@ class GuestMenu extends Component
         if ($product->modifierGroups->isNotEmpty() && ! $this->showModifierModal) {
             $this->customizingProduct = $product;
             $this->selectedModifiers = [];
+            $this->itemNote = '';
             $this->modifierError = null;
             $this->showModifierModal = true;
 
@@ -518,9 +605,17 @@ class GuestMenu extends Component
 
         $modifierIds = $this->normalizeModifierIds($this->selectedModifiers);
 
-        // Generate a unique key for the cart (product_id + sorted modifiers)
+        // Sanitize the untrusted note before it enters cart state.
+        $note = $this->sanitizeNote($this->itemNote);
+
+        // Generate a unique key for the cart (product_id + sorted modifiers +
+        // note). Two otherwise-identical lines with different notes must stay
+        // separate so a per-line allergen request is never merged away.
         $modifierKey = ! empty($modifierIds) ? implode('-', collect($modifierIds)->sort()->toArray()) : 'plain';
         $itemKey = $productId.'-'.$modifierKey;
+        if ($note !== null) {
+            $itemKey .= '-n'.substr(md5($note), 0, 8);
+        }
 
         $pricingRules = $this->loadActivePricingRules();
         $displayPrice = $pricingRules->isNotEmpty()
@@ -546,6 +641,7 @@ class GuestMenu extends Component
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
                     'modifierNames' => $modifierNames,
+                    'note' => $note,
                 ]);
             }
         } else {
@@ -560,6 +656,7 @@ class GuestMenu extends Component
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
                     'modifierNames' => $modifierNames,
+                    'note' => $note,
                 ];
             }
         }
@@ -568,7 +665,38 @@ class GuestMenu extends Component
         $this->showModifierModal = false;
         $this->customizingProduct = null;
         $this->selectedModifiers = [];
+        $this->itemNote = '';
         $this->modifierError = null;
+    }
+
+    /**
+     * Trim and cap an untrusted guest item note. Returns null for blank input
+     * so the column stays NULL rather than an empty string.
+     */
+    protected function sanitizeNote($value): ?string
+    {
+        $note = trim((string) $value);
+        if ($note === '') {
+            return null;
+        }
+
+        return mb_substr($note, 0, 255);
+    }
+
+    /**
+     * Trim and cap the untrusted order-level note. Returns null for blank input
+     * so the column stays NULL rather than an empty string. Capped at 500 to
+     * match the DB text column's practical use (longer than an item note since
+     * it can carry several instructions for the whole order).
+     */
+    protected function sanitizeOrderNote($value): ?string
+    {
+        $note = trim((string) $value);
+        if ($note === '') {
+            return null;
+        }
+
+        return mb_substr($note, 0, 500);
     }
 
     /**
@@ -627,7 +755,7 @@ class GuestMenu extends Component
 
         $rateLimitKey = 'guest-order:'.request()->ip();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
-            $this->orderError = "You're ordering too quickly. Please wait a moment and try again.";
+            $this->orderError = __('guest.rate_limit_error');
             $this->showReviewModal = true;
 
             return;
@@ -636,9 +764,30 @@ class GuestMenu extends Component
 
         $this->orderError = null;
         $this->loyaltyError = null;
-        $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
-        if ($this->loyaltyPhone !== '' && ! $loyaltyPhone) {
-            $this->loyaltyError = __('guest.invalid_phone');
+
+        // Idempotency (Phase 7a, #28). Ensure a token exists even if submit is
+        // reached without the review sheet having opened (defence in depth), so
+        // every order created here is tied to a UNIQUE key.
+        if ($this->idempotencyKey === null) {
+            $this->idempotencyKey = (string) Str::uuid();
+        }
+
+        // If this exact token already produced an order (double-click, network
+        // retry, replayed request), short-circuit to that order's tracker
+        // instead of creating a duplicate. Scoped to this shop.
+        $existing = Order::where('shop_id', $this->shop->id)
+            ->where('idempotency_key', $this->idempotencyKey)
+            ->first();
+        if ($existing) {
+            return $this->redirectToOrder($existing);
+        }
+
+        // Caps (Phase 7a, #28): reject oversized / abusive carts early, before
+        // any order is created. Treat the cart as untrusted (the group-cart JSON
+        // especially). The total cap is checked later, once the server-side
+        // re-priced total is known.
+        if (! $this->passesQuantityAndLineCaps($cartItems)) {
+            $this->orderError = __('guest.cart_too_large');
             $this->showReviewModal = true;
 
             return;
@@ -695,6 +844,154 @@ class GuestMenu extends Component
             return;
         }
 
+        // Pay-at-counter checkout (Phase 4, #24): name + phone are required.
+        // Runs after the availability/price-integrity guard above so a stale or
+        // tampered cart is always caught, regardless of contact entry.
+        $customerName = trim((string) $this->customerName);
+        if ($customerName === '') {
+            $this->orderError = __('guest.name_required');
+            $this->showReviewModal = true;
+
+            return;
+        }
+        $customerName = mb_substr($customerName, 0, 255);
+
+        // Phone is required and validated through the existing loyalty regex.
+        $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
+        if (! $loyaltyPhone) {
+            $this->loyaltyError = trim((string) $this->loyaltyPhone) === ''
+                ? __('guest.phone_required')
+                : __('guest.invalid_phone');
+            $this->showReviewModal = true;
+
+            return;
+        }
+
+        $built = $this->buildOrderItems($cartItems, $products);
+        if ($built['error'] !== null) {
+            $this->orderError = $built['error'];
+            $this->showReviewModal = true;
+
+            return;
+        }
+
+        $orderItems = $built['items'];
+        $subtotalAmount = $built['subtotal'];
+        $taxAmount = $built['tax'];
+
+        if (empty($orderItems)) {
+            return;
+        }
+
+        // Total cap (Phase 7a, #28): use the server-side re-priced total, never
+        // the client-sent prices, so a tampered cart cannot slip past.
+        $totalAmount = round($subtotalAmount + $taxAmount, 3);
+        if ($totalAmount > (float) config('ordering.max_order_total', 1000)) {
+            $this->orderError = __('guest.order_total_too_high');
+            $this->showReviewModal = true;
+
+            return;
+        }
+
+        // Sanitize the untrusted order-level note before it touches the DB.
+        $orderNote = $this->sanitizeOrderNote($this->orderNote);
+
+        $persisted = $this->persistOrder($orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+
+        // Race-replay: a concurrent request with the same token won the UNIQUE
+        // index. Redirect to that order without re-running side effects — the
+        // winning request already did them.
+        if (! $persisted['created']) {
+            return $this->redirectToOrder($persisted['order']);
+        }
+
+        $this->finalizeOrderState($persisted['order'], $cartItems, $loyaltyPhone);
+
+        return $this->redirectToOrder($persisted['order']);
+    }
+
+    /**
+     * Persist the order and its items inside a transaction. On a unique-key
+     * race (a concurrent request with the same idempotency token inserted
+     * first) the existing order is returned with `created => false` so the
+     * caller redirects without re-running side effects.
+     *
+     * @return array{order: Order, created: bool}
+     */
+    protected function persistOrder(array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
+    {
+        $idempotencyKey = $this->idempotencyKey;
+
+        try {
+            $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems, $idempotencyKey) {
+                $order = Order::forceCreate([
+                    'shop_id' => $this->shop->id,
+                    'status' => 'unpaid',
+                    'customer_name' => $customerName,
+                    'loyalty_phone' => $loyaltyPhone,
+                    'order_note' => $orderNote,
+                    'subtotal_amount' => $subtotalAmount,
+                    'tax_amount' => round($taxAmount, 3),
+                    'total_amount' => $totalAmount,
+                    'tracking_token' => (string) Str::uuid(),
+                    'idempotency_key' => $idempotencyKey,
+                    'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
+                ]);
+
+                foreach ($orderItems as $item) {
+                    $orderItem = OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['product_id'],
+                        'product_name_snapshot_en' => $item['product_name_snapshot_en'],
+                        'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
+                        'price_snapshot' => $item['price_snapshot'],
+                        'quantity' => $item['quantity'],
+                        'note' => $item['note'],
+                    ]);
+
+                    foreach ($item['modifiers'] as $mod) {
+                        OrderItemModifier::create([
+                            'order_item_id' => $orderItem->id,
+                            'modifier_option_name_snapshot_en' => $mod['name_en'],
+                            'modifier_option_name_snapshot_ar' => $mod['name_ar'],
+                            'price_adjustment_snapshot' => $mod['price'],
+                        ]);
+                    }
+                }
+
+                return $order;
+            });
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Race: a concurrent request with the same token inserted first and
+            // won the UNIQUE index. Return that order rather than erroring or
+            // duplicating. Scoped to this shop.
+            $existing = Order::where('shop_id', $this->shop->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($existing) {
+                return ['order' => $existing, 'created' => false];
+            }
+
+            throw $e;
+        }
+
+        return ['order' => $order, 'created' => true];
+    }
+
+    /**
+     * Re-price the untrusted cart server-side and assemble the persisted order
+     * items. Prices are recomputed from fresh product/modifier data (never the
+     * client-sent values) and modifier ids are validated. Returns an `error`
+     * string on the first invalid line so the caller can reject before any
+     * order is created; otherwise returns the items and the re-priced totals.
+     *
+     * @param  array  $cartItems  Untrusted cart lines (POS or group JSON).
+     * @param  \Illuminate\Support\Collection  $products  Fresh products keyed by id.
+     * @return array{error: ?string, items: array, subtotal: float, tax: float}
+     */
+    protected function buildOrderItems(array $cartItems, $products): array
+    {
         $pricingRules = $this->loadActivePricingRules();
 
         $subtotalAmount = 0;
@@ -720,10 +1017,7 @@ class GuestMenu extends Component
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
             $modifierError = $this->validateCartModifierIds($product, $modifierIds);
             if ($modifierError) {
-                $this->orderError = $modifierError;
-                $this->showReviewModal = true;
-
-                return;
+                return ['error' => $modifierError, 'items' => [], 'subtotal' => 0, 'tax' => 0];
             }
 
             $validOptions = $this->getValidModifierOptions($product, $modifierIds);
@@ -751,49 +1045,27 @@ class GuestMenu extends Component
                 'product_name_snapshot_ar' => $product->name_ar,
                 'price_snapshot' => $itemPrice,
                 'quantity' => $quantity,
+                'note' => $this->sanitizeNote($item['note'] ?? null),
                 'modifiers' => $modifiersData,
             ];
         }
 
-        if (empty($orderItems)) {
-            return;
-        }
+        return [
+            'error' => null,
+            'items' => $orderItems,
+            'subtotal' => $subtotalAmount,
+            'tax' => $taxAmount,
+        ];
+    }
 
-        $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $loyaltyPhone, $orderItems) {
-            $order = Order::forceCreate([
-                'shop_id' => $this->shop->id,
-                'status' => 'unpaid',
-                'loyalty_phone' => $loyaltyPhone,
-                'subtotal_amount' => $subtotalAmount,
-                'tax_amount' => round($taxAmount, 3),
-                'total_amount' => round($subtotalAmount + $taxAmount, 3),
-                'tracking_token' => (string) Str::uuid(),
-                'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
-            ]);
-
-            foreach ($orderItems as $item) {
-                $orderItem = OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'product_name_snapshot_en' => $item['product_name_snapshot_en'],
-                    'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
-                    'price_snapshot' => $item['price_snapshot'],
-                    'quantity' => $item['quantity'],
-                ]);
-
-                foreach ($item['modifiers'] as $mod) {
-                    OrderItemModifier::create([
-                        'order_item_id' => $orderItem->id,
-                        'modifier_option_name_snapshot_en' => $mod['name_en'],
-                        'modifier_option_name_snapshot_ar' => $mod['name_ar'],
-                        'price_adjustment_snapshot' => $mod['price'],
-                    ]);
-                }
-            }
-
-            return $order;
-        });
-
+    /**
+     * Post-transaction side effects and state reset after an order is created:
+     * save favorites, fire the WhatsApp notification, tear down the group cart,
+     * clear the checkout fields, and regenerate the idempotency token so the
+     * next checkout is distinct.
+     */
+    protected function finalizeOrderState(Order $order, array $cartItems, ?string $loyaltyPhone): void
+    {
         // Save current cart as customer's favorites for "Order your usual"
         if ($loyaltyPhone) {
             $loyaltyService = app(LoyaltyService::class);
@@ -819,35 +1091,48 @@ class GuestMenu extends Component
         }
 
         $this->cart = [];
+        $this->customerName = '';
+        $this->orderNote = '';
         $this->loyaltyPhone = '';
         $this->loyaltyError = null;
         $this->recognizedCustomer = null;
         $this->showWelcomeBack = false;
 
+        // Regenerate the idempotency token so a fresh checkout creates a new,
+        // distinct order rather than colliding with the one just placed.
+        $this->idempotencyKey = (string) Str::uuid();
+    }
+
+    /**
+     * Redirect the guest to an order's public tracker. Centralised so the
+     * happy path and both idempotent-replay paths behave identically.
+     */
+    protected function redirectToOrder(Order $order)
+    {
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
     }
 
-    public function saveFavorite()
+    /**
+     * Enforce the per-line quantity cap and the distinct-line-count cap on an
+     * untrusted cart (Phase 7a, #28). The total cap is enforced separately
+     * against the server-side re-priced total. Returns false if either cap is
+     * exceeded so the caller can reject before any order is created.
+     */
+    protected function passesQuantityAndLineCaps(array $cartItems): bool
     {
-        $cartItems = $this->getActiveCartItems();
-
-        if (empty($cartItems)) {
-            session()->flash('message', __('guest.favorite_add_first'));
-
-            return;
+        $maxLines = (int) config('ordering.max_lines_per_order', 50);
+        if (count($cartItems) > $maxLines) {
+            return false;
         }
 
-        $items = collect($cartItems)
-            ->values()
-            ->map(fn ($item) => [
-                'id' => $item['id'],
-                'quantity' => (int) ($item['quantity'] ?? 1),
-                'selectedModifiers' => $item['selectedModifiers'] ?? [],
-            ])
-            ->all();
+        $maxQty = (int) config('ordering.max_quantity_per_line', 99);
+        foreach ($cartItems as $item) {
+            if ((int) ($item['quantity'] ?? 0) > $maxQty) {
+                return false;
+            }
+        }
 
-        $this->dispatch('favorite:save', items: $items, shop: $this->shop->id);
-        session()->flash('message', __('guest.favorite_saved'));
+        return true;
     }
 
     public function applyFavorite(): void
@@ -860,12 +1145,6 @@ class GuestMenu extends Component
         }
 
         $this->applyFavoriteItems($customer->getFavorites());
-    }
-
-    #[On('favorite:apply')]
-    public function applySavedFavorite($items = []): void
-    {
-        $this->applyFavoriteItems($items);
     }
 
     protected function applyFavoriteItems($items = []): void
@@ -1176,8 +1455,12 @@ class GuestMenu extends Component
             ? $this->shop->branding['theme']
             : 'warm';
 
+        $popularProducts = $this->buildPopularProducts($categories);
+
         return view('livewire.guest-menu', [
             'categories' => $categories,
+            'popularProducts' => $popularProducts,
+            'searchNames' => $this->buildSearchNames($categories),
             'locale' => $this->locale,
             'isRtl' => $this->locale === 'ar',
             'groupCartItems' => $groupCartItems,
@@ -1185,5 +1468,48 @@ class GuestMenu extends Component
             'pricingRules' => $pricingRules,
             'theme' => $theme,
         ])->layout('layouts.app', ['shop' => $this->shop]);
+    }
+
+    /**
+     * Lowercased "name + description" search string per product, keyed by id.
+     *
+     * Computed once per render so the client-side search index (the <main>
+     * allNames list, each section's names list, and every card's data-name
+     * attribute) reads from one map instead of re-resolving translated() and
+     * lowercasing the same product three times in the view.
+     */
+    protected function buildSearchNames(\Illuminate\Support\Collection $categories): array
+    {
+        return $categories
+            ->flatMap(fn ($category) => $category->products)
+            ->mapWithKeys(fn ($product) => [
+                $product->id => Str::lower(
+                    $product->translated('name').' '.($product->translated('description') ?? '')
+                ),
+            ])
+            ->all();
+    }
+
+    /**
+     * Owner-highlighted "Popular today" rail (mockup screen 2/2b/3).
+     *
+     * There is no dedicated featured flag on products, so we derive the rail
+     * from already-loaded, shop-scoped categories: on-sale items first (the
+     * owner's active promotions), then the leading orderable items by
+     * sort order. Sold-out items are excluded from the rail.
+     */
+    protected function buildPopularProducts(\Illuminate\Support\Collection $categories): \Illuminate\Support\Collection
+    {
+        $orderable = $categories
+            ->flatMap(fn ($category) => $category->products)
+            ->filter(fn ($product) => $product->is_available);
+
+        $onSale = $orderable->filter(fn ($product) => $product->is_on_sale);
+        $rest = $orderable->reject(fn ($product) => $product->is_on_sale);
+
+        return $onSale->concat($rest)
+            ->unique('id')
+            ->take(8)
+            ->values();
     }
 }

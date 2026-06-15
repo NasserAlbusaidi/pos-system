@@ -97,6 +97,8 @@ class GuestMenuModifierTest extends TestCase
                     'selectedModifiers' => [$option->id],
                 ],
             ])
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
             ->call('submitOrder');
 
         // Order total should be 12.00 (10 + 2)
@@ -262,7 +264,10 @@ class GuestMenuModifierTest extends TestCase
             ->call('addToCart', $data['product']->id); // Submit to cart
 
         // Now submit the order
-        $component->call('submitOrder');
+        $component
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
+            ->call('submitOrder');
 
         // Order total: 1.000 + 0.200 + 0.100 = 1.300
         $this->assertDatabaseHas('orders', [

@@ -1,0 +1,237 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot — Menu browse: search, category tabs, popular rail
+   (Phase 2, #22). Mockup screens 2b / 3. Split out of the original
+   monolithic guest-browse.css so each guest unit stays under the
+   800-line project ceiling: the gate, hero, product sheet, and cart
+   now live in guest-gate.css / guest-hero.css / guest-sheet.css /
+   guest-cart.css. Imported by app.css. Tokens only, RTL-aware.
+   Search + tab filtering is client-side (Alpine) over the
+   server-rendered, server-validated menu.
+   ────────────────────────────────────────────────────────────── */
+
+/* Guest menu page header. Sticky at top:0, z-50 so it pins above the pinbar
+   (z-40). It publishes its own height to --guest-header-h at runtime. */
+.guest-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: var(--space-4);
+    border-bottom: 1px solid rgb(var(--line) / 0.8);
+    background: rgb(var(--panel) / 0.85);
+    backdrop-filter: blur(24px);
+}
+
+@media (min-width: 640px) {
+    .guest-header {
+        padding-inline: var(--space-6);
+    }
+}
+
+.guest-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+}
+
+/* Sticky bar: search box + horizontal category tabs.
+   The guest menu page header is itself `.guest-header` (sticky top:0, z-50) in
+   the same window scroll context, so the pinbar must pin *below* it — not at
+   top:0, where the taller header would clip it. --guest-header-h is published
+   by the header at runtime (its real offsetHeight, RTL/responsive-safe); the
+   68px fallback covers the first paint and the no-JS case. */
+.guest-pinbar {
+    position: sticky;
+    top: var(--guest-header-h, 68px);
+    z-index: 40;
+    margin-inline: calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    background: rgb(var(--paper) / 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgb(var(--line) / 0.5);
+}
+
+.guest-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--panel));
+    border: 1px solid rgb(var(--line));
+    color: rgb(var(--ink-soft));
+}
+
+.guest-search__icon {
+    flex: none;
+    color: rgb(var(--ink-soft));
+}
+
+.guest-search__input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: rgb(var(--ink));
+    outline: none;
+}
+
+.guest-search__input::placeholder {
+    color: rgb(var(--ink-soft));
+}
+
+/* Hide the native clear button for a consistent look */
+.guest-search__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.guest-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.guest-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.guest-tab {
+    flex: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgb(var(--line) / 0.7);
+    background: rgb(var(--panel));
+    color: rgb(var(--ink-soft));
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.guest-tab--on {
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+    border-color: transparent;
+}
+
+/* Popular today rail */
+.guest-popular {
+    padding-top: var(--space-5);
+}
+
+.guest-popular__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.guest-popular__title {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: rgb(var(--ink));
+}
+
+.guest-popular__rail {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.guest-popular__rail::-webkit-scrollbar {
+    display: none;
+}
+
+.guest-pcard {
+    flex: none;
+    width: 138px;
+}
+
+.guest-pcard__tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 104px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    background:
+        linear-gradient(150deg, rgb(var(--crema) / 0.16), rgb(var(--signal) / 0.10));
+    box-shadow: var(--shadow-sm);
+    color: rgb(var(--ink) / 0.55);
+    transition: transform 150ms ease;
+}
+
+.guest-pcard__tile:hover {
+    transform: translateY(-2px);
+}
+
+.guest-pcard__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-pcard__placeholder {
+    color: rgb(var(--ink) / 0.4);
+}
+
+.guest-pcard__flag {
+    position: absolute;
+    top: var(--space-2);
+    inset-inline-start: var(--space-2);
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: rgb(var(--alert));
+    color: rgb(var(--paper));
+    font-size: 9px;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.guest-pcard__name {
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    color: rgb(var(--ink));
+}
+
+.guest-pcard__price {
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+}
+
+/* Empty-search hint */
+.guest-noresults {
+    padding: var(--space-12) var(--space-4);
+    text-align: center;
+    color: rgb(var(--ink-soft));
+    font-size: var(--font-size-sm);
+}
+
+/* RTL — logical properties handle most flips; tab/rail scroll direction
+   follows the document direction automatically. */
+[dir="rtl"] .guest-popular__title {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}

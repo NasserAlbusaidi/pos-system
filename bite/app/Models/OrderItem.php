@@ -18,6 +18,7 @@ class OrderItem extends Model
         'product_name_snapshot_ar',
         'price_snapshot',
         'quantity',
+        'note',
     ];
 
     public function order()

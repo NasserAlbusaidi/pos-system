@@ -5,14 +5,31 @@ return [
     'guest_ordering' => 'طلب الضيوف',
     'mobile_checkout' => 'الدفع عبر الجوال',
 
+    // Language gate (screen 1)
+    'choose_language' => 'اختر لغتك · Choose your language',
+    'powered_by' => 'مدعوم بواسطة',
+
+    // Hero (screen 2)
+    'status_open' => 'مفتوح الآن',
+    'dine_in' => 'تناول في المطعم',
+
     // Menu
     'guest_experience' => 'تجربة الضيف',
     'build_your_order' => 'أنشئ طلبك',
     'load_favorite' => 'تحميل المفضلة',
     'save_favorite' => 'حفظ المفضلة',
     'no_items_available' => 'لا توجد عناصر متاحة',
+    'no_items_hint' => 'تحقق قريباً — يتم تحديث القائمة.',
+    'add_item_aria' => 'أضف :name إلى الطلب',
+    'view_details_aria' => 'عرض تفاصيل :name',
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
+
+    // Browse (screen 2b / 3) — search, tabs, popular rail
+    'popular_today' => 'الأكثر طلباً',
+    'search_menu' => 'ابحث في القائمة…',
+    'category_all' => 'الكل',
+    'no_search_results' => 'لا توجد عناصر تطابق بحثك.',
 
     // Cart
     'add_to_order' => 'أضف إلى الطلب',
@@ -24,6 +41,40 @@ return [
     'cancel' => 'إلغاء',
     'place_order' => 'تأكيد الطلب',
     'send_to_kitchen' => 'إرسال الطلب إلى المطبخ؟',
+
+    // Cart / review (screen 5) + checkout (screen 6) — Phase 4 (#24)
+    'cart_empty_title' => 'سلتك فارغة',
+    'cart_empty_body' => 'تصفّح القائمة واضغط + لبدء طلبك.',
+    'browse_menu' => 'تصفّح القائمة',
+    'continue_to_checkout' => 'المتابعة إلى الدفع',
+    'counter_pickup_hint' => 'الاستلام من الكاونتر — سننادي باسمك.',
+    'pay_at_counter_hint' => 'ادفع عند الكاونتر عند الاستلام — نقداً أو بالبطاقة. يبدأ المطبخ بعد تأكيد الدفع.',
+    'place_order_hint' => 'بتأكيد هذا الطلب فإنك توافق على الدفع عند الكاونتر.',
+
+    // Order-level note (whole order) — Phase 4 (#24)
+    'order_note_label' => 'ملاحظة للمطبخ',
+    'order_note_placeholder' => 'أي ملاحظة لكامل الطلب؟ تحسس، توقيت، طاولة…',
+
+    // Checkout contact + payment (screen 6)
+    'almost_there' => 'أوشكت على الانتهاء',
+    'confirm_your_order' => 'أكّد طلبك',
+    'your_name' => 'اسمك',
+    'name_placeholder' => 'مثال: ليلى',
+    'phone_label' => 'الهاتف',
+    'phone_hint' => 'لتحديثات الطلب والنقاط',
+    'name_required' => 'يرجى إدخال اسمك.',
+    'phone_required' => 'يرجى إدخال رقم هاتفك.',
+    'cart_too_large' => 'طلبك كبير جداً ولا يمكن إرساله. يرجى تقليل الكميات أو تقسيمه إلى طلب أصغر.',
+    'order_total_too_high' => 'إجمالي طلبك مرتفع جداً ولا يمكن إرساله عبر الإنترنت. يرجى الطلب عند الكاونتر أو تقسيمه إلى طلب أصغر.',
+    'rate_limit_error' => 'أنت تطلب بسرعة كبيرة. يرجى الانتظار لحظة ثم المحاولة مرة أخرى.',
+    'payment' => 'الدفع',
+    'pay_at_counter' => 'الدفع عند الكاونتر',
+    'pay_at_counter_desc' => 'نقداً أو بالبطاقة عند الاستلام',
+
+    // Cart line controls
+    'decrease_qty' => 'إنقاص الكمية',
+    'increase_qty' => 'زيادة الكمية',
+    'remove_item' => 'إزالة العنصر',
 
     // Totals
     'subtotal' => 'المجموع الفرعي',
@@ -39,6 +90,13 @@ return [
     'select_at_most' => 'اختر كحد أقصى :count خيار(ات) لـ :group.',
     'invalid_modifier_selection' => 'اختيار الإضافات غير صحيح.',
     'base_price' => 'أساسي',
+    'included' => 'مشمول',
+    'add_ons' => 'إضافات',
+    'up_to' => 'حتى :count',
+
+    // Item note (allergen / special request) — pilot safety feature
+    'item_note_label' => 'طلب خاص',
+    'item_note_placeholder' => 'ملح أقل، بدون مكسرات، ملاحظة تحسس…',
 
     // Loyalty
     'loyalty_phone' => 'رقم هاتف الولاء (اختياري)',
@@ -113,4 +171,24 @@ return [
     'submit_feedback' => 'إرسال التقييم',
     'thank_you_feedback' => 'شكراً لتقييمك!',
     'feedback_placeholder' => 'أي ملاحظات؟ (اختياري)',
+
+    // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_show_counter' => 'أظهر هذا عند الكاونتر',
+    'items_count' => '{0}لا عناصر|{1}عنصر واحد|{2}عنصران|[3,10]:count عناصر|[11,*]:count عنصراً',
+    'rating_stars' => '{1}نجمة واحدة|{2}نجمتان|[3,10]:count نجوم|[11,*]:count نجمة',
+    'track_step_received' => 'تم استلام الطلب',
+    'track_step_received_hint' => 'وصلنا طلبك.',
+    'track_step_accepted' => 'تم التأكيد',
+    'track_step_accepted_hint' => 'تم تأكيد الدفع عند الكاونتر — بدأ المطبخ بالتحضير.',
+    'track_step_preparing' => 'قيد التحضير',
+    'track_step_preparing_hint' => 'المطبخ يحضّر طلبك.',
+    'track_step_ready' => 'جاهز للاستلام',
+    'track_step_ready_hint' => 'طلبك جاهز — استلمه من الكاونتر.',
+    'track_cancelled_title' => 'تم إلغاء الطلب',
+
+    // Post-order review invite (screen 7, #25)
+    'rate_on_google' => 'قيّمنا على Google',
+    'rate_on_google_hint' => 'يفتح صفحتنا على Google',
+    'follow_on_instagram' => 'تابعنا على Instagram',
+    'follow_on_instagram_hint' => 'مخبوزات وعروض جديدة',
 ];

@@ -1,0 +1,151 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest pilot — Hero shell (screens 2 / 2b) + "Powered by Bite"
+   footer. Extracted from guest-browse.css to keep each unit under
+   the 800-line project ceiling. Imported by app.css. Tokens only,
+   RTL-aware.
+   ────────────────────────────────────────────────────────────── */
+
+/* Hero shell (screens 2 / 2b) */
+.guest-hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    color: rgb(var(--paper));
+}
+
+.guest-hero--placeholder {
+    background:
+        radial-gradient(circle at 18% 18%, rgb(var(--crema) / 0.30), transparent 55%),
+        linear-gradient(150deg, rgb(var(--crema) / 0.20), rgb(var(--signal) / 0.14) 60%, rgb(var(--ink) / 0.20));
+}
+
+.guest-hero__cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 28%, rgb(var(--ink) / 0.68));
+}
+
+.guest-hero__meta {
+    position: absolute;
+    inset-inline: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 1;
+    text-align: start;
+}
+
+.guest-hero__logo {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-sm);
+    background: rgb(var(--paper));
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.guest-hero__logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.guest-hero__wordmark {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: rgb(var(--ink));
+}
+
+.guest-hero__name {
+    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: rgb(var(--paper));
+}
+
+.guest-hero__sub {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.guest-hero__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    background: rgb(var(--signal) / 0.92);
+    color: rgb(var(--paper));
+}
+
+.guest-hero__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+.guest-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    background: rgb(var(--paper) / 0.16);
+    color: rgb(var(--paper) / 0.92);
+}
+
+/* Powered by Bite — gate footer + page footer */
+.guest-powered {
+    flex: none;
+    padding: var(--space-3);
+    text-align: center;
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.02em;
+    color: rgb(var(--paper) / 0.7);
+}
+
+.guest-powered b {
+    color: rgb(var(--crema));
+    font-weight: var(--font-weight-semibold);
+}
+
+.guest-powered--page {
+    color: rgb(var(--ink-soft));
+    padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+/* RTL — hero meta uses text-align:start on its base rule so it flips
+   automatically; the bakery name swaps to the Arabic display face. */
+[dir="rtl"] .guest-hero__name {
+    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
+    font-weight: var(--font-weight-bold);
+}
+
+@media (min-width: 640px) {
+    .guest-hero {
+        height: 260px;
+    }
+
+    .guest-hero__meta {
+        inset-inline: var(--space-6);
+        bottom: var(--space-6);
+    }
+}

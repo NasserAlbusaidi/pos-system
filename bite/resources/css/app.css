@@ -1,3 +1,13 @@
+/* Guest pilot CSS — split per screen so each unit stays under the 800-line
+   project ceiling. Guest selectors use a distinct class namespace, so import
+   order does not affect the cascade. */
+@import './guest-gate.css';
+@import './guest-hero.css';
+@import './guest-browse.css';
+@import './guest-sheet.css';
+@import './guest-cart.css';
+@import './guest-track.css';
+
 /* ── JetBrains Mono (self-hosted, latin) ─────────────────── */
 @font-face {
     font-family: 'JetBrains Mono';
@@ -186,6 +196,31 @@
         --line-height-tight: 1.20;
         --line-height-normal: 1.50;
         --line-height-loose: 1.70;
+
+        /* Spacing scale — 4px base. Consumed by the guest-menu pilot screens
+           (docs/design/mockups/guest-menu-pilot.html) and reusable app-wide. */
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-7: 28px;
+        --space-8: 32px;
+        --space-10: 40px;
+        --space-12: 48px;
+        --space-16: 64px;
+
+        /* Corner radii — md is the default card/control radius. */
+        --radius-sm: 10px;
+        --radius-md: 16px;
+        --radius-lg: 22px;
+        --radius-pill: 999px;
+
+        /* Elevation — shadows keyed to --ink so they respect per-shop branding. */
+        --shadow-sm: 0 1px 2px rgb(var(--ink) / 0.06), 0 1px 3px rgb(var(--ink) / 0.05);
+        --shadow-md: 0 6px 20px rgb(var(--ink) / 0.08), 0 2px 6px rgb(var(--ink) / 0.05);
+        --shadow-lg: 0 18px 48px rgb(var(--ink) / 0.16);
     }
 
     /* Arabic line-height override (D-08) — IBM Plex Sans Arabic ascenders are taller
@@ -361,6 +396,52 @@
 
     .kds-card {
         animation: kds-bump 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+
+    /* Guest special-request note on a KDS card. Safety-critical (allergens) —
+       highlighted in crema so the kitchen cannot miss it. */
+    .kds-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        margin-top: 6px;
+        padding: 6px 8px;
+        border: 1px solid rgb(var(--crema) / 0.5);
+        border-radius: var(--radius-sm);
+        background: rgb(var(--crema) / 0.15);
+        color: rgb(var(--crema));
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+        line-height: 1.375;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .kds-note__icon {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        margin-top: 1px;
+    }
+
+    /* Guest order-level note on a KDS card (Phase 4). Spans the whole card and
+       uses the signal accent so it reads as an order-wide instruction, distinct
+       from the per-item crema notes above it. */
+    .kds-order-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 8px 10px;
+        border: 1px solid rgb(var(--signal) / 0.5);
+        border-radius: var(--radius-sm);
+        background: rgb(var(--signal) / 0.16);
+        color: rgb(var(--paper));
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+        line-height: 1.375;
+        letter-spacing: 0.04em;
     }
 
     /* Guest Menu — Card Grid */
@@ -1093,3 +1174,4 @@
         box-shadow: none !important;
     }
 }
+
