@@ -59,6 +59,11 @@ class PrintNodeService
                     $lines[] = '  + '.$modifier->modifier_option_name_snapshot_en;
                 }
             }
+            // Guest special request — safety-critical (allergens). Flagged so
+            // kitchen staff cannot miss it on the printed ticket.
+            if (filled($item->note)) {
+                $lines[] = '  ** NOTE: '.$item->note;
+            }
         }
 
         $lines[] = '-------------------------';

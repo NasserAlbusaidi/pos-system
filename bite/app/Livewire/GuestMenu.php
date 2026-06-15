@@ -38,6 +38,10 @@ class GuestMenu extends Component
 
     public $selectedModifiers = [];
 
+    // Guest-supplied special request for the line being customized (allergen
+    // safety in the bakery pilot). Untrusted: trimmed + capped on add-to-cart.
+    public $itemNote = '';
+
     public $modifierError = null;
 
     public $recognizedCustomer = null;
@@ -541,9 +545,17 @@ class GuestMenu extends Component
 
         $modifierIds = $this->normalizeModifierIds($this->selectedModifiers);
 
-        // Generate a unique key for the cart (product_id + sorted modifiers)
+        // Sanitize the untrusted note before it enters cart state.
+        $note = $this->sanitizeNote($this->itemNote);
+
+        // Generate a unique key for the cart (product_id + sorted modifiers +
+        // note). Two otherwise-identical lines with different notes must stay
+        // separate so a per-line allergen request is never merged away.
         $modifierKey = ! empty($modifierIds) ? implode('-', collect($modifierIds)->sort()->toArray()) : 'plain';
         $itemKey = $productId.'-'.$modifierKey;
+        if ($note !== null) {
+            $itemKey .= '-n'.substr(md5($note), 0, 8);
+        }
 
         $pricingRules = $this->loadActivePricingRules();
         $displayPrice = $pricingRules->isNotEmpty()
@@ -569,6 +581,7 @@ class GuestMenu extends Component
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
                     'modifierNames' => $modifierNames,
+                    'note' => $note,
                 ]);
             }
         } else {
@@ -583,6 +596,7 @@ class GuestMenu extends Component
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
                     'modifierNames' => $modifierNames,
+                    'note' => $note,
                 ];
             }
         }
@@ -591,7 +605,22 @@ class GuestMenu extends Component
         $this->showModifierModal = false;
         $this->customizingProduct = null;
         $this->selectedModifiers = [];
+        $this->itemNote = '';
         $this->modifierError = null;
+    }
+
+    /**
+     * Trim and cap an untrusted guest item note. Returns null for blank input
+     * so the column stays NULL rather than an empty string.
+     */
+    protected function sanitizeNote($value): ?string
+    {
+        $note = trim((string) $value);
+        if ($note === '') {
+            return null;
+        }
+
+        return mb_substr($note, 0, 255);
     }
 
     /**
@@ -774,6 +803,7 @@ class GuestMenu extends Component
                 'product_name_snapshot_ar' => $product->name_ar,
                 'price_snapshot' => $itemPrice,
                 'quantity' => $quantity,
+                'note' => $this->sanitizeNote($item['note'] ?? null),
                 'modifiers' => $modifiersData,
             ];
         }
@@ -802,6 +832,7 @@ class GuestMenu extends Component
                     'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
                     'price_snapshot' => $item['price_snapshot'],
                     'quantity' => $item['quantity'],
+                    'note' => $item['note'],
                 ]);
 
                 foreach ($item['modifiers'] as $mod) {

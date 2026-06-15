@@ -3,31 +3,21 @@
 
     {{-- Language gate (mockup screen 1) — full-screen, blocks menu until a language is picked --}}
     @if($showLanguageGate)
-        <div class="guest-gate" role="dialog" aria-modal="true">
-            <div class="guest-gate__panel">
-                <div class="guest-gate__crest">
-                    @php
-                        $gateLogoUrl = \App\Support\BrandingUrl::safe($shop->branding['logo_url'] ?? null);
-                    @endphp
-                    @if($gateLogoUrl)
-                        <img src="{{ $gateLogoUrl }}" alt="{{ $shop->name }}" class="guest-gate__crest-img">
-                    @else
-                        <span class="guest-gate__crest-mark">{{ Str::of($shop->name)->trim()->substr(0, 1)->upper() }}</span>
-                    @endif
-                </div>
-                <div class="guest-gate__word">{{ $shop->name }}</div>
-                <p class="guest-gate__ask">{{ __('guest.choose_language') }}</p>
-                <div class="guest-gate__langs">
-                    <button type="button" wire:click="chooseLanguage('en')" class="guest-gate__lang guest-gate__lang--primary">English</button>
-                    <button type="button" wire:click="chooseLanguage('ar')" class="guest-gate__lang guest-gate__lang--alt">العربية</button>
-                </div>
-            </div>
-            <div class="guest-powered">{{ __('guest.powered_by') }} <b>Bite</b></div>
-        </div>
+        @include('livewire.partials.guest-gate')
     @endif
 
-    <header class="sticky top-0 z-50 border-b border-line/80 bg-panel/85 px-4 py-4 backdrop-blur-xl sm:px-6">
-        <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
+    <header
+        class="guest-header"
+        x-data
+        x-init="
+            const sync = () => document.documentElement.style.setProperty('--guest-header-h', $el.offsetHeight + 'px');
+            sync();
+            const ro = new ResizeObserver(sync);
+            ro.observe($el);
+            $cleanup(() => ro.disconnect());
+        "
+    >
+        <div class="guest-header__inner">
             <div class="flex items-center gap-3">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink text-panel font-display text-xl font-black">B</div>
                 <div>
@@ -90,35 +80,8 @@
         </div>
     @endif
 
-    @php
-        $guestBranding = $shop->branding ?? [];
-        $guestCoverUrl = \App\Support\BrandingUrl::safe($guestBranding['cover_url'] ?? null);
-        $guestLogoUrl = \App\Support\BrandingUrl::safe($guestBranding['logo_url'] ?? null);
-    @endphp
-
     {{-- Hero shell (mockup screens 2 / 2b) — cover, logo, name, open pill, dine-in chip --}}
-    <section class="guest-hero {{ $guestCoverUrl ? '' : 'guest-hero--placeholder' }}">
-        @if($guestCoverUrl)
-            <img src="{{ $guestCoverUrl }}" alt="{{ $shop->name }}" class="guest-hero__cover" loading="eager">
-        @endif
-        <div class="guest-hero__scrim"></div>
-        <div class="guest-hero__meta">
-            <div class="guest-hero__logo">
-                @if($guestLogoUrl)
-                    <img src="{{ $guestLogoUrl }}" alt="{{ $shop->name }}" class="guest-hero__logo-img">
-                @else
-                    <span class="guest-hero__wordmark">{{ Str::of($shop->name)->trim()->substr(0, 1)->upper() }}</span>
-                @endif
-            </div>
-            <h2 class="guest-hero__name">{{ $shop->name }}</h2>
-            <div class="guest-hero__sub">
-                <span class="guest-hero__pill">
-                    <span class="guest-hero__dot"></span>{{ __('guest.status_open') }}
-                </span>
-                <span class="guest-hero__chip">{{ __('guest.dine_in') }}</span>
-            </div>
-        </div>
-    </section>
+    @include('livewire.partials.guest-hero')
 
     {{-- Browse skin (mockup screens 2b / 3): sticky search + category tabs, then
          the Popular rail and the full category list. Search and tab filtering are
@@ -174,52 +137,7 @@
 
         {{-- Popular today rail (mockup screen 2/2b/3). Hidden while searching or
              when a single category is selected, since the list below covers it. --}}
-        @if($popularProducts->isNotEmpty())
-            <section class="guest-popular" x-show="query === '' && activeCategory === 'all'">
-                <div class="guest-popular__head">
-                    <h3 class="guest-popular__title">{{ __('guest.popular_today') }}</h3>
-                </div>
-                <div class="guest-popular__rail">
-                    @foreach($popularProducts as $product)
-                        @php
-                            $popTimePriced = $pricingRules->isNotEmpty()
-                                ? $product->getTimePriced($pricingRules)
-                                : null;
-                            $popHasTimeDiscount = $popTimePriced !== null && $popTimePriced < $product->final_price;
-                            $popDisplayPrice = $popHasTimeDiscount ? $popTimePriced : ($product->is_on_sale ? $product->final_price : $product->price);
-                        @endphp
-                        <article class="guest-pcard" wire:key="popular-{{ $product->id }}">
-                            <button
-                                type="button"
-                                wire:click="addToCart({{ $product->id }})"
-                                class="guest-pcard__tile"
-                                aria-label="Add {{ $product->translated('name') }} to order"
-                            >
-                                @if(productImage($product, 'card'))
-                                    <img src="{{ productImage($product, 'card') }}" alt="{{ $product->translated('name') }}" class="guest-pcard__img" loading="lazy">
-                                @else
-                                    <svg class="guest-pcard__placeholder" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                                    </svg>
-                                @endif
-                                @if($product->is_on_sale)
-                                    <span class="guest-pcard__flag">{{ __('guest.flash_sale') }}</span>
-                                @elseif($popHasTimeDiscount)
-                                    <span class="guest-pcard__flag">{{ __('guest.limited_offer') }}</span>
-                                @endif
-                            </button>
-                            <p class="guest-pcard__name">{{ $product->translated('name') }}</p>
-                            <span class="menu-product-price guest-pcard__price">
-                                @if($popHasTimeDiscount || $product->is_on_sale)
-                                    <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
-                                @endif
-                                <x-price :amount="$popDisplayPrice" :shop="$shop" />
-                            </span>
-                        </article>
-                    @endforeach
-                </div>
-            </section>
-        @endif
+        @include('livewire.partials.guest-popular-rail')
 
         {{-- Empty-search hint (shown only when search hides every item) --}}
         <p class="guest-noresults" x-show="query.trim() !== '' && !hasMatches" x-cloak>
@@ -747,74 +665,106 @@
         </div>
     @endif
 
+    {{-- Product detail SHEET (mockup screen 4, #23). Re-skin of the modifier
+         modal: image hero, name/price, choice chips per group, add-ons, a
+         special-request note (allergen safety), and a sticky "Add to order"
+         bar. Modifier min/max validation is unchanged — presentation only. --}}
     @if($showModifierModal && $customizingProduct)
-        <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-            <div class="surface-card flex w-full max-w-xl flex-col overflow-hidden border-t sm:border sm:rounded-xl">
-                <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
-                    <div>
-                        <h3 class="font-display text-3xl font-extrabold leading-none text-ink">{{ $customizingProduct->translated('name') }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.price') }}: <x-price :amount="$this->customizingProductPrice" :shop="$shop" /></p>
+        <div class="guest-sheet-backdrop">
+            <div class="guest-sheet">
+                <div class="guest-sheet__scroll">
+                    {{-- Image hero with close --}}
+                    <div class="guest-sheet__hero">
+                        @if(productImage($customizingProduct, 'card'))
+                            <img src="{{ productImage($customizingProduct, 'card') }}"
+                                 alt="{{ $customizingProduct->translated('name') }}"
+                                 class="guest-sheet__hero-img">
+                        @else
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                <path d="M7 2v20"/>
+                                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                            </svg>
+                        @endif
+                        <button wire:click="$set('showModifierModal', false)" class="guest-sheet__close" type="button" aria-label="{{ __('guest.cancel') }}">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                     </div>
-                    <button wire:click="$set('showModifierModal', false)" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
 
-                @if($modifierError)
-                    <div class="px-6 pt-5 sm:px-8">
-                        <div class="rounded-lg border border-alert/35 bg-alert/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-alert">
-                            {{ $modifierError }}
-                        </div>
-                    </div>
-                @endif
+                    @if($modifierError)
+                        <div class="guest-sheet__error">{{ $modifierError }}</div>
+                    @endif
 
-                <div class="max-h-[60vh] space-y-8 overflow-y-auto p-6 sm:p-8">
-                    @foreach($customizingProduct->modifierGroups as $group)
-                        <section class="space-y-3">
-                            <div class="flex items-end justify-between border-b border-line pb-2">
-                                <h4 class="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ $group->translated('name') }}</h4>
-                                <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ $group->min_selection > 0 ? __('guest.required') : __('guest.optional') }}</span>
-                            </div>
+                    <div class="guest-sheet__body">
+                        <h3 class="guest-sheet__name">{{ $customizingProduct->translated('name') }}</h3>
+                        <p class="guest-sheet__price"><x-price :amount="$this->customizingProductPrice" :shop="$shop" /></p>
 
-                            <div class="space-y-2">
+                        @if($customizingProduct->translated('description'))
+                            <p class="guest-sheet__desc">{{ $customizingProduct->translated('description') }}</p>
+                        @endif
+
+                        @foreach($customizingProduct->modifierGroups as $group)
+                            <section class="guest-mgroup">
+                                <div class="guest-mgroup__head">
+                                    <span class="guest-mgroup__title">{{ $group->translated('name') }}</span>
+                                    @if($group->min_selection > 0)
+                                        <span class="guest-mgroup__req">{{ __('guest.required') }}</span>
+                                    @else
+                                        <span class="guest-mgroup__req" style="background:rgb(var(--ink-soft)/0.12);color:rgb(var(--ink-soft))">{{ __('guest.optional') }}</span>
+                                    @endif
+                                    @if($group->max_selection > 1)
+                                        <span class="guest-mgroup__opt">{{ __('guest.up_to', ['count' => $group->max_selection]) }}</span>
+                                    @endif
+                                </div>
+
                                 @foreach($group->options as $option)
                                     @php
                                         $isChecked = $group->max_selection == 1
                                             ? (($selectedModifiers[$group->id] ?? null) == $option->id)
                                             : in_array((string) $option->id, (array) ($selectedModifiers[$group->id] ?? []));
                                     @endphp
-                                    <label class="flex cursor-pointer items-center justify-between rounded-lg border border-line bg-panel px-3 py-3 transition-colors duration-200 hover:border-ink-soft has-[:checked]:border-crema has-[:checked]:bg-crema/5">
-                                        <span class="flex items-center gap-3">
-                                            <input
-                                                type="{{ $group->max_selection == 1 ? 'radio' : 'checkbox' }}"
-                                                value="{{ $option->id }}"
-                                                wire:click="selectModifier({{ $group->id }}, {{ $option->id }}, {{ $group->max_selection > 1 ? 'true' : 'false' }})"
-                                                name="group_{{ $group->id }}"
-                                                class="h-4 w-4 cursor-pointer border-line text-crema focus:ring-0"
-                                                @checked($isChecked)
-                                            >
-                                            <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->translated('name') }}</span>
-                                        </span>
+                                    <label class="guest-opt">
+                                        <input
+                                            type="{{ $group->max_selection == 1 ? 'radio' : 'checkbox' }}"
+                                            value="{{ $option->id }}"
+                                            wire:click="selectModifier({{ $group->id }}, {{ $option->id }}, {{ $group->max_selection > 1 ? 'true' : 'false' }})"
+                                            name="group_{{ $group->id }}"
+                                            class="guest-opt__input"
+                                            @checked($isChecked)
+                                        >
+                                        <span class="guest-opt__mark {{ $group->max_selection == 1 ? '' : 'guest-opt__mark--sq' }}" aria-hidden="true"></span>
+                                        <span class="guest-opt__name">{{ $option->translated('name') }}</span>
                                         @if($option->price_adjustment > 0)
-                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
-                                        @elseif($group->min_selection > 0 && $group->options->count() > 1)
-                                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('guest.base_price') }}</span>
+                                            <span class="guest-opt__price guest-opt__price--add">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                        @else
+                                            <span class="guest-opt__price">{{ __('guest.included') }}</span>
                                         @endif
                                     </label>
                                 @endforeach
-                            </div>
-                        </section>
-                    @endforeach
+                            </section>
+                        @endforeach
+
+                        {{-- Special request / allergen note (pilot safety feature) --}}
+                        <div class="guest-note">
+                            <label for="guest-item-note" class="guest-note__label">{{ __('guest.item_note_label') }}</label>
+                            <textarea
+                                id="guest-item-note"
+                                wire:model="itemNote"
+                                maxlength="255"
+                                class="guest-note__field"
+                                placeholder="{{ __('guest.item_note_placeholder') }}"></textarea>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 border-t border-line bg-muted/20 p-4 sm:p-8">
-                    <button wire:click="$set('showModifierModal', false)" class="btn-secondary w-full justify-center">{{ __('guest.cancel') }}</button>
+                <div class="guest-actionbar">
                     <button wire:click="addToCart({{ $customizingProduct->id }})"
                             wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-wait"
                             wire:target="addToCart({{ $customizingProduct->id }})"
-                            class="btn-primary w-full justify-center">
-                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})">{{ __('guest.add_for', ['price' => '']) }}<x-price :amount="$this->customizingProductPrice" :shop="$shop" /></span>
+                            class="guest-addbtn"
+                            type="button">
+                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})">{{ __('guest.add_to_order') }}</span>
+                        <span wire:loading.remove wire:target="addToCart({{ $customizingProduct->id }})" class="guest-addbtn__price"><x-price :amount="$this->customizingProductPrice" :shop="$shop" /></span>
                         <span wire:loading wire:target="addToCart({{ $customizingProduct->id }})" class="loading-spinner"></span>
                     </button>
                 </div>

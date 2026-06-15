@@ -53,6 +53,13 @@ return [
     'select_at_most' => 'Select at most :count option(s) for :group.',
     'invalid_modifier_selection' => 'Invalid modifier selection.',
     'base_price' => 'Base',
+    'included' => 'Included',
+    'add_ons' => 'Add-ons',
+    'up_to' => 'up to :count',
+
+    // Item note (allergen / special request) — pilot safety feature
+    'item_note_label' => 'Special request',
+    'item_note_placeholder' => 'Less salt, no nuts, allergy note…',
 
     // Loyalty
     'loyalty_phone' => 'Loyalty Phone (Optional)',

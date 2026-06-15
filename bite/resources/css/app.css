@@ -393,6 +393,33 @@
         animation: kds-bump 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
 
+    /* Guest special-request note on a KDS card. Safety-critical (allergens) —
+       highlighted in crema so the kitchen cannot miss it. */
+    .kds-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        margin-top: 6px;
+        padding: 6px 8px;
+        border: 1px solid rgb(var(--crema) / 0.5);
+        border-radius: var(--radius-sm);
+        background: rgb(var(--crema) / 0.15);
+        color: rgb(var(--crema));
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+        line-height: 1.375;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .kds-note__icon {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        margin-top: 1px;
+    }
+
     /* Guest Menu — Card Grid */
     .menu-product-grid {
         display: grid;

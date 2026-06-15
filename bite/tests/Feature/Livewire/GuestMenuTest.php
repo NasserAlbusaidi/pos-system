@@ -57,6 +57,7 @@ class GuestMenuTest extends TestCase
                     'quantity' => 1,
                     'selectedModifiers' => [],
                     'modifierNames' => [],
+                    'note' => null,
                 ],
             ])
             ->call('addToCart', $product->id)
@@ -68,6 +69,7 @@ class GuestMenuTest extends TestCase
                     'quantity' => 2,
                     'selectedModifiers' => [],
                     'modifierNames' => [],
+                    'note' => null,
                 ],
             ]);
     }

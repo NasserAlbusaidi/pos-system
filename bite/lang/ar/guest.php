@@ -53,6 +53,13 @@ return [
     'select_at_most' => 'اختر كحد أقصى :count خيار(ات) لـ :group.',
     'invalid_modifier_selection' => 'اختيار الإضافات غير صحيح.',
     'base_price' => 'أساسي',
+    'included' => 'مشمول',
+    'add_ons' => 'إضافات',
+    'up_to' => 'حتى :count',
+
+    // Item note (allergen / special request) — pilot safety feature
+    'item_note_label' => 'طلب خاص',
+    'item_note_placeholder' => 'ملح أقل، بدون مكسرات، ملاحظة تحسس…',
 
     // Loyalty
     'loyalty_phone' => 'رقم هاتف الولاء (اختياري)',
