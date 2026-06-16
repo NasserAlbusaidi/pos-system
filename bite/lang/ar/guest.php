@@ -7,6 +7,7 @@ return [
 
     // Language gate (screen 1)
     'choose_language' => 'اختر لغتك · Choose your language',
+    'continue_to_menu' => 'المتابعة إلى القائمة',
     'powered_by' => 'مدعوم بواسطة',
 
     // Hero (screen 2)
