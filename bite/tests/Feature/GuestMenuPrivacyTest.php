@@ -109,6 +109,7 @@ class GuestMenuPrivacyTest extends TestCase
                 $product->id.'-plain' => [
                     'id' => $product->id,
                     'name' => 'Latte',
+                    'image' => null,
                     'price' => 4.5,
                     'quantity' => 2,
                     'selectedModifiers' => [],

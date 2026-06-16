@@ -223,7 +223,7 @@
                                 <svg class="guest-cart__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>
                                 <p class="guest-cart__empty-title">{{ __('guest.cart_empty_title') }}</p>
                                 <p class="guest-cart__empty-body">{{ __('guest.cart_empty_body') }}</p>
-                                <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark" style="flex:none;width:auto;padding-inline:var(--space-6)">
+                                <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark">
                                     {{ __('guest.browse_menu') }}
                                 </button>
                             </div>
@@ -249,6 +249,11 @@
                                     </div>
                                     @foreach($items as $item)
                                         <div class="guest-cartline">
+                                            @if(filled($item['image'] ?? null))
+                                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="guest-cartline__img" loading="lazy">
+                                            @else
+                                                <span class="guest-cartline__img guest-cartline__img--ph" aria-hidden="true"></span>
+                                            @endif
                                             <div class="guest-cartline__info">
                                                 <p class="guest-cartline__name">{{ $item['name'] }}</p>
                                                 @if(!empty($item['modifierNames']))
@@ -280,9 +285,14 @@
                                     @endforeach
                                 @endforeach
                             @else
-                                {{-- Solo cart lines --}}
+                                {{-- Solo cart lines (prototype web-cart-line: thumb + info + stepper) --}}
                                 @foreach($cart as $key => $item)
                                     <div class="guest-cartline">
+                                        @if(filled($item['image'] ?? null))
+                                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="guest-cartline__img" loading="lazy">
+                                        @else
+                                            <span class="guest-cartline__img guest-cartline__img--ph" aria-hidden="true"></span>
+                                        @endif
                                         <div class="guest-cartline__info">
                                             <p class="guest-cartline__name">{{ $item['name'] }}</p>
                                             @if(!empty($item['modifierNames']))
@@ -362,14 +372,14 @@
 
                                 {{-- Welcome-back / order-your-usual (loyalty recognition preserved) --}}
                                 @if($showWelcomeBack && is_array($recognizedCustomer))
-                                    <div class="guest-cart__hint" style="margin-top:var(--space-3);color:rgb(var(--ink))">
+                                    <div class="guest-cart__hint" style="margin-top:12px;color:var(--neutral-900)">
                                         <span>
                                             {{ __('guest.welcome_back') }}
                                             @if($recognizedCustomer['name'] ?? null){{ $recognizedCustomer['name'] }}@endif
                                             · {{ $recognizedCustomer['points'] ?? 0 }} {{ __('guest.points_label') }}
                                         </span>
                                     </div>
-                                    <button wire:click="orderUsual" type="button" class="guest-addbtn" style="margin-top:var(--space-3);background:rgb(var(--crema) / 0.12);color:rgb(var(--crema));box-shadow:none">
+                                    <button wire:click="orderUsual" type="button" class="guest-addbtn guest-addbtn--soft">
                                         {{ __('guest.order_your_usual') }}
                                     </button>
                                 @endif
@@ -409,7 +419,7 @@
                     @if($cartIsEmpty)
                         <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark">{{ __('guest.cancel') }}</button>
                     @else
-                        <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--dark" style="flex:0 0 auto;background:rgb(var(--panel));color:rgb(var(--ink));box-shadow:none;border:1px solid rgb(var(--line))">{{ __('guest.cancel') }}</button>
+                        <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--ghost">{{ __('guest.cancel') }}</button>
                         <button x-on:click="$dispatch('confirm-action', {
                                     title: '{{ __('guest.place_order') }}',
                                     message: '{{ $this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen') }}',

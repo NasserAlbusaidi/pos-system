@@ -660,6 +660,7 @@ class GuestMenu extends Component
                     'id' => $product->id,
                     'itemKey' => $itemKey,
                     'name' => $product->translated('name'),
+                    'image' => productImage($product, 'thumb'),
                     'price' => $displayPrice,
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
@@ -675,6 +676,7 @@ class GuestMenu extends Component
                 $this->cart[$itemKey] = [
                     'id' => $product->id,
                     'name' => $product->translated('name'),
+                    'image' => productImage($product, 'thumb'),
                     'price' => $displayPrice,
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
@@ -1227,6 +1229,7 @@ class GuestMenu extends Component
             $newCart[$itemKey] = [
                 'id' => $product->id,
                 'name' => $product->translated('name'),
+                'image' => productImage($product, 'thumb'),
                 'price' => $displayPrice,
                 'quantity' => $quantity,
                 'selectedModifiers' => $validModifierIds,
