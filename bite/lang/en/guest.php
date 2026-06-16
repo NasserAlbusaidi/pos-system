@@ -28,7 +28,10 @@ return [
     'limited_offer' => 'Limited Offer',
 
     // Home landing (screen 2) — hero, context strip, highlight, popular grid
-    'home_hero_title' => 'Order from your table',
+    // Pilot is shop-level QR + counter pickup (no per-table service), so the
+    // headline stays table-neutral — see GuestMenuHeroTest table-context guard.
+    'home_hero_title' => 'Order from the menu',
+    'full_menu' => 'Full menu',
     'home_prep' => '~15 min average',
     'todays_highlight' => "Today's Highlight",
     'owners_pick' => "Owner's pick",

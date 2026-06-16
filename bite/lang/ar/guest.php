@@ -28,7 +28,8 @@ return [
     'limited_offer' => 'عرض محدود',
 
     // Home landing (screen 2) — hero, context strip, highlight, popular grid
-    'home_hero_title' => 'اطلب من طاولتك',
+    'home_hero_title' => 'اطلب من القائمة',
+    'full_menu' => 'القائمة الكاملة',
     'home_prep' => 'متوسط ١٥ دقيقة',
     'todays_highlight' => 'اختيار اليوم',
     'owners_pick' => 'اختيار المالك',

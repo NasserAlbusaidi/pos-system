@@ -14,63 +14,23 @@
          is present on first paint. Home is the landing; "See all" → showMenu(). --}}
     @include('livewire.partials.guest-home')
 
-    <div class="guest-screen--menu">
-    <header
-        class="guest-header"
-        x-data
-        x-init="
-            const sync = () => document.documentElement.style.setProperty('--guest-header-h', $el.offsetHeight + 'px');
-            sync();
-            const ro = new ResizeObserver(sync);
-            ro.observe($el);
-            // $cleanup isn't exposed in x-init on this Alpine build — guard it so
-            // we still disconnect where available without throwing where it isn't.
-            if (typeof $cleanup === 'function') $cleanup(() => ro.disconnect());
-        "
+    {{-- Full-menu screen (prototype screen 3 / "order"). Green subheader + sticky
+         category chips + grouped menu-row list. The Alpine scope lives on this
+         wrapper (not <main>) so the search input in the subheader and the rows in
+         the list share one `query`. --}}
+    <div
+        class="guest-screen--menu"
+        x-data="{
+            query: '',
+            activeCategory: 'all',
+            allNames: @js(array_values($searchNames)),
+            get hasMatches() {
+                const q = this.query.toLowerCase().trim();
+                return q === '' || this.allNames.some(n => n.includes(q));
+            },
+        }"
     >
-        <div class="guest-header__inner">
-            <div class="flex items-center gap-3">
-                <button type="button" wire:click="showHome" class="guest-back" aria-label="{{ __('guest.back') }}">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-                </button>
-                <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink text-panel font-display text-xl font-black">B</div>
-                <div>
-                    <h1 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $shop->name }}</h1>
-                    <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">
-                        @if($this->isGroupMode)
-                            {{ __('guest.group_ordering') }}
-                        @else
-                            {{ __('guest.guest_ordering') }}
-                        @endif
-                    </p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                {{-- Group Order Button --}}
-                @if($this->isGroupMode)
-                    <button wire:click="toggleGroupShare" class="inline-flex items-center gap-1.5 rounded-full border border-crema/40 bg-crema/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-crema transition-colors hover:bg-crema/20" type="button">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        {{ __('guest.group_active') }}
-                    </button>
-                @else
-                    <button wire:click="createGroup" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft transition-colors hover:border-ink hover:text-ink" type="button">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        {{ __('guest.group_order') }}
-                    </button>
-                @endif
-
-                {{-- Language Toggle --}}
-                <div class="flex items-center gap-0.5 rounded-full border border-line bg-panel p-0.5">
-                    <button wire:click="switchLanguage('en')" class="lang-toggle {{ $locale === 'en' ? 'lang-toggle-active' : '' }}" type="button">
-                        EN
-                    </button>
-                    <button wire:click="switchLanguage('ar')" class="lang-toggle {{ $locale === 'ar' ? 'lang-toggle-active' : '' }}" type="button">
-                        عربي
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
+        @include('livewire.partials.guest-subheader')
 
     {{-- Group Mode Banner --}}
     @if($this->isGroupMode)
@@ -94,80 +54,44 @@
         </div>
     @endif
 
-    {{-- Hero shell (mockup screens 2 / 2b) — cover, logo, name, open pill, dine-in chip --}}
-    @include('livewire.partials.guest-hero')
-
-    {{-- Browse skin (mockup screens 2b / 3): sticky search + category tabs, then
-         the Popular rail and the full category list. Search and tab filtering are
-         client-side over the already-rendered, server-validated menu — no extra
-         Livewire round-trips. Sale / limited-offer / sold-out states and the three
-         themes are preserved by the existing card markup below. --}}
-    <main
-        x-data="{
-            query: '',
-            activeCategory: 'all',
-            allNames: @js(array_values($searchNames)),
-            get hasMatches() {
-                const q = this.query.toLowerCase().trim();
-                return q === '' || this.allNames.some(n => n.includes(q));
-            },
-        }"
-        class="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 sm:px-6"
-    >
-        {{-- Pinned bar: search + horizontal category tabs --}}
-        <div class="guest-pinbar">
-            <label class="guest-search">
-                <svg class="guest-search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
-                </svg>
-                <input
-                    type="search"
-                    x-model="query"
-                    class="guest-search__input"
-                    placeholder="{{ __('guest.search_menu') }}"
-                    aria-label="{{ __('guest.search_menu') }}"
-                >
-            </label>
-
-            @if($categories->isNotEmpty())
-                <div class="guest-tabs" role="tablist">
+    <main class="guest-menu-screen mx-auto w-full max-w-6xl flex-1 px-4 pb-28 sm:px-6">
+        {{-- Sticky category chips (prototype web-category-row). The search field
+             lives in the green subheader above; both drive the wrapper's shared
+             `query` / `activeCategory`, so filtering stays client-side. --}}
+        @if($categories->isNotEmpty())
+            <div class="guest-tabs" role="tablist">
+                <button
+                    type="button"
+                    @click="activeCategory = 'all'"
+                    class="guest-tab"
+                    :class="{ 'guest-tab--on': activeCategory === 'all' }"
+                >{{ __('guest.category_all') }}</button>
+                @foreach($categories as $category)
                     <button
                         type="button"
-                        @click="activeCategory = 'all'"
+                        @click="activeCategory = '{{ $category->id }}'"
                         class="guest-tab"
-                        :class="{ 'guest-tab--on': activeCategory === 'all' }"
-                    >{{ __('guest.category_all') }}</button>
-                    @foreach($categories as $category)
-                        <button
-                            type="button"
-                            @click="activeCategory = '{{ $category->id }}'"
-                            class="guest-tab"
-                            :class="{ 'guest-tab--on': activeCategory === '{{ $category->id }}' }"
-                        >{{ $category->translated('name') }}</button>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-        {{-- Popular today rail (mockup screen 2/2b/3). Hidden while searching or
-             when a single category is selected, since the list below covers it. --}}
-        @include('livewire.partials.guest-popular-rail')
+                        :class="{ 'guest-tab--on': activeCategory === '{{ $category->id }}' }"
+                    >{{ $category->translated('name') }}</button>
+                @endforeach
+            </div>
+        @endif
 
         {{-- Empty-search hint (shown only when search hides every item) --}}
         <p class="guest-noresults" x-show="query.trim() !== '' && !hasMatches" x-cloak>
             {{ __('guest.no_search_results') }}
         </p>
 
-        {{-- Skeleton product cards shown while language switches --}}
-        <div wire:loading wire:target="switchLanguage" class="space-y-10 pt-4">
+        {{-- Skeleton menu rows shown while language switches --}}
+        <div wire:loading wire:target="switchLanguage" class="menu-list pt-2">
             @for($s = 0; $s < 2; $s++)
-                <section class="space-y-4">
+                <section class="menu-category-section">
                     <div class="skeleton h-5 w-32">&nbsp;</div>
-                    <div class="menu-product-grid">
-                        @for($i = 0; $i < 4; $i++)
-                            <article class="surface-card menu-product-card">
-                                <div class="menu-product-image-area skeleton">&nbsp;</div>
-                                <div class="menu-product-body">
+                    <div class="menu-category-items">
+                        @for($i = 0; $i < 3; $i++)
+                            <article class="menu-row">
+                                <span class="menu-row__img skeleton"></span>
+                                <div class="menu-row__body">
                                     <div class="skeleton h-4 w-3/4">&nbsp;</div>
                                     <div class="skeleton h-3 w-1/2">&nbsp;</div>
                                 </div>
@@ -179,7 +103,7 @@
         </div>
 
         {{-- Actual menu content hidden during language switch --}}
-        <div wire:loading.remove wire:target="switchLanguage">
+        <div wire:loading.remove wire:target="switchLanguage" class="menu-list">
             @forelse($categories as $category)
                 @php
                     $categoryNames = $category->products
@@ -188,291 +112,76 @@
                         ->all();
                 @endphp
                 <section
+                    class="menu-category-section"
                     data-category-section="{{ $category->id }}"
                     x-data="{ names: @js($categoryNames) }"
                     x-show="(activeCategory === 'all' || activeCategory === '{{ $category->id }}')
                         && (query.trim() === '' || names.some(n => n.includes(query.toLowerCase().trim())))"
                 >
-                    <h3 class="menu-category-header">{{ $category->translated('name') }}</h3>
+                    <h2 class="menu-category-title">{{ $category->translated('name') }}</h2>
 
-                    <div x-data="{ expanded: null }" class="menu-product-grid">
+                    <div class="menu-category-items">
                         @foreach($category->products as $product)
                             @php
-                                $timePricedAmount = $pricingRules->isNotEmpty()
+                                $rowTimePriced = $pricingRules->isNotEmpty()
                                     ? $product->getTimePriced($pricingRules)
                                     : null;
-                                $hasTimeDiscount = $timePricedAmount !== null && $timePricedAmount < $product->final_price;
-                                $displayPrice = $hasTimeDiscount ? $timePricedAmount : ($product->is_on_sale ? $product->final_price : $product->price);
-                                $searchName = $searchNames[$product->id] ?? '';
+                                $rowHasDiscount = $rowTimePriced !== null && $rowTimePriced < $product->final_price;
+                                $rowPrice = $rowHasDiscount ? $rowTimePriced : ($product->is_on_sale ? $product->final_price : $product->price);
+                                $rowName = $searchNames[$product->id] ?? '';
                             @endphp
-
-                            @if($theme === 'modern')
-                                {{-- Modern theme: horizontal card (image left, text right) --}}
-                                <article
-                                    class="surface-card menu-product-card menu-card-modern {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                    data-product
-                                    data-name="{{ $searchName }}"
-                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
-                                    wire:key="product-{{ $product->id }}"
+                            <article
+                                class="menu-row {{ ! $product->is_available ? 'menu-row--sold-out' : '' }}"
+                                data-name="{{ $rowName }}"
+                                x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
+                                wire:key="product-{{ $product->id }}"
+                            >
+                                {{-- Tile opens the detail sheet (Phase 7e — keeps the per-item
+                                     note reachable); disabled when sold out. The '+' keeps
+                                     wire:click.stop as a quick-add. --}}
+                                <button
+                                    type="button"
+                                    class="menu-row__open"
+                                    @if($product->is_available)
+                                        wire:click="openProductSheet({{ $product->id }})"
+                                        aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
+                                    @else
+                                        disabled
+                                    @endif
                                 >
-                                    {{-- Sold Out badge --}}
-                                    @if(! $product->is_available)
-                                        <div class="menu-product-sold-out-badge">{{ __('guest.sold_out') }}</div>
+                                    @if(productImage($product, 'card'))
+                                        <img src="{{ productImage($product, 'card') }}" alt="{{ $product->translated('name') }}" class="menu-row__img" loading="lazy">
+                                    @else
+                                        <span class="menu-row__img guest-home__imgph" aria-hidden="true"></span>
                                     @endif
-
-                                    {{-- Sale/Discount badge --}}
-                                    @if($product->is_on_sale)
-                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
-                                    @elseif($hasTimeDiscount)
-                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
-                                    @endif
-
-                                    {{-- Horizontal layout: image left, content right.
-                                         Tapping the card body opens the detail sheet
-                                         (Phase 7e, #23-followup) so a per-item note is
-                                         reachable on every product. The '+' button keeps
-                                         wire:click.stop so it stays a quick-add. --}}
-                                    <div class="menu-card-modern-inner"
-                                         @if($product->is_available)
-                                             wire:click="openProductSheet({{ $product->id }})"
-                                             role="button"
-                                             tabindex="0"
-                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
-                                         @endif
-                                    >
-                                        <div class="menu-card-modern-image"
-                                             x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }">
-                                            @if(productImage($product, 'card'))
-                                                <img src="{{ productImage($product, 'card') }}"
-                                                     alt="{{ $product->translated('name') }}"
-                                                     class="menu-product-img"
-                                                     loading="lazy"
-                                                     style="opacity: 0; transition: opacity 200ms ease"
-                                                     x-on:load="loaded = true"
-                                                     x-on:error="broken = true"
-                                                     x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'">
-                                            @endif
-                                            <div class="menu-product-placeholder"
-                                                 x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
-                                                 x-cloak>
-                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-                                                    <path d="M7 2v20"/>
-                                                    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="menu-card-modern-content">
-                                            <p class="menu-product-name">{{ $product->translated('name') }}</p>
-                                            @if($product->translated('description'))
-                                                <p class="menu-card-modern-desc">{{ Str::limit($product->translated('description'), 60) }}</p>
-                                            @endif
-                                            <div class="menu-card-modern-footer">
-                                                <span class="menu-product-price">
-                                                    @if($hasTimeDiscount || $product->is_on_sale)
-                                                        <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
-                                                    @endif
-                                                    <x-price :amount="$displayPrice" :shop="$shop" />
-                                                </span>
-                                                @if($product->is_available)
-                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}">+</button>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-
-                            @elseif($theme === 'dark')
-                                {{-- Dark theme: hero card with overlay text on image --}}
-                                <article
-                                    class="surface-card menu-product-card menu-card-dark {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                    x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
-                                    data-product
-                                    data-name="{{ $searchName }}"
-                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
-                                    wire:key="product-{{ $product->id }}"
-                                >
-                                    {{-- Sold Out badge --}}
-                                    @if(! $product->is_available)
-                                        <div class="menu-product-sold-out-badge">{{ __('guest.sold_out') }}</div>
-                                    @endif
-
-                                    {{-- Sale/Discount badge --}}
-                                    @if($product->is_on_sale)
-                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
-                                    @elseif($hasTimeDiscount)
-                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
-                                    @endif
-
-                                    {{-- Hero image with overlay. Tapping the image/text
-                                         opens the detail sheet (Phase 7e, #23-followup);
-                                         the '+' button keeps wire:click.stop as quick-add. --}}
-                                    <div class="menu-product-image-area"
-                                         @if($product->is_available)
-                                             wire:click="openProductSheet({{ $product->id }})"
-                                             role="button"
-                                             tabindex="0"
-                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
-                                         @endif
-                                    >
-                                        <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
-                                        @if(productImage($product, 'card'))
-                                            <img src="{{ productImage($product, 'card') }}"
-                                                 alt="{{ $product->translated('name') }}"
-                                                 class="menu-product-img"
-                                                 loading="lazy"
-                                                 style="opacity: 0; transition: opacity 200ms ease"
-                                                 x-on:load="loaded = true"
-                                                 x-on:error="broken = true"
-                                                 x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'">
+                                    <div class="menu-row__body">
+                                        <h3 class="menu-row__name">{{ $product->translated('name') }}</h3>
+                                        @if($product->translated('description'))
+                                            <p class="menu-row__desc">{{ Str::limit($product->translated('description'), 64) }}</p>
                                         @endif
-                                        <div class="menu-product-placeholder" x-show="broken || {{ productImage($product) ? 'false' : 'true' }}" x-cloak>
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-                                                <path d="M7 2v20"/>
-                                                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                                            </svg>
-                                        </div>
-
-                                        {{-- Overlay text on image --}}
-                                        <div class="menu-card-dark-overlay">
-                                            <p class="menu-product-name" style="color: rgb(var(--ink));">{{ $product->translated('name') }}</p>
-                                            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-                                                <span class="menu-product-price" style="color: rgb(var(--ink));">
-                                                    @if($hasTimeDiscount || $product->is_on_sale)
-                                                        <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
-                                                    @endif
-                                                    <x-price :amount="$displayPrice" :shop="$shop" />
-                                                </span>
-                                                @if($product->is_available)
-                                                    <button wire:click.stop="addToCart({{ $product->id }})" class="menu-product-add" type="button" aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}">+</button>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- Description below image --}}
-                                    @if($product->translated('description'))
-                                        <div class="menu-product-body">
-                                            <p class="menu-card-dark-desc">{{ Str::limit($product->translated('description'), 80) }}</p>
-                                        </div>
-                                    @endif
-                                </article>
-
-                            @else
-                                {{-- Warm theme (default): vertical card, 2-column grid.
-                                     Tapping the image/body opens the detail sheet
-                                     (Phase 7e, #23-followup); the '+' button keeps
-                                     wire:click.stop as quick-add. Sold-out products
-                                     keep the inline accordion (no sheet to open). --}}
-                                <article
-                                    class="surface-card menu-product-card {{ ! $product->is_available ? 'menu-product-sold-out' : '' }}"
-                                    x-data="{ loaded: {{ productImage($product) ? 'false' : 'true' }}, broken: false }"
-                                    data-product
-                                    data-name="{{ $searchName }}"
-                                    x-bind:hidden="query.trim() !== '' && !$el.dataset.name.includes(query.toLowerCase().trim())"
-                                    @if(! $product->is_available)
-                                        @click="expanded = (expanded === {{ $product->id }}) ? null : {{ $product->id }}"
-                                    @endif
-                                    wire:key="product-{{ $product->id }}"
-                                >
-                                    {{-- Sale/Discount badge --}}
-                                    @if($product->is_on_sale)
-                                        <div class="menu-badge-sale">{{ __('guest.flash_sale') }}</div>
-                                    @elseif($hasTimeDiscount)
-                                        <div class="menu-badge-sale">{{ __('guest.limited_offer') }}</div>
-                                    @endif
-
-                                    {{-- Sold Out badge (mutually exclusive with sale badge) --}}
-                                    @if(! $product->is_available)
-                                        <div class="menu-product-sold-out-badge">
-                                            {{ __('guest.sold_out') }}
-                                        </div>
-                                    @endif
-
-                                    {{-- Image area: fixed height, shimmer while loading.
-                                         Opens the detail sheet on tap (available items). --}}
-                                    <div class="menu-product-image-area"
-                                         @if($product->is_available)
-                                             wire:click="openProductSheet({{ $product->id }})"
-                                             role="button"
-                                             tabindex="0"
-                                             aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
-                                         @endif
-                                    >
-                                        {{-- Shimmer skeleton (shown while image loads) --}}
-                                        <div class="skeleton" style="position:absolute;inset:0;border-radius:0" x-show="!loaded && !broken"></div>
-
-                                        @if(productImage($product, 'card'))
-                                            <img
-                                                src="{{ productImage($product, 'card') }}"
-                                                alt="{{ $product->translated('name') }}"
-                                                class="menu-product-img"
-                                                loading="lazy"
-                                                style="opacity: 0; transition: opacity 200ms ease"
-                                                x-on:load="loaded = true"
-                                                x-on:error="broken = true"
-                                                x-bind:style="(loaded && !broken) ? 'opacity:1; transition: opacity 200ms ease' : 'opacity:0'"
-                                            >
-                                        @endif
-
-                                        {{-- Placeholder icon (shown when broken or no image) --}}
-                                        <div class="menu-product-placeholder"
-                                             x-show="broken || {{ productImage($product) ? 'false' : 'true' }}"
-                                             x-cloak>
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-                                                <path d="M7 2v20"/>
-                                                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    {{-- Name + price + quick-add. Tapping the body opens
-                                         the detail sheet (available items); the '+' keeps
-                                         wire:click.stop as quick-add. --}}
-                                    <div class="menu-product-body"
-                                         @if($product->is_available)
-                                             wire:click="openProductSheet({{ $product->id }})"
-                                         @endif
-                                    >
-                                        <p class="menu-product-name">{{ $product->translated('name') }}</p>
-                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-                                            <span class="menu-product-price">
-                                                @if($hasTimeDiscount || $product->is_on_sale)
-                                                    <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
-                                                @endif
-                                                <x-price :amount="$displayPrice" :shop="$shop" />
-                                            </span>
-                                            @if($product->is_available)
-                                                <button
-                                                    wire:click.stop="addToCart({{ $product->id }})"
-                                                    class="menu-product-add"
-                                                    type="button"
-                                                    aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}"
-                                                >+</button>
+                                        <strong class="menu-row__price">
+                                            @if($rowHasDiscount || $product->is_on_sale)
+                                                <span class="guest-home__strike"><x-price :amount="$product->price" :shop="$shop" /></span>
                                             @endif
-                                        </div>
+                                            <x-price :amount="$rowPrice" :shop="$shop" />
+                                        </strong>
                                     </div>
-
-                                    {{-- Expandable description (accordion — one at a time) --}}
-                                    @if($product->translated('description'))
-                                        <div
-                                            class="menu-product-description"
-                                            x-bind:data-expanded="expanded === {{ $product->id }} ? 'true' : 'false'"
-                                        >
-                                            <p>{{ $product->translated('description') }}</p>
-                                        </div>
-                                    @endif
-                                </article>
-                            @endif
+                                </button>
+                                @if($product->is_available)
+                                    <button type="button" wire:click.stop="addToCart({{ $product->id }})" class="menu-row__plus" aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                    </button>
+                                @else
+                                    <span class="menu-row__soldout">{{ __('guest.sold_out') }}</span>
+                                @endif
+                            </article>
                         @endforeach
                     </div>
                 </section>
             @empty
-                <section class="surface-card border-dashed p-14 text-center">
-                    <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{{ __('guest.no_items_available') }}</p>
-                    <p class="mt-2 text-sm text-ink-soft">{{ __('guest.no_items_hint') }}</p>
+                <section class="guest-empty">
+                    <p class="guest-empty__title">{{ __('guest.no_items_available') }}</p>
+                    <p class="guest-empty__hint">{{ __('guest.no_items_hint') }}</p>
                 </section>
             @endforelse
         </div>

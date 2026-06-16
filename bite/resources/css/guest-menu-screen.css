@@ -1,0 +1,309 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest re-skin — Full Menu screen (prototype screen 3 / "order").
+   Green subheader + search, sticky category chips, and the grouped
+   menu-row list. Ported from the customer-ordering prototype; tokens
+   from guest-prototype-base.css. Imported after guest-browse.css so the
+   chip/search rules here win over the older theme-token styling. RTL-aware.
+   ────────────────────────────────────────────────────────────── */
+
+/* ── Green subheader ────────────────────────────────────────── */
+.guest-subheader {
+    min-height: 154px;
+    color: var(--white);
+    border-radius: 0 0 var(--radius) var(--radius);
+    background: var(--bite-accent);
+}
+
+.guest-subheader__row {
+    display: grid;
+    grid-template-columns: 38px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.guest-subheader__icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--white);
+    cursor: pointer;
+}
+
+.guest-subheader__titles {
+    min-width: 0;
+}
+
+.guest-subheader__title {
+    margin: 0 0 2px;
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.guest-subheader__venue {
+    margin: 0;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.guest-subheader__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guest-subheader__lang {
+    min-width: 44px;
+    height: 38px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--white);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* Search sits inside the green bar — white pill with a soft drop shadow. */
+.guest-subheader .guest-search {
+    margin: 0 16px 16px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: 0 10px 24px rgba(12, 14, 22, 0.1);
+    color: var(--primary-500);
+}
+
+.guest-subheader .guest-search__icon {
+    color: var(--primary-500);
+}
+
+.guest-subheader .guest-search__input {
+    color: var(--neutral-900);
+}
+
+.guest-subheader .guest-search__input::placeholder {
+    color: var(--neutral-500);
+}
+
+/* ── Sticky category chips (reuse .guest-tabs / .guest-tab classes) ── */
+.guest-menu-screen .guest-tabs {
+    position: sticky;
+    top: 8px;
+    z-index: 30;
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 18px;
+    padding: 8px;
+    overflow-x: auto;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 26px rgba(47, 53, 30, 0.14);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    scrollbar-width: none;
+}
+
+.guest-menu-screen .guest-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.guest-menu-screen .guest-tab {
+    flex: none;
+    min-width: max-content;
+    height: 38px;
+    margin: 0;
+    padding: 0 15px;
+    border: 1px solid var(--primary-100);
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--white);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.guest-menu-screen .guest-tab--on {
+    color: var(--white);
+    border-color: var(--primary-500);
+    background: var(--primary-500);
+}
+
+/* ── Grouped menu-row list ──────────────────────────────────── */
+.menu-list {
+    display: grid;
+    gap: 18px;
+}
+
+.menu-category-section {
+    display: grid;
+    gap: 12px;
+}
+
+.menu-category-section + .menu-category-section {
+    padding-top: 18px;
+    border-top: 1px solid var(--primary-100);
+}
+
+.menu-category-title {
+    margin: 0;
+    color: var(--neutral-900);
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.menu-category-items {
+    display: grid;
+    gap: 12px;
+}
+
+.menu-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 108px;
+    padding: 10px;
+    border-radius: var(--radius);
+    background: var(--primary-50);
+}
+
+.menu-row__open {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.menu-row__open:disabled {
+    cursor: default;
+}
+
+.menu-row__img {
+    width: 84px;
+    height: 84px;
+    border-radius: var(--radius);
+    background: var(--white);
+    object-fit: cover;
+}
+
+.menu-row__body {
+    min-width: 0;
+}
+
+.menu-row__name {
+    margin: 0;
+    color: var(--neutral-900);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.menu-row__desc {
+    display: -webkit-box;
+    margin: 4px 0 0;
+    overflow: hidden;
+    color: var(--neutral-500);
+    font-size: 12px;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.menu-row__price {
+    display: block;
+    margin-top: 8px;
+    color: var(--orange-500);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.menu-row__plus {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    color: var(--white);
+    background: var(--bite-accent);
+    cursor: pointer;
+}
+
+.menu-row__soldout {
+    padding: 4px 9px;
+    border-radius: var(--radius);
+    background: rgba(12, 14, 22, 0.7);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.menu-row--sold-out .menu-row__img,
+.menu-row--sold-out .menu-row__name,
+.menu-row--sold-out .menu-row__price {
+    opacity: 0.55;
+}
+
+/* Empty state */
+.guest-empty {
+    padding: 56px 16px;
+    text-align: center;
+    border: 1px dashed var(--primary-100);
+    border-radius: var(--radius);
+    background: var(--primary-50);
+}
+
+.guest-empty__title {
+    margin: 0;
+    color: var(--neutral-900);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.guest-empty__hint {
+    margin: 6px 0 0;
+    color: var(--neutral-500);
+    font-size: 13px;
+}
+
+/* ── RTL ────────────────────────────────────────────────────── */
+[dir="rtl"] .guest-subheader__row > .guest-subheader__icon svg {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .guest-subheader__venue {
+    text-align: right;
+}
+
+/* Grid columns reverse with the document direction, so the image lands on the
+   right automatically; only the text alignment needs flipping. */
+[dir="rtl"] .menu-row__open {
+    text-align: right;
+}

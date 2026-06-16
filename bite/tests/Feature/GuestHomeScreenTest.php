@@ -100,4 +100,16 @@ class GuestHomeScreenTest extends TestCase
         $component->call('showHome')
             ->assertSet('screen', 'home');
     }
+
+    public function test_full_menu_screen_renders_subheader_and_menu_rows(): void
+    {
+        $this->product('Croissant', 1);
+
+        Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->call('showMenu')
+            ->assertSet('screen', 'menu')
+            ->assertSee(__('guest.full_menu'))
+            ->assertSeeHtml('menu-row')
+            ->assertSee('Croissant');
+    }
 }
