@@ -1,0 +1,457 @@
+/* ──────────────────────────────────────────────────────────────
+   Guest re-skin — Home landing (screen 2). Hero over the shop cover,
+   context strip, Today's Highlight, popular grid, and the shared green
+   sticky cart CTA. Ported from the customer-ordering prototype. Tokens
+   from guest-prototype-base.css. RTL-aware.
+   ────────────────────────────────────────────────────────────── */
+
+/* Screen toggling — both screens render; [data-guest-screen] picks the active
+   one. The menu wrapper is display:contents so its header/hero/main keep filling
+   the flex shell; setting it to none when home is active hides the whole subtree. */
+.guest-screen--menu {
+    display: contents;
+}
+
+[data-guest-screen="home"] .guest-screen--menu {
+    display: none;
+}
+
+[data-guest-screen="menu"] .guest-screen--home {
+    display: none;
+}
+
+.guest-home {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.guest-home__hero {
+    position: relative;
+    min-height: 296px;
+    overflow: hidden;
+    color: var(--white);
+    background: #2d371e;
+}
+
+.guest-home__herobg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.guest-home__toprow,
+.guest-home__copy {
+    position: relative;
+    z-index: 2;
+}
+
+.guest-home__toprow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 16px 0;
+}
+
+.guest-home__logo {
+    width: 142px;
+    height: 34px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.guest-home__wordmark {
+    color: var(--white);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.guest-home__lang {
+    min-width: 48px;
+    height: 38px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--white);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.guest-home__copy {
+    display: grid;
+    gap: 8px;
+    padding: 72px 16px 24px;
+}
+
+.guest-home__venue {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.guest-home__title {
+    max-width: 300px;
+    margin: 0;
+    color: var(--white);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.14;
+}
+
+.guest-home__loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    width: max-content;
+    max-width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    color: var(--primary-50);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ── Body ───────────────────────────────────────────────────── */
+.guest-home__body {
+    display: grid;
+    gap: 16px;
+    width: min(370px, 100% - 32px);
+    margin: 18px auto 0;
+    padding-bottom: 104px; /* clear the fixed cart CTA */
+}
+
+/* Context strip */
+.guest-home__context {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.guest-home__chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--primary-50);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.guest-home__chip svg {
+    flex: none;
+}
+
+/* Section headings */
+.guest-home__h2 {
+    margin: 0;
+    color: var(--neutral-900);
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.guest-home__sectionhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.guest-home__seeall {
+    border: 0;
+    padding: 0;
+    color: var(--bite-accent);
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Today's Highlight */
+.guest-home__offers {
+    margin-top: 6px;
+}
+
+.guest-home__highlight {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 142px;
+    align-items: center;
+    gap: 12px;
+    direction: ltr;
+    width: 100%;
+    min-height: 158px;
+    margin-top: 14px;
+    overflow: hidden;
+    padding: 16px;
+    border: 0;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #f3f4ee 0%, #eff1eb 100%);
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.guest-home__highlight-copy {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+}
+
+.guest-home__kicker {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: var(--radius);
+    color: var(--bite-accent);
+    background: var(--white);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.guest-home__highlight-name {
+    margin: 6px 0 7px;
+    color: #41506a;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.18;
+}
+
+.guest-home__highlight-price {
+    display: block;
+    margin-top: 2px;
+    color: var(--orange-500);
+}
+
+.guest-home__highlight-desc {
+    margin: 0 0 13px;
+    color: var(--neutral-500);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.guest-home__highlight-cta {
+    color: var(--bite-accent);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.guest-home__highlight-img {
+    grid-column: 2;
+    grid-row: 1;
+    width: 142px;
+    height: 142px;
+    justify-self: end;
+    border-radius: var(--radius);
+    object-fit: cover;
+}
+
+/* Popular grid */
+.guest-home__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.guest-home__card {
+    position: relative;
+    min-height: 211px;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--primary-50);
+}
+
+.guest-home__cardopen {
+    display: grid;
+    width: 100%;
+    border: 0;
+    padding: 0 0 44px;
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.guest-home__cardimg {
+    width: 100%;
+    height: 126px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.guest-home__cardname {
+    margin: 14px 12px 6px;
+    color: var(--neutral-900);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.guest-home__carddesc {
+    margin: 0 12px;
+    color: var(--neutral-500);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.guest-home__cardprice {
+    position: absolute;
+    left: 12px;
+    bottom: 11px;
+    color: var(--orange-500);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.guest-home__plus {
+    position: absolute;
+    z-index: 2;
+    right: 12px;
+    bottom: 12px;
+    display: grid;
+    width: 31px;
+    height: 31px;
+    place-items: center;
+    border: 0;
+    border-radius: var(--radius);
+    padding: 0;
+    color: var(--white);
+    background: var(--bite-accent);
+    cursor: pointer;
+}
+
+.guest-home__soldout {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    background: rgba(12, 14, 22, 0.7);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.guest-home__imgph {
+    display: block;
+    background: linear-gradient(135deg, #e7e9e0, #dfe2d8);
+}
+
+.guest-home__strike {
+    margin-inline-end: 4px;
+    opacity: 0.5;
+    text-decoration: line-through;
+    font-size: 0.8em;
+}
+
+/* ── Shared sticky green cart CTA ───────────────────────────── */
+.guest-cta {
+    position: fixed;
+    right: max(16px, calc(50vw - 185px));
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: max(16px, calc(50vw - 185px));
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 60px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--radius);
+    color: var(--white);
+    background: var(--bite-accent);
+    box-shadow: var(--shadow);
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.guest-cta__count {
+    color: var(--primary-100);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.guest-cta__label {
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* Menu back button (full-menu header → home) */
+.guest-back {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--primary-100);
+    border-radius: var(--radius);
+    color: var(--neutral-900);
+    background: var(--white);
+    cursor: pointer;
+}
+
+/* ── RTL ────────────────────────────────────────────────────── */
+[dir="rtl"] .guest-home__logo {
+    object-position: right center;
+}
+
+[dir="rtl"] .guest-home__highlight {
+    grid-template-columns: 142px minmax(0, 1fr);
+}
+
+[dir="rtl"] .guest-home__highlight-copy {
+    grid-column: 2;
+    grid-row: 1;
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .guest-home__highlight-img {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+}
+
+[dir="rtl"] .guest-home__cardopen {
+    text-align: right;
+}
+
+[dir="rtl"] .guest-home__cardprice {
+    left: auto;
+    right: 12px;
+}
+
+[dir="rtl"] .guest-home__plus,
+[dir="rtl"] .guest-home__soldout {
+    right: auto;
+    left: 12px;
+}
+
+[dir="rtl"] .guest-home__title,
+[dir="rtl"] .guest-home__venue {
+    font-family: var(--font-arabic);
+}
+
+[dir="rtl"] .guest-back svg {
+    transform: scaleX(-1);
+}

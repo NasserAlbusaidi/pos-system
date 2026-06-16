@@ -4,6 +4,7 @@ return [
     // Header
     'guest_ordering' => 'طلب الضيوف',
     'mobile_checkout' => 'الدفع عبر الجوال',
+    'back' => 'رجوع',
 
     // Language gate (screen 1)
     'choose_language' => 'اختر لغتك · Choose your language',
@@ -25,6 +26,15 @@ return [
     'view_details_aria' => 'عرض تفاصيل :name',
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
+
+    // Home landing (screen 2) — hero, context strip, highlight, popular grid
+    'home_hero_title' => 'اطلب من طاولتك',
+    'home_prep' => 'متوسط ١٥ دقيقة',
+    'todays_highlight' => 'اختيار اليوم',
+    'owners_pick' => 'اختيار المالك',
+    'view_item' => 'عرض المنتج',
+    'see_all' => 'عرض الكل',
+    'view_cart' => 'عرض السلة',
 
     // Browse (screen 2b / 3) — search, tabs, popular rail
     'popular_today' => 'الأكثر طلباً',

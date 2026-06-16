@@ -1,4 +1,5 @@
 <div class="guest-menu-bg guest-shell relative flex min-h-full flex-col overflow-x-hidden"
+     data-guest-screen="{{ $screen }}"
      @if($this->isGroupMode) wire:poll.3s @endif>
 
     {{-- Language gate (mockup screen 1) — full-screen, blocks menu until a language is picked --}}
@@ -6,6 +7,14 @@
         @include('livewire.partials.guest-gate')
     @endif
 
+    {{-- Both screens render every time; the active one is shown via
+         [data-guest-screen] + CSS (the menu wrapper uses display:contents so its
+         flex children still fill the shell). Keeping both in the DOM means a
+         Livewire re-render (addToCart) preserves the screen and the browse markup
+         is present on first paint. Home is the landing; "See all" → showMenu(). --}}
+    @include('livewire.partials.guest-home')
+
+    <div class="guest-screen--menu">
     <header
         class="guest-header"
         x-data
@@ -21,6 +30,9 @@
     >
         <div class="guest-header__inner">
             <div class="flex items-center gap-3">
+                <button type="button" wire:click="showHome" class="guest-back" aria-label="{{ __('guest.back') }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink text-panel font-display text-xl font-black">B</div>
                 <div>
                     <h1 class="font-display text-2xl font-extrabold leading-none text-ink">{{ $shop->name }}</h1>
@@ -465,38 +477,12 @@
             @endforelse
         </div>
     </main>
+    </div>{{-- /guest-screen--menu --}}
 
-    {{-- Bottom Bar: Solo Mode --}}
-    @if(!$this->isGroupMode && count($cart) > 0)
-        <div class="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6">
-            <div class="mx-auto w-full max-w-6xl">
-                <button wire:click="toggleReview" class="surface-card flex w-full items-center justify-between gap-3 border-ink bg-ink px-5 py-4 text-panel transition-transform duration-200 hover:-translate-y-0.5">
-                    <div class="flex items-center gap-3">
-                        <span class="inline-flex items-center rounded-full border border-panel/20 bg-panel/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-panel/90">{{ __('guest.ready') }}</span>
-                        <span class="font-display text-base font-bold leading-none sm:text-2xl">{{ __('guest.review_order') }}</span>
-                    </div>
-                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl"><x-price :amount="$this->total" :shop="$shop" /></span>
-                </button>
-            </div>
-        </div>
-    @endif
-
-    {{-- Bottom Bar: Group Mode --}}
-    @if($this->isGroupMode && count($groupCartItems) > 0)
-        <div class="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6">
-            <div class="mx-auto w-full max-w-6xl">
-                <button wire:click="toggleReview" class="surface-card flex w-full items-center justify-between gap-3 border-crema bg-ink px-5 py-4 text-panel transition-transform duration-200 hover:-translate-y-0.5">
-                    <div class="flex items-center gap-3">
-                        <span class="inline-flex items-center rounded-full border border-crema/30 bg-crema/15 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-crema">
-                            {{ $this->cartItemCount }} {{ __('guest.items') }}
-                        </span>
-                        <span class="font-display text-base font-bold leading-none sm:text-2xl">{{ __('guest.review_group_order') }}</span>
-                    </div>
-                    <span class="font-display text-xl font-extrabold leading-none sm:text-3xl"><x-price :amount="$this->total" :shop="$shop" /></span>
-                </button>
-            </div>
-        </div>
-    @endif
+    {{-- Sticky green cart CTA (prototype web-cart-cta) — shared across home + menu,
+         replaces the two earlier dark bottom bars. Shown only when the cart is
+         non-empty (solo or group). --}}
+    @include('livewire.partials.guest-cart-cta')
 
     {{-- Cart / review + checkout sheet (mockup screens 5 & 6, #24). Re-skinned
          onto the guest design system. Pay-at-counter only — no online payment,
