@@ -30,10 +30,49 @@ class GuestMenuTest extends TestCase
         // For component test, we pass it as a prop.
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('showFullMenu')
             ->assertSee('Coffee')
             ->assertSee('Latte')
             ->assertSee('4.500')
             ->assertSeeHtml('class="omr-symbol"');
+    }
+
+    public function test_see_all_switches_to_the_full_menu_screen(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $coffee = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+        $pastries = Category::create(['shop_id' => $shop->id, 'name_en' => 'Pastries']);
+
+        Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $coffee->id,
+            'name_en' => 'Latte',
+            'price' => 4.50,
+            'is_visible' => true,
+            'is_available' => true,
+        ]);
+        Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $pastries->id,
+            'name_en' => 'Croissant',
+            'price' => 2.00,
+            'is_visible' => true,
+            'is_available' => true,
+        ]);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->assertSet('screen', 'home')
+            ->assertSee('Popular for this table')
+            ->assertDontSeeHtml('data-route-name="order"')
+            ->call('showFullMenu')
+            ->assertSet('screen', 'full_menu')
+            ->assertSeeHtml('data-route-name="order"')
+            ->assertSee('Full menu')
+            ->assertSee('Coffee')
+            ->assertSee('Pastries')
+            ->assertSee('Latte')
+            ->assertSee('Croissant')
+            ->assertDontSee('Popular for this table');
     }
 
     public function test_guest_can_add_item_to_cart(): void

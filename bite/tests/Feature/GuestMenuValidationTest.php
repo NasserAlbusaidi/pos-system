@@ -56,6 +56,7 @@ class GuestMenuValidationTest extends TestCase
         ]);
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('showFullMenu')
             ->assertSee('Sold Out Roll')
             ->assertSee(__('guest.sold_out'));
     }

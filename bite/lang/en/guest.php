@@ -12,6 +12,19 @@ return [
     // Hero (screen 2)
     'status_open' => 'Open now',
     'dine_in' => 'Dine-in',
+    'order_from_table' => 'Order from your table',
+    'table_label' => 'Table :table',
+    'table_context' => 'Table :table · Dine in',
+    'open_until' => 'Open until 11:00 PM',
+    'average_time' => '15 min average',
+    'todays_highlight' => "Today's Highlight",
+    'owners_pick' => "Owner's pick",
+    'view_item' => 'View item',
+    'popular_for_table' => 'Popular for this table',
+    'see_all' => 'See all',
+    'full_menu' => 'Full menu',
+    'call_waiter' => 'Call waiter',
+    'item_note' => 'Item note',
 
     // Menu
     'guest_experience' => 'Guest Experience',
@@ -68,8 +81,18 @@ return [
     'order_total_too_high' => 'Your order total is too high to place online. Please order at the counter or split it into a smaller order.',
     'rate_limit_error' => "You're ordering too quickly. Please wait a moment and try again.",
     'payment' => 'Payment',
-    'pay_at_counter' => 'Pay at the counter',
+    'pay_at_counter' => 'Pay at counter',
     'pay_at_counter_desc' => 'Cash or card when you collect',
+    'payment_method_label' => 'Payment method',
+    'payment_method_counter' => 'Pay at counter',
+    'payment_method_online' => 'Online payment',
+    'payment_method_invalid' => 'Please choose pay at counter or online payment.',
+    'voucher' => 'Voucher',
+    'promo_code' => 'Promo code',
+    'voucher_placeholder' => 'Enter voucher code',
+    'apply_voucher' => 'Apply',
+    'voucher_applied_button' => 'Applied',
+    'voucher_applied' => ':code applied',
 
     // Cart line controls
     'decrease_qty' => 'Decrease quantity',
@@ -173,6 +196,10 @@ return [
     'feedback_placeholder' => 'Any comments? (optional)',
 
     // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_pickup_order' => 'Pick Up Order',
+    'track_view_detail_order' => 'View Detail Order',
+    'track_outlet_label' => 'Outlet',
+    'track_map_alt' => 'Pickup location map',
     'track_show_counter' => 'Show this at the counter',
     'items_count' => '{0}No items|{1}:count item|[2,*]:count items',
     'rating_stars' => '{1}:count star|[2,*]:count stars',

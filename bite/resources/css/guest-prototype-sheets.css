@@ -1,0 +1,567 @@
+.bite-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(5, 18, 11, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.bite-sheet,
+.bite-share-modal {
+    width: min(100vw, 430px);
+    max-height: 92vh;
+    overflow: hidden;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.bite-sheet__header,
+.bite-actionbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--bite-line);
+}
+
+.bite-sheet__header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.bite-sheet__header p {
+    margin: 3px 0 0;
+    color: var(--bite-muted);
+    font-size: 12px;
+}
+
+.bite-sheet__header button {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #eef4ed;
+    color: var(--bite-ink);
+}
+
+.bite-sheet__header svg {
+    width: 17px;
+    height: 17px;
+}
+
+.bite-sheet__scroll {
+    max-height: calc(92vh - 148px);
+    overflow-y: auto;
+    padding: 14px;
+}
+
+.bite-cart-context,
+.bite-payment-card,
+.bite-summary,
+.bite-welcome-back {
+    margin-bottom: 12px;
+}
+
+.bite-cart-context,
+.bite-payment-card,
+.bite-welcome-back {
+    border-radius: 8px;
+    padding: 12px;
+    background: #f1f7f0;
+    color: var(--bite-secondary);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.bite-cart-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bite-line);
+}
+
+.bite-cart-line strong {
+    color: var(--bite-primary);
+    font-size: 13px;
+}
+
+.bite-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 999px;
+    padding: 4px;
+    background: #eef4ed;
+}
+
+.bite-qty button {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--bite-primary);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.bite-qty span,
+.bite-readonly-qty {
+    min-width: 18px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.bite-remove {
+    color: var(--bite-coral);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.bite-field {
+    display: grid;
+    gap: 7px;
+    margin: 14px 0;
+}
+
+.bite-field span {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.bite-field small {
+    color: var(--bite-muted);
+    font-weight: 700;
+}
+
+.bite-field input,
+.bite-field textarea {
+    width: 100%;
+    border: 1px solid var(--bite-line);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+    color: var(--bite-ink);
+    outline: none;
+}
+
+.bite-field textarea {
+    min-height: 74px;
+    resize: vertical;
+}
+
+.bite-summary {
+    display: grid;
+    gap: 9px;
+    padding: 12px;
+}
+
+.bite-summary div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--bite-muted);
+    font-size: 13px;
+}
+
+.bite-summary div:last-child {
+    padding-top: 9px;
+    border-top: 1px solid var(--bite-line);
+    color: var(--bite-ink);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.bite-payment-card {
+    display: grid;
+    gap: 3px;
+}
+
+.bite-payment-card b {
+    color: var(--bite-ink);
+}
+
+.bite-payment-card small {
+    color: var(--bite-muted);
+}
+
+.bite-payment-select {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.bite-payment-select span {
+    color: var(--bite-secondary);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.bite-payment-select select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid rgba(0, 99, 52, 0.18);
+    border-radius: 8px;
+    padding: 0 12px;
+    color: var(--bite-ink);
+    background: #fff;
+    font: inherit;
+    font-weight: 800;
+    outline: none;
+}
+
+.bite-checkout-section {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.bite-checkout-section h4 {
+    margin: 0;
+    color: var(--bite-ink);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.bite-voucher-field {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 78px;
+    border-radius: 8px;
+    padding: 14px;
+    background: #f1f7f0;
+}
+
+.bite-voucher-field__icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 999px;
+    color: var(--bite-secondary);
+    background: #fff;
+}
+
+.bite-voucher-field__icon svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.bite-voucher-field label {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+}
+
+.bite-voucher-field label span {
+    color: var(--bite-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.bite-voucher-field input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    color: var(--bite-ink);
+    background: transparent;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    outline: 0;
+    text-transform: uppercase;
+}
+
+.bite-voucher-field input::placeholder {
+    color: var(--bite-muted);
+    text-transform: none;
+}
+
+.bite-voucher-field button {
+    min-width: 72px;
+    height: 40px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--white);
+    background: var(--bite-secondary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.bite-voucher-field.is-applied button {
+    color: var(--bite-secondary);
+    background: #dcebdd;
+}
+
+.bite-voucher-feedback {
+    margin: 0;
+    color: var(--bite-secondary);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+[dir="rtl"] .bite-voucher-field {
+    direction: rtl;
+    text-align: right;
+}
+
+.bite-sheet-section,
+.bite-cart-participant {
+    margin: 18px 0 6px;
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--bite-muted);
+}
+
+.bite-error {
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: rgba(213, 107, 69, 0.12);
+    color: #9d3f24;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.bite-welcome-back {
+    display: grid;
+    gap: 8px;
+}
+
+.bite-welcome-back button {
+    color: var(--bite-primary);
+    font-weight: 900;
+    text-align: start;
+}
+
+.bite-actionbar {
+    border-top: 1px solid var(--bite-line);
+    border-bottom: 0;
+    background: #fff;
+}
+
+.bite-primary-btn,
+.bite-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-weight: 900;
+}
+
+.bite-primary-btn {
+    flex: 1 1 auto;
+    background: var(--bite-primary);
+    color: #fff;
+}
+
+.bite-secondary-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--bite-line);
+    background: #fff;
+    color: var(--bite-ink);
+}
+
+.bite-detail-hero {
+    position: relative;
+    height: 260px;
+    margin: -14px -14px 0;
+    background: var(--bite-warm);
+}
+
+.bite-detail-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bite-detail-hero button {
+    position: absolute;
+    top: 14px;
+    inset-inline-start: 14px;
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.bite-detail-hero svg {
+    width: 18px;
+    height: 18px;
+}
+
+.bite-detail-body {
+    display: grid;
+    gap: 18px;
+    padding-top: 16px;
+}
+
+.bite-detail-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.bite-detail-title h3 {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.08;
+    font-weight: 900;
+}
+
+.bite-detail-title p {
+    margin: 8px 0 0;
+    color: var(--bite-muted);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.bite-detail-title strong {
+    color: var(--bite-primary);
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.bite-modifier-group {
+    display: grid;
+    gap: 8px;
+}
+
+.bite-modifier-group header,
+.bite-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.bite-modifier-group h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.bite-modifier-group header span {
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: #eef4ed;
+    color: var(--bite-secondary);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.bite-option {
+    min-height: 48px;
+    border: 1px solid var(--bite-line);
+    border-radius: 8px;
+    padding: 0 12px;
+}
+
+.bite-option input {
+    accent-color: var(--bite-primary);
+}
+
+.bite-option span {
+    flex: 1;
+    font-weight: 800;
+}
+
+.bite-option strong {
+    color: var(--bite-primary);
+    font-size: 13px;
+}
+
+.bite-empty {
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    padding: 32px 18px;
+    text-align: center;
+}
+
+.bite-empty p {
+    margin: 0;
+    font-weight: 900;
+}
+
+.bite-empty span {
+    color: var(--bite-muted);
+    font-size: 13px;
+}
+
+.bite-share-modal {
+    display: grid;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.bite-share-modal > p,
+.bite-share-modal > small,
+.bite-share-modal > button {
+    margin-inline: 16px;
+}
+
+.bite-share-url {
+    overflow-wrap: anywhere;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f1f7f0;
+    color: var(--bite-primary);
+    font-size: 12px;
+}
+
+.price-display {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price-display .omr-symbol {
+    width: 0.86em;
+    height: 0.55em;
+}
+
+[dir="rtl"] .bite-ordering-stage {
+    font-family: 'GE Dinar One', 'Bai Jamjuree', 'GE SS Two', 'GE SS Text', 'Dubai', Tahoma, Arial, sans-serif;
+}
+
+@media (min-width: 640px) {
+    .bite-phone-shell {
+        min-height: calc(100vh - 32px);
+        margin-block: 16px;
+        border-radius: 28px;
+        overflow: hidden;
+    }
+
+    .bite-menu-screen {
+        min-height: calc(100vh - 32px);
+    }
+
+    .guest-gate[data-skin="bite-language-gate"] {
+        inset: 16px auto;
+        left: 50%;
+        width: 430px;
+        border-radius: 28px;
+        transform: translateX(-50%);
+        box-shadow: 0 24px 80px rgba(23, 33, 27, 0.28);
+    }
+}

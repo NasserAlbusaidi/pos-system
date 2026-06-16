@@ -18,7 +18,7 @@ class GuestMenuLanguageGateTest extends TestCase
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->assertSet('showLanguageGate', true)
-            ->assertSeeHtml('class="guest-gate"')
+            ->assertSeeHtml('guest-gate screen web-screen language-screen')
             ->assertSee('Sourdough');
     }
 

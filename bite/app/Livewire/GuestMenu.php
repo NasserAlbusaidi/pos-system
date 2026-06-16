@@ -34,6 +34,12 @@ class GuestMenu extends Component
     // for the pay-at-counter pilot. Untrusted: trimmed on submit.
     public $customerName = '';
 
+    public string $paymentMethod = 'counter';
+
+    public string $voucherCode = '';
+
+    public bool $voucherApplied = false;
+
     // Guest-supplied order-level note (Phase 4, #24): one note for the whole
     // order ("table by the window", shared allergen flag). Untrusted: trimmed
     // + capped on submit. Reaches the kitchen (KDS card + printed ticket).
@@ -79,6 +85,10 @@ class GuestMenu extends Component
     // True only when the visitor has NOT yet chosen a language this session.
     public bool $showLanguageGate = false;
 
+    public string $screen = 'home';
+
+    public ?string $tableLabel = null;
+
     // Group ordering state
     public $groupToken = null;
 
@@ -98,6 +108,16 @@ class GuestMenu extends Component
         // language this session. The rendering default above ('en' / shop
         // default) is distinct from an explicit choice stored under 'guest_locale'.
         $this->showLanguageGate = ! session()->has('guest_locale');
+
+        $table = request()->query('table');
+        if (is_scalar($table)) {
+            $this->tableLabel = Str::of((string) $table)
+                ->squish()
+                ->limit(20, '')
+                ->toString() ?: null;
+        }
+
+        $this->screen = request()->query('view') === 'menu' ? 'full_menu' : 'home';
 
         // Generate or retrieve a stable participant ID for this browser session
         $this->participantId = session('guest_participant_id');
@@ -134,6 +154,18 @@ class GuestMenu extends Component
     {
         $this->switchLanguage($lang);
         $this->showLanguageGate = false;
+    }
+
+    public function showFullMenu(): void
+    {
+        $this->screen = 'full_menu';
+        $this->dispatch('guest-screen-changed', screen: 'full_menu');
+    }
+
+    public function showHome(): void
+    {
+        $this->screen = 'home';
+        $this->dispatch('guest-screen-changed', screen: 'home');
     }
 
     // ──────────────────────────────────
@@ -511,6 +543,18 @@ class GuestMenu extends Component
         }
     }
 
+    public function updatedVoucherCode(mixed $value): void
+    {
+        $this->voucherCode = Str::upper(mb_substr((string) $value, 0, 40));
+        $this->voucherApplied = false;
+    }
+
+    public function applyVoucher(): void
+    {
+        $this->voucherCode = Str::upper(trim($this->voucherCode));
+        $this->voucherApplied = $this->voucherCode !== '';
+    }
+
     /**
      * Explicitly manage modifier selection to avoid Livewire hydration issues
      * with mixed scalar (radio) and array (checkbox) values in the same property.
@@ -867,6 +911,14 @@ class GuestMenu extends Component
             return;
         }
 
+        $paymentMethod = $this->normalizePaymentMethod($this->paymentMethod);
+        if ($paymentMethod === null) {
+            $this->orderError = __('guest.payment_method_invalid');
+            $this->showReviewModal = true;
+
+            return;
+        }
+
         $built = $this->buildOrderItems($cartItems, $products);
         if ($built['error'] !== null) {
             $this->orderError = $built['error'];
@@ -896,7 +948,7 @@ class GuestMenu extends Component
         // Sanitize the untrusted order-level note before it touches the DB.
         $orderNote = $this->sanitizeOrderNote($this->orderNote);
 
-        $persisted = $this->persistOrder($orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+        $persisted = $this->persistOrder($orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote, $paymentMethod);
 
         // Race-replay: a concurrent request with the same token won the UNIQUE
         // index. Redirect to that order without re-running side effects — the
@@ -918,17 +970,18 @@ class GuestMenu extends Component
      *
      * @return array{order: Order, created: bool}
      */
-    protected function persistOrder(array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
+    protected function persistOrder(array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote, string $paymentMethod): array
     {
         $idempotencyKey = $this->idempotencyKey;
 
         try {
-            $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems, $idempotencyKey) {
+            $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems, $idempotencyKey, $paymentMethod) {
                 $order = Order::forceCreate([
                     'shop_id' => $this->shop->id,
                     'status' => 'unpaid',
                     'customer_name' => $customerName,
                     'loyalty_phone' => $loyaltyPhone,
+                    'payment_method' => $paymentMethod,
                     'order_note' => $orderNote,
                     'subtotal_amount' => $subtotalAmount,
                     'tax_amount' => round($taxAmount, 3),
@@ -977,6 +1030,13 @@ class GuestMenu extends Component
         }
 
         return ['order' => $order, 'created' => true];
+    }
+
+    protected function normalizePaymentMethod(mixed $method): ?string
+    {
+        $method = trim((string) $method);
+
+        return in_array($method, ['counter', 'online'], true) ? $method : null;
     }
 
     /**
@@ -1092,6 +1152,9 @@ class GuestMenu extends Component
 
         $this->cart = [];
         $this->customerName = '';
+        $this->paymentMethod = 'counter';
+        $this->voucherCode = '';
+        $this->voucherApplied = false;
         $this->orderNote = '';
         $this->loyaltyPhone = '';
         $this->loyaltyError = null;

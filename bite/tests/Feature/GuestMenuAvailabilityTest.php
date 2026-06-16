@@ -74,7 +74,8 @@ class GuestMenuAvailabilityTest extends TestCase
         $unavailable->category_id = $this->category->id;
         $unavailable->save();
 
-        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop]);
+        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->call('showFullMenu');
         $component->assertSee('Croissant');
         $component->assertSee('Danish');
     }
@@ -93,7 +94,8 @@ class GuestMenuAvailabilityTest extends TestCase
         $product->category_id = $this->category->id;
         $product->save();
 
-        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop]);
+        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->call('showFullMenu');
         $component->call('addToCart', $product->id);
 
         // Cart should remain empty because addToCart guards with is_available=true
@@ -126,7 +128,8 @@ class GuestMenuAvailabilityTest extends TestCase
         $productB->category_id = $this->category->id;
         $productB->save();
 
-        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop]);
+        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->call('showFullMenu');
 
         // Manually populate the cart with both products (bypassing addToCart)
         $component->set('cart', [
@@ -181,7 +184,8 @@ class GuestMenuAvailabilityTest extends TestCase
         $unavailable->category_id = $this->category->id;
         $unavailable->save();
 
-        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop]);
+        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->call('showFullMenu');
 
         // The category name should appear even though its only product is unavailable
         $component->assertSee('Pastries');

@@ -85,6 +85,47 @@ class OrderTrackerTimelineTest extends TestCase
             ->assertDontSee('Unpaid');
     }
 
+    public function test_tracker_renders_figma_inspired_pickup_layout(): void
+    {
+        $shop = $this->makeShop();
+        $order = $this->makeOrder($shop, 'paid', ['customer_name' => 'Layla']);
+        $order->items()->create([
+            'product_name_snapshot_en' => 'Karak Tea',
+            'product_name_snapshot_ar' => 'شاي كرك',
+            'price_snapshot' => 0.500,
+            'quantity' => 2,
+        ]);
+
+        $this->get(route('guest.track', $order->tracking_token))
+            ->assertOk()
+            ->assertSee('guest-track__phone', false)
+            ->assertSee('guest-track-hero', false)
+            ->assertSee('guest-statusbar', false)
+            ->assertSee('guest-outlet-card', false)
+            ->assertSee('guest-detail-card', false)
+            ->assertSee('customer-ordering/assets/hopresso/map-square.png', false)
+            ->assertSee(__('guest.track_pickup_order'))
+            ->assertSee(__('guest.track_view_detail_order'))
+            ->assertSee(__('guest.track_outlet_label'))
+            ->assertSee('Layla')
+            ->assertSee('Karak Tea')
+            ->assertSee('2x');
+    }
+
+    public function test_tracker_css_uses_bite_green_for_annotated_surfaces(): void
+    {
+        $css = file_get_contents(resource_path('css/guest-track.css'));
+
+        $this->assertStringContainsString('--track-olive: #006334;', $css);
+        $this->assertMatchesRegularExpression('/\.guest-track-header\s*\{[^}]*background: var\(--track-olive\);/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-track-header\s*\{[^}]*color: var\(--track-olive\);/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-track-header h1\s*\{[^}]*color: #fff;/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-status-steps\s*\{[^}]*color: var\(--track-olive\);/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-codecard\s*\{[^}]*color: var\(--track-olive\);/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-codecard__code\s*\{[^}]*color: var\(--track-olive\);/s', $css);
+        $this->assertMatchesRegularExpression('/\.guest-track-action\s*\{[^}]*background: var\(--track-olive\);/s', $css);
+    }
+
     public function test_cancelled_status_shows_a_distinct_cancelled_state(): void
     {
         $shop = $this->makeShop();

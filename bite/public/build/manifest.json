@@ -1,12 +1,52 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DBk2qjAF.css",
+    "file": "assets/app-CcJNfUAo.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
     "names": [
       "app.css"
     ]
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-Bold.woff2": {
+    "file": "assets/BaiJamjuree-Bold--FtHU4U3.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-Bold.woff2"
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-BoldItalic.woff2": {
+    "file": "assets/BaiJamjuree-BoldItalic-CYkZDSuH.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-BoldItalic.woff2"
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-Italic.woff2": {
+    "file": "assets/BaiJamjuree-Italic-B7r5X7Sy.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-Italic.woff2"
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-Medium.woff2": {
+    "file": "assets/BaiJamjuree-Medium-B9Yr_iy9.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-Medium.woff2"
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-Regular.woff2": {
+    "file": "assets/BaiJamjuree-Regular-CX4EYklb.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-Regular.woff2"
+  },
+  "resources/fonts/customer-ordering/BaiJamjuree-SemiBold.woff2": {
+    "file": "assets/BaiJamjuree-SemiBold-DTBba28W.woff2",
+    "src": "resources/fonts/customer-ordering/BaiJamjuree-SemiBold.woff2"
+  },
+  "resources/fonts/customer-ordering/GE-Dinar-One-Bold.otf": {
+    "file": "assets/GE-Dinar-One-Bold-D_F7wha7.otf",
+    "src": "resources/fonts/customer-ordering/GE-Dinar-One-Bold.otf"
+  },
+  "resources/fonts/customer-ordering/GE-Dinar-One-Light-Italic.woff2": {
+    "file": "assets/GE-Dinar-One-Light-Italic-Bvi5Gxw8.woff2",
+    "src": "resources/fonts/customer-ordering/GE-Dinar-One-Light-Italic.woff2"
+  },
+  "resources/fonts/customer-ordering/GE-Dinar-One-Light.woff2": {
+    "file": "assets/GE-Dinar-One-Light-B3UqexBA.woff2",
+    "src": "resources/fonts/customer-ordering/GE-Dinar-One-Light.woff2"
+  },
+  "resources/fonts/customer-ordering/GE-Dinar-One-Medium.ttf": {
+    "file": "assets/GE-Dinar-One-Medium-BwwfZSHW.ttf",
+    "src": "resources/fonts/customer-ordering/GE-Dinar-One-Medium.ttf"
   },
   "resources/js/app.js": {
     "file": "assets/app-CKl8NZMC.js",

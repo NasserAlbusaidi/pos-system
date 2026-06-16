@@ -33,16 +33,16 @@ class GuestMenuHeroTest extends TestCase
         return $shop;
     }
 
-    public function test_hero_does_not_render_table_context_copy(): void
+    public function test_hero_renders_prototype_table_ordering_copy(): void
     {
         $shop = $this->seedShop();
 
         $response = $this->get(route('guest.menu', $shop->slug));
 
         $response->assertStatus(200);
-        // Pilot scope is shop-level QR + counter pickup — no per-table ordering.
-        $response->assertDontSee('order from your table');
-        $response->assertDontSee('من طاولتك', false);
+        $response->assertSee('Order from your table');
+        $response->assertSee('bite-phone-shell', false);
+        $response->assertSee('bite-menu-screen', false);
     }
 
     public function test_hero_renders_dine_in_chip(): void

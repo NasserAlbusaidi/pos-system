@@ -1,49 +1,57 @@
-{{-- Popular today rail (mockup screen 2/2b/3). Hidden while searching or when a
-     single category is selected, since the list below covers it. Extracted from
-     guest-menu.blade.php to keep that file under the 800-line ceiling.
-     Expects: $popularProducts, $pricingRules, $shop. Rendered inside the <main>
-     Alpine scope, so x-show reads `query` / `activeCategory` from the parent. --}}
+@php
+    $fallbackImages = [
+        'customer-ordering/assets/hopresso/americano.png',
+        'customer-ordering/assets/hopresso/coffee-latte-top.png',
+        'customer-ordering/assets/hopresso/iced-latte.png',
+        'customer-ordering/assets/hopresso/caramel-cream.png',
+        'customer-ordering/assets/hopresso/sparkling-tea.png',
+    ];
+@endphp
+
 @if($popularProducts->isNotEmpty())
-    <section class="guest-popular" x-show="query === '' && activeCategory === 'all'">
-        <div class="guest-popular__head">
-            <h3 class="guest-popular__title">{{ __('guest.popular_today') }}</h3>
+    <section class="recommended-section guest-popular bite-popular" x-show="query === '' && activeCategory === 'all'">
+        <div class="section-title bite-section-head">
+            <h2>{{ __('guest.popular_for_table') }}</h2>
+            <span class="sr-only">{{ __('guest.popular_today') }}</span>
+            <button type="button" wire:click="showFullMenu">
+                {{ __('guest.see_all') }}
+            </button>
         </div>
-        <div class="guest-popular__rail">
-            @foreach($popularProducts as $product)
+
+        <div class="product-grid web-product-grid bite-popular__rail">
+            @foreach($popularProducts->take(4) as $product)
                 @php
                     $popTimePriced = $pricingRules->isNotEmpty()
                         ? $product->getTimePriced($pricingRules)
                         : null;
                     $popHasTimeDiscount = $popTimePriced !== null && $popTimePriced < $product->final_price;
                     $popDisplayPrice = $popHasTimeDiscount ? $popTimePriced : ($product->is_on_sale ? $product->final_price : $product->price);
+                    $fallback = $fallbackImages[$loop->index % count($fallbackImages)];
+                    $imageUrl = productImage($product, 'card') ?: asset($fallback);
                 @endphp
-                <article class="guest-pcard" wire:key="popular-{{ $product->id }}">
+                <article class="product-card bite-popular-card" wire:key="popular-{{ $product->id }}">
                     <button
                         type="button"
-                        wire:click="addToCart({{ $product->id }})"
-                        class="guest-pcard__tile"
-                        aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}"
+                        wire:click="openProductSheet({{ $product->id }})"
+                        class="product-open bite-popular-card__image"
+                        aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
                     >
-                        @if(productImage($product, 'card'))
-                            <img src="{{ productImage($product, 'card') }}" alt="{{ $product->translated('name') }}" class="guest-pcard__img" loading="lazy">
-                        @else
-                            <svg class="guest-pcard__placeholder" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-                            </svg>
-                        @endif
+                        <img src="{{ $imageUrl }}" alt="{{ $product->translated('name') }}" loading="lazy">
                         @if($product->is_on_sale)
-                            <span class="guest-pcard__flag">{{ __('guest.flash_sale') }}</span>
+                            <span class="bite-popular-card__badge">{{ __('guest.flash_sale') }}</span>
                         @elseif($popHasTimeDiscount)
-                            <span class="guest-pcard__flag">{{ __('guest.limited_offer') }}</span>
+                            <span class="bite-popular-card__badge">{{ __('guest.limited_offer') }}</span>
                         @endif
+                        <h3>{{ $product->translated('name') }}</h3>
+                        <p>{{ Str::limit($product->translated('description') ?: __('guest.guest_experience'), 42) }}</p>
+                        <strong><x-price :amount="$popDisplayPrice" :shop="$shop" /></strong>
                     </button>
-                    <p class="guest-pcard__name">{{ $product->translated('name') }}</p>
-                    <span class="menu-product-price guest-pcard__price">
-                        @if($popHasTimeDiscount || $product->is_on_sale)
-                            <span style="text-decoration:line-through;opacity:0.5;margin-right:4px"><x-price :amount="$product->price" :shop="$shop" /></span>
-                        @endif
-                        <x-price :amount="$popDisplayPrice" :shop="$shop" />
-                    </span>
+                    <button
+                        wire:click="addToCart({{ $product->id }})"
+                        class="mini-plus bite-add-mini"
+                        type="button"
+                        aria-label="{{ __('guest.add_item_aria', ['name' => $product->translated('name')]) }}"
+                    >{!! $prototypeIcon('plus') !!}</button>
                 </article>
             @endforeach
         </div>

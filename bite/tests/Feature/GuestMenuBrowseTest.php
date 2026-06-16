@@ -59,7 +59,7 @@ class GuestMenuBrowseTest extends TestCase
     {
         $shop = $this->seedShop();
 
-        $response = $this->get(route('guest.menu', $shop->slug));
+        $response = $this->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
 
         $response->assertStatus(200);
         $response->assertSee('guest-search');
@@ -69,7 +69,7 @@ class GuestMenuBrowseTest extends TestCase
     {
         $shop = $this->seedShop();
 
-        $response = $this->get(route('guest.menu', $shop->slug));
+        $response = $this->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
 
         $response->assertStatus(200);
         $response->assertSee('guest-tabs');
@@ -91,6 +91,19 @@ class GuestMenuBrowseTest extends TestCase
         $response->assertSee('Cinnamon Roll');
     }
 
+    public function test_full_menu_products_use_the_popular_card_pattern(): void
+    {
+        $shop = $this->seedShop();
+
+        $response = $this->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
+
+        $response->assertStatus(200);
+        $response->assertSee('bite-menu-card-grid', false);
+        $response->assertSee('product-card bite-popular-card bite-menu-card', false);
+        $response->assertSee('product-open bite-popular-card__image', false);
+        $response->assertDontSee('bite-menu-row__open', false);
+    }
+
     public function test_browse_preserves_sold_out_state(): void
     {
         $shop = $this->seedShop();
@@ -103,7 +116,7 @@ class GuestMenuBrowseTest extends TestCase
             'is_visible' => true,
         ]);
 
-        $response = $this->get(route('guest.menu', $shop->slug));
+        $response = $this->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
 
         $response->assertStatus(200);
         $response->assertSee('Sold Out');
@@ -114,7 +127,7 @@ class GuestMenuBrowseTest extends TestCase
         $shop = $this->seedShop();
 
         $response = $this->withSession(['guest_locale' => 'ar'])
-            ->get(route('guest.menu', $shop->slug));
+            ->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
 
         $response->assertStatus(200);
         $response->assertSee('قهوة', false);

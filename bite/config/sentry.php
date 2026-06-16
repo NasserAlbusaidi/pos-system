@@ -5,6 +5,8 @@
  *
  * @see https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/
  */
+$tracesSampleRate = env('SENTRY_TRACES_SAMPLE_RATE');
+
 return [
 
     // @see https://docs.sentry.io/concepts/key-terms/dsn-explainer/
@@ -29,7 +31,7 @@ return [
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#traces_sample_rate
     // D-13: Default to 10% performance trace sampling in production.
     // Set SENTRY_TRACES_SAMPLE_RATE=0 to disable, or any float 0.0-1.0 to override.
-    'traces_sample_rate' => (float) env('SENTRY_TRACES_SAMPLE_RATE', 0.10),
+    'traces_sample_rate' => $tracesSampleRate === null || $tracesSampleRate === '' ? 0.10 : (float) $tracesSampleRate,
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#profiles_sample_rate
     'profiles_sample_rate' => env('SENTRY_PROFILES_SAMPLE_RATE') === null ? null : (float) env('SENTRY_PROFILES_SAMPLE_RATE'),

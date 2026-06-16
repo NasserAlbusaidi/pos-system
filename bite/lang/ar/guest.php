@@ -12,6 +12,19 @@ return [
     // Hero (screen 2)
     'status_open' => 'مفتوح الآن',
     'dine_in' => 'تناول في المطعم',
+    'order_from_table' => 'اطلب من طاولتك',
+    'table_label' => 'طاولة :table',
+    'table_context' => 'طاولة :table - تناول في المطعم',
+    'open_until' => 'مفتوح حتى 11:00 مساءً',
+    'average_time' => 'متوسط 15 دقيقة',
+    'todays_highlight' => 'اختيار اليوم',
+    'owners_pick' => 'اختيار المالك',
+    'view_item' => 'عرض العنصر',
+    'popular_for_table' => 'الأكثر طلباً لهذه الطاولة',
+    'see_all' => 'عرض الكل',
+    'full_menu' => 'القائمة الكاملة',
+    'call_waiter' => 'استدعاء النادل',
+    'item_note' => 'ملاحظة للعنصر',
 
     // Menu
     'guest_experience' => 'تجربة الضيف',
@@ -70,6 +83,16 @@ return [
     'payment' => 'الدفع',
     'pay_at_counter' => 'الدفع عند الكاونتر',
     'pay_at_counter_desc' => 'نقداً أو بالبطاقة عند الاستلام',
+    'payment_method_label' => 'طريقة الدفع',
+    'payment_method_counter' => 'الدفع عند الكاونتر',
+    'payment_method_online' => 'الدفع الإلكتروني',
+    'payment_method_invalid' => 'يرجى اختيار الدفع عند الكاونتر أو الدفع الإلكتروني.',
+    'voucher' => 'القسيمة',
+    'promo_code' => 'رمز الخصم',
+    'voucher_placeholder' => 'أدخل رمز الخصم',
+    'apply_voucher' => 'تطبيق',
+    'voucher_applied_button' => 'تم التطبيق',
+    'voucher_applied' => 'تم تطبيق :code',
 
     // Cart line controls
     'decrease_qty' => 'إنقاص الكمية',
@@ -173,6 +196,10 @@ return [
     'feedback_placeholder' => 'أي ملاحظات؟ (اختياري)',
 
     // Order tracking — counter card + customer-safe timeline (screen 7, #25)
+    'track_pickup_order' => 'طلب الاستلام',
+    'track_view_detail_order' => 'عرض تفاصيل الطلب',
+    'track_outlet_label' => 'الفرع',
+    'track_map_alt' => 'خريطة موقع الاستلام',
     'track_show_counter' => 'أظهر هذا عند الكاونتر',
     'items_count' => '{0}لا عناصر|{1}عنصر واحد|{2}عنصران|[3,10]:count عناصر|[11,*]:count عنصراً',
     'rating_stars' => '{1}نجمة واحدة|{2}نجمتان|[3,10]:count نجوم|[11,*]:count نجمة',

@@ -106,11 +106,17 @@ class GuestMenuBilingualParityTest extends TestCase
         $response->assertSee(__('guest.status_open'), false);
         $response->assertSee(__('guest.dine_in'), false);
         $response->assertSee(__('guest.popular_today'), false);
-        $response->assertSee(__('guest.category_all'), false);
+
+        $fullMenuResponse = $this->withSession(['guest_locale' => 'ar'])
+            ->get(route('guest.menu', ['shop' => $shop->slug, 'view' => 'menu']));
+
+        $fullMenuResponse->assertOk();
+        $fullMenuResponse->assertSee(__('guest.category_all'), false);
         // Localized category name (translated()).
-        $response->assertSee('قهوة', false);
+        $fullMenuResponse->assertSee('قهوة', false);
 
         $this->assertNoRawTranslationKey($response->getContent());
+        $this->assertNoRawTranslationKey($fullMenuResponse->getContent());
     }
 
     public function test_language_gate_renders_without_key_leak(): void
@@ -120,8 +126,9 @@ class GuestMenuBilingualParityTest extends TestCase
         // No locale chosen yet → gate is shown. It is intentionally bilingual.
         $html = Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->assertSet('showLanguageGate', true)
-            ->assertSeeHtml('class="guest-gate"')
-            ->assertSee(__('guest.choose_language'))
+            ->assertSeeHtml('guest-gate screen web-screen language-screen')
+            ->assertSee('Choose your language')
+            ->assertSee('اختر لغتك')
             ->html();
 
         $this->assertNoRawTranslationKey($html);
