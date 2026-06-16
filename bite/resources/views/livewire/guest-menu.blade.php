@@ -1,4 +1,4 @@
-<div class="guest-menu-bg relative flex min-h-full flex-col overflow-x-hidden"
+<div class="guest-menu-bg guest-shell relative flex min-h-full flex-col overflow-x-hidden"
      @if($this->isGroupMode) wire:poll.3s @endif>
 
     {{-- Language gate (mockup screen 1) — full-screen, blocks menu until a language is picked --}}

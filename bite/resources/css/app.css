@@ -1,6 +1,7 @@
 /* Guest pilot CSS — split per screen so each unit stays under the 800-line
    project ceiling. Guest selectors use a distinct class namespace, so import
    order does not affect the cascade. */
+@import './guest-prototype-base.css';
 @import './guest-gate.css';
 @import './guest-hero.css';
 @import './guest-browse.css';
