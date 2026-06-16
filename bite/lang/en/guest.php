@@ -108,6 +108,9 @@ return [
     'add_ons' => 'Add-ons',
     'up_to' => 'up to :count',
 
+    // Product detail metric chips (real data only — no fabricated rating/calories)
+    'on_sale' => 'On sale',
+
     // Item note (allergen / special request) — pilot safety feature
     'item_note_label' => 'Special request',
     'item_note_placeholder' => 'Less salt, no nuts, allergy note…',

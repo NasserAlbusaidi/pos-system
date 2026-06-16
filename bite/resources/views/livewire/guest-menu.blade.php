@@ -498,65 +498,87 @@
                         <div class="guest-sheet__error">{{ $modifierError }}</div>
                     @endif
 
-                    <div class="guest-sheet__body">
-                        <h3 class="guest-sheet__name">{{ $customizingProduct->translated('name') }}</h3>
-                        <p class="guest-sheet__price"><x-price :amount="$this->customizingProductPrice" :shop="$shop" /></p>
+                    @php
+                        // Sale state for the metric chip — real data only (Product has
+                        // no rating/calories/prep columns, so the prototype's fabricated
+                        // metric chips are deliberately not rendered).
+                        $sheetTimePriced = $pricingRules->isNotEmpty()
+                            ? $customizingProduct->getTimePriced($pricingRules)
+                            : null;
+                        $sheetOnSale = $customizingProduct->is_on_sale
+                            || ($sheetTimePriced !== null && $sheetTimePriced < $customizingProduct->final_price);
+                    @endphp
+                    <div class="guest-sheet__body guest-detail">
+                        {{-- Title + live price (prototype .title-price) --}}
+                        <div class="guest-detail__head">
+                            <h3 class="guest-detail__name">{{ $customizingProduct->translated('name') }}</h3>
+                            <strong class="guest-detail__price"><x-price :amount="$this->customizingProductPrice" :shop="$shop" /></strong>
+                        </div>
+
+                        {{-- Metric row (prototype .metric-row) — category + sale chips only --}}
+                        <div class="guest-metric-row">
+                            @if($customizingProduct->category)
+                                <span class="guest-metric">{{ $customizingProduct->category->translated('name') }}</span>
+                            @endif
+                            @if($sheetOnSale)
+                                <span class="guest-metric guest-metric--sale">{{ __('guest.on_sale') }}</span>
+                            @endif
+                        </div>
 
                         @if($customizingProduct->translated('description'))
-                            <p class="guest-sheet__desc">{{ $customizingProduct->translated('description') }}</p>
+                            <p class="guest-detail__desc">{{ $customizingProduct->translated('description') }}</p>
                         @endif
 
                         @foreach($customizingProduct->modifierGroups as $group)
                             <section class="guest-mgroup">
                                 <div class="guest-mgroup__head">
-                                    <span class="guest-mgroup__title">{{ $group->translated('name') }}</span>
+                                    <h4 class="guest-mgroup__title">{{ $group->translated('name') }}</h4>
                                     @if($group->min_selection > 0)
                                         <span class="guest-mgroup__req">{{ __('guest.required') }}</span>
                                     @else
-                                        <span class="guest-mgroup__req" style="background:rgb(var(--ink-soft)/0.12);color:rgb(var(--ink-soft))">{{ __('guest.optional') }}</span>
+                                        <span class="guest-mgroup__req guest-mgroup__req--optional">{{ __('guest.optional') }}</span>
                                     @endif
                                     @if($group->max_selection > 1)
                                         <span class="guest-mgroup__opt">{{ __('guest.up_to', ['count' => $group->max_selection]) }}</span>
                                     @endif
                                 </div>
 
-                                @foreach($group->options as $option)
-                                    @php
-                                        $isChecked = $group->max_selection == 1
-                                            ? (($selectedModifiers[$group->id] ?? null) == $option->id)
-                                            : in_array((string) $option->id, (array) ($selectedModifiers[$group->id] ?? []));
-                                    @endphp
-                                    <label class="guest-opt">
-                                        <input
-                                            type="{{ $group->max_selection == 1 ? 'radio' : 'checkbox' }}"
-                                            value="{{ $option->id }}"
+                                {{-- Choice-row chips (prototype .choice-row). Buttons toggle the
+                                     same selectModifier() flow as before — presentation only; the
+                                     min/max validation in addToCart() is unchanged. --}}
+                                <div class="guest-choice-row" role="group" aria-label="{{ $group->translated('name') }}">
+                                    @foreach($group->options as $option)
+                                        @php
+                                            $isChecked = $group->max_selection == 1
+                                                ? (($selectedModifiers[$group->id] ?? null) == $option->id)
+                                                : in_array((string) $option->id, (array) ($selectedModifiers[$group->id] ?? []));
+                                        @endphp
+                                        <button
+                                            type="button"
                                             wire:click="selectModifier({{ $group->id }}, {{ $option->id }}, {{ $group->max_selection > 1 ? 'true' : 'false' }})"
-                                            name="group_{{ $group->id }}"
-                                            class="guest-opt__input"
-                                            @checked($isChecked)
+                                            class="guest-choice {{ $isChecked ? 'guest-choice--on' : '' }}"
+                                            aria-pressed="{{ $isChecked ? 'true' : 'false' }}"
                                         >
-                                        <span class="guest-opt__mark {{ $group->max_selection == 1 ? '' : 'guest-opt__mark--sq' }}" aria-hidden="true"></span>
-                                        <span class="guest-opt__name">{{ $option->translated('name') }}</span>
-                                        @if($option->price_adjustment > 0)
-                                            <span class="guest-opt__price guest-opt__price--add">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
-                                        @else
-                                            <span class="guest-opt__price">{{ __('guest.included') }}</span>
-                                        @endif
-                                    </label>
-                                @endforeach
+                                            <span class="guest-choice__name">{{ $option->translated('name') }}</span>
+                                            @if($option->price_adjustment > 0)
+                                                <span class="guest-choice__price">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                            @endif
+                                        </button>
+                                    @endforeach
+                                </div>
                             </section>
                         @endforeach
 
                         {{-- Special request / allergen note (pilot safety feature) --}}
-                        <div class="guest-note">
-                            <label for="guest-item-note" class="guest-note__label">{{ __('guest.item_note_label') }}</label>
+                        <label class="guest-note" for="guest-item-note">
+                            <span class="guest-note__label">{{ __('guest.item_note_label') }}</span>
                             <textarea
                                 id="guest-item-note"
                                 wire:model="itemNote"
                                 maxlength="255"
                                 class="guest-note__field"
                                 placeholder="{{ __('guest.item_note_placeholder') }}"></textarea>
-                        </div>
+                        </label>
                     </div>
                 </div>
 

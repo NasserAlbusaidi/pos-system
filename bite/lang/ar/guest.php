@@ -106,6 +106,9 @@ return [
     'add_ons' => 'إضافات',
     'up_to' => 'حتى :count',
 
+    // Product detail metric chips (real data only — no fabricated rating/calories)
+    'on_sale' => 'عرض',
+
     // Item note (allergen / special request) — pilot safety feature
     'item_note_label' => 'طلب خاص',
     'item_note_placeholder' => 'ملح أقل، بدون مكسرات، ملاحظة تحسس…',

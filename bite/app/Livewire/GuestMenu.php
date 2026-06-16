@@ -574,7 +574,7 @@ class GuestMenu extends Component
     public function openProductSheet(int $productId): void
     {
         $product = $this->shop->products()
-            ->with('modifierGroups.options')
+            ->with(['modifierGroups.options', 'category'])
             ->orderable()
             ->find($productId);
 
@@ -596,7 +596,7 @@ class GuestMenu extends Component
         }
 
         $product = $this->shop->products()
-            ->with('modifierGroups.options')
+            ->with(['modifierGroups.options', 'category'])
             ->orderable()
             ->find($productId);
 
