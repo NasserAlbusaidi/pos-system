@@ -522,8 +522,10 @@ class SourdoughMenuSeeder extends Seeder
             $filename = 'products/seed-'.Str::random(16).'.jpg';
             Storage::disk('public')->put($filename, $response->body());
 
-            // Process through ImageService → creates thumb/card/full WebP variants
-            return $imageService->processUpload($filename);
+            // Process on the SAME 'public' disk we wrote to — processUpload otherwise
+            // defaults to config('filesystems.default') (=local in dev), reads from the
+            // wrong disk, gets null, and fails with "Unable to decode input".
+            return $imageService->processUpload($filename, 'public');
         } catch (\Throwable $e) {
             $this->command?->warn("    Photo download failed for Pexels {$pexelsId}: {$e->getMessage()}");
 
