@@ -32,6 +32,7 @@
                     <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
                     <span class="tag">{{ __('admin.refresh_interval', ['seconds' => '5s']) }}</span>
                     <span class="tag">{{ __('admin.open_count', ['count' => count($orders)]) }}</span>
+                    <button wire:click="openNewOrder" class="btn-primary !px-4 !py-2.5">+ {{ __('admin.new_sale') }}</button>
                 </div>
             </div>
 
@@ -449,6 +450,103 @@
                 <div class="flex gap-3 border-t border-line bg-muted/20 p-5">
                     <button wire:click="cancelManagerOverride" class="btn-secondary flex-1 justify-center">{{ __('admin.cancel') }}</button>
                     <button wire:click="confirmManagerOverride" class="btn-primary flex-1 justify-center">{{ __('admin.confirm') }}</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($showNewOrder)
+        <div class="fixed inset-0 z-[125] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+            <div class="surface-card flex h-[92vh] w-full max-w-5xl flex-col overflow-hidden sm:rounded-xl">
+                <div class="flex items-center justify-between border-b border-line bg-muted/30 px-5 py-4">
+                    <div>
+                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.new_sale') }}</h3>
+                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.new_sale_desc') }}</p>
+                    </div>
+                    <button wire:click="closeNewOrder" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="grid min-h-0 flex-1 md:grid-cols-[1.4fr_1fr]">
+                    {{-- Product picker --}}
+                    <div class="min-h-0 overflow-y-auto border-b border-line p-5 md:border-b-0 md:border-e">
+                        <p class="section-headline">{{ __('admin.add_items') }}</p>
+                        <div class="mt-3 space-y-5">
+                            @foreach($menuCategories as $category)
+                                @if($category->products->isNotEmpty())
+                                    <div>
+                                        <p class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">{{ $category->name_en }}</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3">
+                                            @foreach($category->products as $product)
+                                                <button
+                                                    wire:click="addToCart({{ $product->id }})"
+                                                    @disabled(! $product->is_available)
+                                                    class="flex flex-col items-start gap-0.5 rounded-lg border border-line bg-panel px-3 py-2.5 text-start transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-40">
+                                                    <span class="text-xs font-semibold text-ink">{{ $product->name_en }}</span>
+                                                    <span class="font-mono text-[11px] text-ink-soft"><x-price :amount="$product->final_price" :shop="$shop" /></span>
+                                                    @unless($product->is_available)
+                                                        <span class="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-alert">86</span>
+                                                    @endunless
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Cart --}}
+                    <div class="flex min-h-0 flex-col">
+                        <div class="border-b border-line p-5">
+                            <label class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.customer_name_optional') }}</label>
+                            <input type="text" wire:model="newOrderName" maxlength="255" placeholder="{{ __('admin.walk_in') }}" class="field mt-2 w-full text-sm">
+                        </div>
+
+                        @php $cartTotal = collect($posCart)->sum(fn ($r) => $r['price'] * $r['quantity']); @endphp
+                        <div class="min-h-0 flex-1 overflow-y-auto p-5">
+                            @forelse($posCart as $row)
+                                <div class="mb-2 flex items-center gap-2 rounded-lg border border-line bg-panel p-3">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-xs font-semibold text-ink">{{ $row['name'] }}</p>
+                                        <p class="font-mono text-[10px] text-ink-soft"><x-price :amount="$row['price']" :shop="$shop" /></p>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button wire:click="decrementCartItem({{ $row['id'] }})" class="h-7 w-7 rounded-md border border-line bg-muted/30 font-mono text-sm font-bold text-ink hover:border-ink">&minus;</button>
+                                        <span class="w-6 text-center font-mono text-xs font-bold text-ink">{{ $row['quantity'] }}</span>
+                                        <button wire:click="addToCart({{ $row['id'] }})" class="h-7 w-7 rounded-md border border-line bg-muted/30 font-mono text-sm font-bold text-ink hover:border-ink">+</button>
+                                    </div>
+                                    <button wire:click="removeCartItem({{ $row['id'] }})" class="px-1.5 text-base leading-none text-ink-soft/50 hover:text-alert" title="{{ __('admin.remove') }}">&times;</button>
+                                </div>
+                            @empty
+                                <p class="py-10 text-center font-mono text-[11px] text-ink-soft/60">{{ __('admin.cart_empty') }}</p>
+                            @endforelse
+                        </div>
+
+                        @if($newOrderError)
+                            <div class="px-5">
+                                <div class="rounded-lg border border-alert/35 bg-alert/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-alert">{{ $newOrderError }}</div>
+                            </div>
+                        @endif
+
+                        <div class="border-t border-line bg-muted/20 p-5">
+                            <div class="mb-3 flex items-center justify-between">
+                                <span class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.total') }}</span>
+                                <span class="font-display text-2xl font-extrabold text-ink"><x-price :amount="$cartTotal" :shop="$shop" /></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button wire:click="chargeNewOrder('cash')" wire:target="chargeNewOrder('cash')" wire:loading.attr="disabled" @disabled(empty($posCart)) class="btn-primary justify-center disabled:opacity-40">
+                                    <span wire:loading.remove wire:target="chargeNewOrder('cash')">{{ __('admin.charge_cash') }}</span>
+                                    <span wire:loading wire:target="chargeNewOrder('cash')" class="loading-spinner"></span>
+                                </button>
+                                <button wire:click="chargeNewOrder('card')" wire:target="chargeNewOrder('card')" wire:loading.attr="disabled" @disabled(empty($posCart)) class="btn-secondary justify-center disabled:opacity-40">
+                                    <span wire:loading.remove wire:target="chargeNewOrder('card')">{{ __('admin.charge_card') }}</span>
+                                    <span wire:loading wire:target="chargeNewOrder('card')" class="loading-spinner"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

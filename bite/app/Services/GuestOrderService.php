@@ -185,6 +185,75 @@ class GuestOrderService
     }
 
     /**
+     * Staff counter sale (#56): same re-pricing / availability / persistence core
+     * as create(), but contact details are optional. Walk-in customers have no
+     * phone, so we default the name to a generic label and leave loyalty_phone
+     * null unless the cashier captured one. Returns the same outcome shapes as
+     * create() so the component handles both paths uniformly.
+     */
+    public function createForCounter(Shop $shop, array $cart, array $context = []): array
+    {
+        if (empty($cart)) {
+            return ['outcome' => 'empty'];
+        }
+
+        $idempotencyKey = $context['idempotency_key'] ?? (string) Str::uuid();
+
+        $existing = Order::where('shop_id', $shop->id)
+            ->where('idempotency_key', $idempotencyKey)
+            ->first();
+        if ($existing) {
+            return ['outcome' => 'duplicate', 'order' => $existing];
+        }
+
+        if (! $this->passesQuantityAndLineCaps($cart)) {
+            return ['outcome' => 'invalid', 'error' => __('guest.cart_too_large'), 'error_field' => 'order'];
+        }
+
+        $products = $this->fetchOrderableProducts($shop, $cart);
+
+        $unavailable = $this->findUnavailable($cart, $products);
+        if (! empty($unavailable['names'])) {
+            return [
+                'outcome' => 'unavailable',
+                'unavailable' => $unavailable['names'],
+                'unavailable_ids' => $unavailable['ids'],
+            ];
+        }
+
+        $built = $this->buildOrderItems($shop, $cart, $products);
+        if ($built['error'] !== null) {
+            return ['outcome' => 'invalid', 'error' => $built['error'], 'error_field' => 'order'];
+        }
+
+        $orderItems = $built['items'];
+        if (empty($orderItems)) {
+            return ['outcome' => 'empty'];
+        }
+
+        $subtotalAmount = $built['subtotal'];
+        $taxAmount = $built['tax'];
+        $totalAmount = round($subtotalAmount + $taxAmount, 3);
+
+        if ($totalAmount > (float) config('ordering.max_order_total', 1000)) {
+            return ['outcome' => 'invalid', 'error' => __('guest.order_total_too_high'), 'error_field' => 'order'];
+        }
+
+        $customerName = trim((string) ($context['customer_name'] ?? ''));
+        $customerName = $customerName === '' ? 'Walk-in' : mb_substr($customerName, 0, 255);
+        $loyaltyPhone = $this->normalizePhone($context['loyalty_phone'] ?? null);
+        $orderNote = $this->sanitizeOrderNote($context['order_note'] ?? null);
+
+        $persisted = $this->persistOrder($shop, $idempotencyKey, $orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+
+        if (! $persisted['created']) {
+            return ['outcome' => 'raced', 'order' => $persisted['order']];
+        }
+
+        return ['outcome' => 'created', 'order' => $persisted['order']];
+    }
+
+    /**
      * Fetch fresh, orderable product data (shop-scoped, with modifiers) for the
      * cart's product ids — the source of truth for re-pricing and availability.
      */

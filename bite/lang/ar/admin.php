@@ -512,4 +512,14 @@ return [
     'snap_no_items' => 'لم يتم العثور على عناصر في الصورة. جرّب صورة مختلفة أو أضف يدوياً.',
     'snap_items_found' => 'تم العثور على :count عنصر في :categories تصنيف',
     'order_note' => 'ملاحظة الطلب',
+
+    // Walk-in / counter order entry (#56)
+    'new_sale' => 'بيع جديد',
+    'new_sale_desc' => 'إنشاء طلب مباشر من الكاشير',
+    'customer_name_optional' => 'اسم العميل (اختياري)',
+    'walk_in' => 'زبون مباشر',
+    'add_items' => 'إضافة أصناف',
+    'cart_empty' => 'لا أصناف بعد — اضغط على منتج لإضافته.',
+    'charge_cash' => 'دفع نقدي',
+    'charge_card' => 'دفع بالبطاقة',
 ];

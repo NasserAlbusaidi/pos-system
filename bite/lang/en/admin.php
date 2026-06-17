@@ -520,4 +520,14 @@ return [
     'snap_no_items' => 'No items were found in the photo. Try a different image or add items manually.',
     'snap_items_found' => ':count items found across :categories categories',
     'order_note' => 'Order note',
+
+    // Walk-in / counter order entry (#56)
+    'new_sale' => 'New Sale',
+    'new_sale_desc' => 'Ring up a walk-in order',
+    'customer_name_optional' => 'Customer name (optional)',
+    'walk_in' => 'Walk-in',
+    'add_items' => 'Add items',
+    'cart_empty' => 'No items yet — tap a product to add it.',
+    'charge_cash' => 'Charge Cash',
+    'charge_card' => 'Charge Card',
 ];

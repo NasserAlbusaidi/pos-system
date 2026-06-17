@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
+use App\Services\GuestOrderService;
 use App\Services\LoyaltyService;
 use App\Services\PrintNodeService;
 use Illuminate\Support\Facades\Auth;
@@ -75,6 +76,18 @@ class PosDashboard extends Component
 
     public array $upsellSuggestions = [];
 
+    // Walk-in / counter order entry (#56).
+    public bool $showNewOrder = false;
+
+    public array $posCart = [];
+
+    public string $newOrderName = '';
+
+    public ?string $newOrderError = null;
+
+    // Set when the builder opens; makes a double-clicked charge idempotent.
+    public string $newOrderKey = '';
+
     public function mount(): void
     {
         $this->shop = Auth::user()->shop;
@@ -121,6 +134,118 @@ class PosDashboard extends Component
             }
         }
         $this->upsellSuggestions = $suggestions;
+    }
+
+    public function openNewOrder(): void
+    {
+        $this->reset(['posCart', 'newOrderName', 'newOrderError']);
+        $this->newOrderKey = (string) Str::uuid();
+        $this->showNewOrder = true;
+    }
+
+    public function closeNewOrder(): void
+    {
+        $this->reset(['showNewOrder', 'posCart', 'newOrderName', 'newOrderError', 'newOrderKey']);
+    }
+
+    public function addToCart(int $productId): void
+    {
+        // Shop-scoped, orderable lookup — never trust the client for price or
+        // for whether the product belongs to this tenant.
+        $product = $this->shop->products()->orderable()->find($productId);
+        if (! $product) {
+            return;
+        }
+
+        $maxQty = (int) config('ordering.max_quantity_per_line', 99);
+        $current = (int) ($this->posCart[$productId]['quantity'] ?? 0);
+        if ($current >= $maxQty) {
+            return;
+        }
+
+        $this->posCart[$productId] = [
+            'id' => $product->id,
+            'name' => $product->name_en,
+            'price' => (float) $product->final_price,
+            'quantity' => $current + 1,
+        ];
+        $this->newOrderError = null;
+    }
+
+    public function decrementCartItem(int $productId): void
+    {
+        if (! isset($this->posCart[$productId])) {
+            return;
+        }
+
+        $next = (int) $this->posCart[$productId]['quantity'] - 1;
+        if ($next < 1) {
+            unset($this->posCart[$productId]);
+
+            return;
+        }
+
+        $this->posCart[$productId]['quantity'] = $next;
+    }
+
+    public function removeCartItem(int $productId): void
+    {
+        unset($this->posCart[$productId]);
+    }
+
+    public function chargeNewOrder(string $method = 'cash')
+    {
+        $method = in_array($method, ['cash', 'card'], true) ? $method : 'cash';
+
+        $cart = collect($this->posCart)
+            ->map(fn ($row) => [
+                'id' => (int) $row['id'],
+                'name' => $row['name'],
+                'quantity' => (int) $row['quantity'],
+            ])
+            ->values()
+            ->all();
+
+        if (empty($cart)) {
+            $this->newOrderError = 'Add at least one item.';
+
+            return;
+        }
+
+        $result = app(GuestOrderService::class)->createForCounter($this->shop, $cart, [
+            'customer_name' => $this->newOrderName,
+            'idempotency_key' => $this->newOrderKey,
+        ]);
+
+        switch ($result['outcome']) {
+            case 'invalid':
+                $this->newOrderError = $result['error'];
+
+                return;
+
+            case 'unavailable':
+                foreach ($result['unavailable_ids'] as $id) {
+                    unset($this->posCart[$id]);
+                }
+                $this->newOrderError = 'No longer available: '.implode(', ', $result['unavailable']);
+
+                return;
+
+            case 'created':
+            case 'duplicate':
+            case 'raced':
+                // Counter sale is pay-now: settle the full balance immediately so
+                // the order never sits unpaid (and isn't auto-cancelled). markAsPaid
+                // is idempotent on an already-paid order, so a replayed charge is safe.
+                $this->markAsPaid($result['order']->id, $method);
+                session()->flash('message', 'Order created and paid.');
+                $this->closeNewOrder();
+
+                return;
+
+            default: // 'empty' or anything unexpected
+                $this->newOrderError = 'Add at least one item.';
+        }
     }
 
     public function toggle86(int $productId): void
