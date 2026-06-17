@@ -62,9 +62,19 @@
                         </div>
                     @endforeach
                 @endif
+                @if(filled($item->note))
+                    <div class="receipt-note">↳ {{ $item->note }}</div>
+                @endif
             </div>
         @endforeach
     </div>
+
+    @if(filled($order->order_note))
+        <div class="receipt-order-note">
+            <span class="receipt-note-label">Note</span>
+            <span>{{ $order->order_note }}</span>
+        </div>
+    @endif
 
     <div class="receipt-divider"></div>
 

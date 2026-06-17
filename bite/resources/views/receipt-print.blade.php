@@ -148,6 +148,29 @@
             line-height: 1.5;
         }
 
+        .receipt-note {
+            font-size: 10px;
+            font-style: italic;
+            color: #4f5661;
+            padding-left: 12px;
+            line-height: 1.5;
+        }
+
+        .receipt-order-note {
+            font-size: 11px;
+            color: #1a1a1a;
+            padding: 6px 0;
+            line-height: 1.5;
+        }
+
+        .receipt-order-note .receipt-note-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 10px;
+            margin-right: 4px;
+        }
+
         .receipt-total-row {
             font-size: 14px;
             font-weight: 700;

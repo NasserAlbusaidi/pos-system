@@ -519,4 +519,5 @@ return [
     'snap_error' => 'Could not extract menu items. Please try a clearer photo or add items manually.',
     'snap_no_items' => 'No items were found in the photo. Try a different image or add items manually.',
     'snap_items_found' => ':count items found across :categories categories',
+    'order_note' => 'Order note',
 ];
