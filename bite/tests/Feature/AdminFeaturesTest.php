@@ -18,7 +18,7 @@ class AdminFeaturesTest extends TestCase
     public function test_menu_builder_reorder_product(): void
     {
         $shop = Shop::factory()->create();
-        $user = User::factory()->create(['shop_id' => $shop->id]);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
         $category1 = Category::factory()->create(['shop_id' => $shop->id, 'name_en' => 'Cat 1', 'sort_order' => 1]);
         $category2 = Category::factory()->create(['shop_id' => $shop->id, 'name_en' => 'Cat 2', 'sort_order' => 2]);
         $product = Product::factory()->create(['shop_id' => $shop->id, 'category_id' => $category1->id]);

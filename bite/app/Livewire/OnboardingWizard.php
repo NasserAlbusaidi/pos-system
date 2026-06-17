@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Exceptions\MenuExtractionException;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Category;
 use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
@@ -20,7 +21,13 @@ use Livewire\WithFileUploads;
 
 class OnboardingWizard extends Component
 {
+    use AuthorizesRole;
     use WithFileUploads;
+
+    protected function allowedRoles(): array
+    {
+        return ['admin'];
+    }
 
     // ── Wizard state ────────────────────────────────────────
     public int $step = 1;

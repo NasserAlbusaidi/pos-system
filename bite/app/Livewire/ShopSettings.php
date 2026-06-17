@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
 use App\Services\BillingService;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,13 @@ use Livewire\Component;
 
 class ShopSettings extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     // Shop basics
     public $name;
 

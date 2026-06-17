@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Services\BillingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -10,6 +11,13 @@ use Livewire\Component;
 
 class BillingSettings extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['admin'];
+    }
+
     public bool $showCancelModal = false;
 
     protected BillingService $billing;

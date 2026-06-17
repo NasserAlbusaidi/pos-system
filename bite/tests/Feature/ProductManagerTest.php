@@ -17,7 +17,7 @@ class ProductManagerTest extends TestCase
     public function test_can_create_product()
     {
         $shop = Shop::factory()->create();
-        $user = User::factory()->create(['shop_id' => $shop->id]);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
         $category = Category::factory()->create(['shop_id' => $shop->id]);
 
         Livewire::actingAs($user)

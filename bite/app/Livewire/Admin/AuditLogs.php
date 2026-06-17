@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,13 @@ use Livewire\Component;
 
 class AuditLogs extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public $search = '';
 
     public $userFilter = '';

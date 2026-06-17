@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
@@ -13,6 +14,13 @@ use Livewire\Component;
 
 class MenuBuilder extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public Shop $shop;
 
     public $search = '';

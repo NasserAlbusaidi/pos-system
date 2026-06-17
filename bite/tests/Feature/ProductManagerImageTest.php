@@ -30,7 +30,7 @@ class ProductManagerImageTest extends TestCase
         config(['filesystems.default' => 'public']);
 
         $this->shop = Shop::factory()->create();
-        $this->user = User::factory()->create(['shop_id' => $this->shop->id]);
+        $this->user = User::factory()->create(['shop_id' => $this->shop->id, 'role' => 'admin']);
         $this->category = Category::factory()->create(['shop_id' => $this->shop->id]);
     }
 

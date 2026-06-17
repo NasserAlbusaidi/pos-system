@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
 use App\Models\Shop;
@@ -11,6 +12,13 @@ use Livewire\Component;
 
 class ModifierManager extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public Shop $shop;
 
     // Group properties
