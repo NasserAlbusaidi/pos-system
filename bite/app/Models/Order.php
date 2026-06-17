@@ -40,6 +40,24 @@ class Order extends Model
         'shop_id',
     ];
 
+    /**
+     * Map the internal lifecycle status to a customer-safe label for guest
+     * surfaces (the public JSON API today, the tracker timeline conceptually).
+     * Internal words like "unpaid" are never exposed — they read as alarming
+     * to a guest who has already placed a pay-at-counter order.
+     */
+    public function customerStatus(): string
+    {
+        return match ($this->status) {
+            'paid' => 'accepted',
+            'preparing' => 'preparing',
+            'ready' => 'ready',
+            'completed' => 'completed',
+            'cancelled' => 'cancelled',
+            default => 'received', // 'unpaid' + any unknown → neutral "received"
+        };
+    }
+
     protected static function booted(): void
     {
         static::creating(function (self $order): void {
