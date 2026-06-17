@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\GuestMenu;
 use App\Livewire\KitchenDisplay;
+use App\Livewire\PosDashboard;
 use App\Models\Category;
 use App\Models\GroupCart;
 use App\Models\ModifierGroup;
@@ -246,6 +247,92 @@ class GuestMenuItemNoteTest extends TestCase
             ->test(KitchenDisplay::class)
             ->assertSee('Plain Loaf')
             ->assertDontSeeHtml('kds-note');
+    }
+
+    public function test_item_and_order_notes_render_on_pos_dashboard(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite-pos-notes']);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
+
+        $order = Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'unpaid',
+            'total_amount' => 5.00,
+            'order_note' => 'Call when ready, please',
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => null,
+            'product_name_snapshot_en' => 'Cardamom Bun',
+            'product_name_snapshot_ar' => null,
+            'price_snapshot' => 1.200,
+            'quantity' => 1,
+            'note' => 'No walnuts - allergy',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PosDashboard::class)
+            ->assertSee('No walnuts - allergy')
+            ->assertSee('Call when ready, please');
+    }
+
+    public function test_pos_dashboard_omits_note_block_when_absent(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite-pos-nonote']);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'server']);
+
+        $order = Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'unpaid',
+            'total_amount' => 2.50,
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => null,
+            'product_name_snapshot_en' => 'Plain Loaf',
+            'product_name_snapshot_ar' => null,
+            'price_snapshot' => 2.500,
+            'quantity' => 1,
+            'note' => null,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PosDashboard::class)
+            ->assertSee('Plain Loaf')
+            ->assertDontSeeHtml('pos-item-note')
+            ->assertDontSeeHtml('pos-order-note');
+    }
+
+    public function test_item_and_order_notes_render_on_receipt(): void
+    {
+        $shop = Shop::factory()->create();
+
+        $order = Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'paid',
+            'total_amount' => 5.00,
+            'paid_at' => now(),
+            'order_note' => 'Birthday — add a candle',
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => null,
+            'product_name_snapshot_en' => 'Cardamom Bun',
+            'product_name_snapshot_ar' => null,
+            'price_snapshot' => 1.200,
+            'quantity' => 1,
+            'note' => 'Extra icing',
+        ]);
+
+        $this->blade(
+            '<x-printable-receipt :order="$order" :shop="$shop" />',
+            ['order' => $order->fresh(), 'shop' => $shop],
+        )
+            ->assertSee('Extra icing')
+            ->assertSee('Birthday — add a candle');
     }
 
     private function buildTicket(Order $order): string

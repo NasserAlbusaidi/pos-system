@@ -89,11 +89,21 @@
                                     <div class="mt-1 space-y-0.5">
                                         @foreach($order->items->take(3) as $item)
                                             <p class="font-mono text-xs text-ink">{{ $item->quantity }}x {{ $item->translated('product_name_snapshot') }}</p>
+                                            @if(filled($item->note))
+                                                <p class="pos-item-note font-mono text-[10px] italic text-ink-soft ps-4">↳ {{ $item->note }}</p>
+                                            @endif
                                         @endforeach
                                         @if($order->items->count() > 3)
                                             <p class="font-mono text-[10px] text-ink-soft">{{ __('admin.more_items', ['count' => $order->items->count() - 3]) }}</p>
                                         @endif
                                     </div>
+                                </div>
+                            @endif
+
+                            @if(filled($order->order_note))
+                                <div class="pos-order-note rounded-lg border border-crema/20 bg-crema/5 px-3 py-2">
+                                    <p class="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.order_note') }}</p>
+                                    <p class="mt-1 font-mono text-[11px] text-ink">{{ $order->order_note }}</p>
                                 </div>
                             @endif
 
