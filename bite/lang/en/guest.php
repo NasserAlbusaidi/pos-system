@@ -4,9 +4,11 @@ return [
     // Header
     'guest_ordering' => 'Guest Ordering',
     'mobile_checkout' => 'Mobile Checkout',
+    'back' => 'Back',
 
     // Language gate (screen 1)
     'choose_language' => 'Choose your language · اختر لغتك',
+    'continue_to_menu' => 'Continue to menu',
     'powered_by' => 'Powered by',
 
     // Hero (screen 2)
@@ -24,6 +26,18 @@ return [
     'view_details_aria' => 'View details for :name',
     'flash_sale' => 'Flash Sale',
     'limited_offer' => 'Limited Offer',
+
+    // Home landing (screen 2) — hero, context strip, highlight, popular grid
+    // Pilot is shop-level QR + counter pickup (no per-table service), so the
+    // headline stays table-neutral — see GuestMenuHeroTest table-context guard.
+    'home_hero_title' => 'Order from the menu',
+    'full_menu' => 'Full menu',
+    'home_prep' => '~15 min average',
+    'todays_highlight' => "Today's Highlight",
+    'owners_pick' => "Owner's pick",
+    'view_item' => 'View item',
+    'see_all' => 'See all',
+    'view_cart' => 'View cart',
 
     // Browse (screen 2b / 3) — search, tabs, popular rail
     'popular_today' => 'Popular today',
@@ -93,6 +107,9 @@ return [
     'included' => 'Included',
     'add_ons' => 'Add-ons',
     'up_to' => 'up to :count',
+
+    // Product detail metric chips (real data only — no fabricated rating/calories)
+    'on_sale' => 'On sale',
 
     // Item note (allergen / special request) — pilot safety feature
     'item_note_label' => 'Special request',

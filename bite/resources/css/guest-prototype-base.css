@@ -1,0 +1,152 @@
+/* Guest prototype re-skin — design-system foundation (Phase 1).
+   Ports the Hopresso customer-ordering prototype's visual system to the live
+   guest menu: self-hosted display fonts, the prototype token scale, and the
+   centered phone-shell frame.
+
+   Tokens are scoped to `.guest-shell` (the component root), NOT :root, so the
+   platform-green palette never leaks into POS/admin pages that share the
+   layout. Class names here are the contract with the Blade markup. */
+
+/* ── Bai Jamjuree (English display + body, self-hosted) ──────────── */
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-Italic.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/customer-ordering/BaiJamjuree-BoldItalic.woff2') format('woff2');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* ── GE Dinar One (Arabic display, self-hosted) ──────────────────── */
+@font-face {
+    font-family: 'GE Dinar One';
+    src: url('/fonts/customer-ordering/GE-Dinar-One-Light.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'GE Dinar One';
+    src: url('/fonts/customer-ordering/GE-Dinar-One-Light-Italic.woff2') format('woff2');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'GE Dinar One';
+    src: url('/fonts/customer-ordering/GE-Dinar-One-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'GE Dinar One';
+    src: url('/fonts/customer-ordering/GE-Dinar-One-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ── Design tokens (prototype scale, scoped to the guest shell) ──── */
+.guest-shell {
+    --primary-900: #2f351e;
+    --primary-800: #3d4528;
+    --primary-700: #4f5933;
+    --primary-600: #657342;
+    --primary-500: #006836;
+    --primary-400: #8c986d;
+    --primary-300: #9fa984;
+    --primary-200: #bdc4ab;
+    --primary-100: #d2d7c6;
+    --primary-50: #f1f2ed;
+
+    --neutral-900: #0c0e16;
+    --neutral-800: #202531;
+    --neutral-700: #37404f;
+    --neutral-600: #4e5769;
+    --neutral-500: #667086;
+    --neutral-400: #c0c6d4;
+    --neutral-300: #d1d7e0;
+    --neutral-200: #e1e5e9;
+    --neutral-100: #fafbfc;
+    --white: #ffffff;
+
+    --orange-600: #e47100;
+    --orange-500: #fa7c00;
+    --orange-400: #fb9633;
+    --red-600: #a21916;
+    --red-50: #f7e8e8;
+    --green-700: #015a51;
+    --green-50: #e6f2f1;
+
+    --bite-accent: #006836;
+
+    --screen-width: 402px;
+    --status-height: 50px;
+    --radius: 8px;
+    --shadow: 0 18px 40px rgba(47, 53, 30, 0.16);
+
+    --font-english: 'Bai Jamjuree', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --font-arabic: 'GE Dinar One', var(--font-english), 'GE SS Two', 'GE SS Text', 'Dubai', Tahoma, Arial, sans-serif;
+    --font: var(--font-english);
+
+    font-family: var(--font);
+    color: var(--neutral-900);
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Arabic switches the whole shell to the GE Dinar One stack. `dir` is set on
+   <html> by the component (guest-menu.blade.php), so this descendant rule
+   flips with the language toggle. */
+[dir='rtl'] .guest-shell {
+    --font: var(--font-arabic);
+}
+
+/* ── Phone-shell frame ───────────────────────────────────────────
+   Centered 402px column on wider screens, full-bleed on phones (the QR
+   audience). The compound selector overrides .guest-menu-bg's theme gradient
+   so the frame reads as a clean white device surface. */
+.guest-menu-bg.guest-shell {
+    width: min(100vw, var(--screen-width));
+    margin-inline: auto;
+    min-height: 100dvh;
+    background: var(--white);
+    position: relative;
+    overflow-x: hidden;
+}

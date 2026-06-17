@@ -45,15 +45,16 @@ class GuestMenuHeroTest extends TestCase
         $response->assertDontSee('من طاولتك', false);
     }
 
-    public function test_hero_renders_dine_in_chip(): void
+    public function test_home_hero_renders_dine_in_chip(): void
     {
         $shop = $this->seedShop();
 
         $response = $this->get(route('guest.menu', $shop->slug));
 
         $response->assertStatus(200);
+        // The home landing hero carries the dine-in context chip. (The reskin
+        // dropped the open/closed status pill — neither prototype hero shows it.)
         $response->assertSee('Dine-in');
-        $response->assertSee('Open now');
     }
 
     public function test_malicious_branding_url_is_not_rendered_in_src(): void

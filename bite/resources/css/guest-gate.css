@@ -1,125 +1,172 @@
 /* ──────────────────────────────────────────────────────────────
-   Guest pilot — Language gate (screen 1). Full-screen overlay that
-   blocks the menu until a language is chosen. Extracted from
-   guest-browse.css to keep each unit under the 800-line project
-   ceiling. Imported by app.css. Tokens only, RTL-aware.
+   Guest re-skin — Language gate (screen 1). Frosted-glass language
+   picker over the shop's cover photo, ported from the customer-
+   ordering prototype. Full-screen overlay constrained to the phone-
+   shell column; blocks the menu until a language is chosen. Tokens
+   from guest-prototype-base.css. RTL-aware.
    ────────────────────────────────────────────────────────────── */
 
-/* Language gate (screen 1) — full-screen overlay, blocks the menu */
 .guest-gate {
     position: fixed;
-    inset: 0;
+    inset-block: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(100vw, var(--screen-width));
     z-index: 200;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-8) var(--space-6);
-    text-align: center;
-    color: rgb(var(--paper));
-    background:
-        radial-gradient(circle at 12% 0%, rgb(var(--crema) / 0.22), transparent 42%),
-        linear-gradient(170deg, rgb(var(--ink)) 0%, rgb(var(--ink) / 0.96) 60%, rgb(var(--crema) / 0.28) 100%);
+    isolation: isolate;
+    color: var(--white);
+    background: linear-gradient(180deg, #2f351e 0%, #161b10 100%);
     overflow-y: auto;
 }
 
-.guest-gate__panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 360px;
-    margin: auto;
+/* Shop cover photo behind the frosted glass (set inline per shop). */
+.guest-gate__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    pointer-events: none;
 }
 
-.guest-gate__crest {
-    display: grid;
-    place-items: center;
-    width: 76px;
-    height: 76px;
-    margin-bottom: var(--space-5);
-    border-radius: var(--radius-pill);
-    background: rgb(var(--paper) / 0.08);
-    border: 1px solid rgb(var(--paper) / 0.18);
-    overflow: hidden;
-}
-
-.guest-gate__crest-img {
+/* Optional ambient cover video. Same layer as __bg but painted on top of it
+   (DOM order); the static cover stays visible underneath as the fallback. */
+.guest-gate__video {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    pointer-events: none;
 }
 
-.guest-gate__crest-mark {
-    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    color: rgb(var(--paper));
+.guest-gate__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.1), transparent 32%),
+        linear-gradient(180deg, rgba(22, 27, 16, 0.28) 0%, rgba(22, 27, 16, 0.56) 52%, rgba(22, 27, 16, 0.84) 100%);
 }
 
-.guest-gate__word {
-    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-tight);
+.guest-gate__hero,
+.guest-gate__langs,
+.guest-gate .guest-powered {
+    position: relative;
+    z-index: 2;
 }
 
-.guest-gate__ask {
-    margin-top: var(--space-2);
-    font-size: var(--font-size-sm);
-    color: rgb(var(--paper) / 0.72);
+/* Hero: logo near the top, identity + ask bottom-aligned (prototype look). */
+.guest-gate__hero {
+    display: grid;
+    align-content: end;
+    justify-items: center;
+    flex: 1;
+    min-height: 420px;
+    padding: 20px 24px 34px;
+    text-align: center;
 }
 
+.guest-gate__logo {
+    width: 156px;
+    max-width: 60%;
+    height: 48px;
+    margin: 0 auto 72px;
+    object-fit: contain;
+}
+
+.guest-gate__venue {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.guest-gate__hero h1 {
+    max-width: 300px;
+    margin: 0 auto;
+    color: var(--white);
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.14;
+}
+
+/* Frosted language cards */
 .guest-gate__langs {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    width: 100%;
-    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(370px, 100% - 32px);
+    margin: 0 auto;
 }
 
 .guest-gate__lang {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: var(--space-4);
-    border: 0;
-    border-radius: var(--radius-md);
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    min-height: 86px;
+    padding: 14px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 25px;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.11);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     font-family: inherit;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
     cursor: pointer;
-    transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+    transition: transform 150ms ease, background-color 150ms ease;
 }
 
-.guest-gate__lang--primary {
-    background: rgb(var(--crema));
-    color: rgb(var(--paper));
-    box-shadow: 0 10px 22px rgb(var(--crema) / 0.32);
+.guest-gate__lang strong {
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.guest-gate__lang--alt {
-    background: rgb(var(--paper) / 0.1);
-    border: 1px solid rgb(var(--paper) / 0.22);
-    color: rgb(var(--paper));
+.guest-gate__lang span {
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 12px;
+    line-height: 1.25;
 }
 
 .guest-gate__lang:hover {
     transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.16);
 }
 
 .guest-gate__lang:active {
     transform: translateY(0);
 }
 
-/* RTL — gate stays centered (matches mockup). */
-[dir="rtl"] .guest-gate__panel {
-    align-items: center;
+.guest-gate__lang:focus-visible {
+    outline: 2px solid var(--white);
+    outline-offset: 2px;
 }
 
-[dir="rtl"] .guest-gate__word,
-[dir="rtl"] .guest-gate__crest-mark {
-    font-family: 'IBM Plex Sans Arabic', var(--theme-display-font, 'Playfair Display', Georgia, serif);
-    font-weight: var(--font-weight-bold);
+/* Powered-by footer: .guest-powered is shared with the page footer, so only
+   the gate-context colour is overridden here for the dark cover backdrop. */
+.guest-gate .guest-powered {
+    flex: none;
+    margin-top: auto;
+    padding: 14px 16px 22px;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.guest-gate .guest-powered b {
+    color: var(--white);
+    font-weight: 800;
+}
+
+/* RTL — the Arabic option labels carry their own inline dir; the grid is
+   symmetric so no column flip is needed. Identity text uses the Arabic face. */
+[dir="rtl"] .guest-gate__venue,
+[dir="rtl"] .guest-gate__hero h1 {
+    font-family: var(--font-arabic);
 }

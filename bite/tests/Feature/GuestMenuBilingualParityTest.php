@@ -102,10 +102,10 @@ class GuestMenuBilingualParityTest extends TestCase
         $response->assertOk();
         // Layout flips to RTL via the SetLocale-shared $direction.
         $response->assertSee('dir="rtl"', false);
-        // Hero + browse Arabic copy.
-        $response->assertSee(__('guest.status_open'), false);
+        // Home hero + full-menu Arabic copy. (status_open was dropped in the
+        // prototype reskin — neither hero shows an open/closed pill.)
         $response->assertSee(__('guest.dine_in'), false);
-        $response->assertSee(__('guest.popular_today'), false);
+        $response->assertSee(__('guest.full_menu'), false);
         $response->assertSee(__('guest.category_all'), false);
         // Localized category name (translated()).
         $response->assertSee('قهوة', false);

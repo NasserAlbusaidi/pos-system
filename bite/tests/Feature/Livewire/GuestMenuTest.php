@@ -53,6 +53,7 @@ class GuestMenuTest extends TestCase
                 $product->id.'-plain' => [
                     'id' => $product->id,
                     'name' => 'Latte',
+                    'image' => null,
                     'price' => 4.50,
                     'quantity' => 1,
                     'selectedModifiers' => [],
@@ -65,6 +66,7 @@ class GuestMenuTest extends TestCase
                 $product->id.'-plain' => [
                     'id' => $product->id,
                     'name' => 'Latte',
+                    'image' => null,
                     'price' => 4.50,
                     'quantity' => 2,
                     'selectedModifiers' => [],

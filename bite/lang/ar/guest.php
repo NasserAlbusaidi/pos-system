@@ -4,9 +4,11 @@ return [
     // Header
     'guest_ordering' => 'طلب الضيوف',
     'mobile_checkout' => 'الدفع عبر الجوال',
+    'back' => 'رجوع',
 
     // Language gate (screen 1)
     'choose_language' => 'اختر لغتك · Choose your language',
+    'continue_to_menu' => 'المتابعة إلى القائمة',
     'powered_by' => 'مدعوم بواسطة',
 
     // Hero (screen 2)
@@ -24,6 +26,16 @@ return [
     'view_details_aria' => 'عرض تفاصيل :name',
     'flash_sale' => 'عرض خاص',
     'limited_offer' => 'عرض محدود',
+
+    // Home landing (screen 2) — hero, context strip, highlight, popular grid
+    'home_hero_title' => 'اطلب من القائمة',
+    'full_menu' => 'القائمة الكاملة',
+    'home_prep' => 'متوسط ١٥ دقيقة',
+    'todays_highlight' => 'اختيار اليوم',
+    'owners_pick' => 'اختيار المالك',
+    'view_item' => 'عرض المنتج',
+    'see_all' => 'عرض الكل',
+    'view_cart' => 'عرض السلة',
 
     // Browse (screen 2b / 3) — search, tabs, popular rail
     'popular_today' => 'الأكثر طلباً',
@@ -93,6 +105,9 @@ return [
     'included' => 'مشمول',
     'add_ons' => 'إضافات',
     'up_to' => 'حتى :count',
+
+    // Product detail metric chips (real data only — no fabricated rating/calories)
+    'on_sale' => 'عرض',
 
     // Item note (allergen / special request) — pilot safety feature
     'item_note_label' => 'طلب خاص',

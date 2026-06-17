@@ -79,6 +79,12 @@ class GuestMenu extends Component
     // True only when the visitor has NOT yet chosen a language this session.
     public bool $showLanguageGate = false;
 
+    // Active screen: 'home' (landing — hero, highlight, popular grid) or 'menu'
+    // (full browse — search, category tabs, every product). A Livewire property
+    // (not Alpine) so the choice survives re-renders triggered by addToCart and
+    // friends — otherwise adding an item from the menu would bounce to home.
+    public string $screen = 'home';
+
     // Group ordering state
     public $groupToken = null;
 
@@ -134,6 +140,23 @@ class GuestMenu extends Component
     {
         $this->switchLanguage($lang);
         $this->showLanguageGate = false;
+    }
+
+    /**
+     * Switch to the full browse screen (search + tabs + every product). Wired to
+     * the home screen's "See all" control and the popular-grid section header.
+     */
+    public function showMenu(): void
+    {
+        $this->screen = 'menu';
+    }
+
+    /**
+     * Return to the home landing screen (hero + highlight + popular grid).
+     */
+    public function showHome(): void
+    {
+        $this->screen = 'home';
     }
 
     // ──────────────────────────────────
@@ -551,7 +574,7 @@ class GuestMenu extends Component
     public function openProductSheet(int $productId): void
     {
         $product = $this->shop->products()
-            ->with('modifierGroups.options')
+            ->with(['modifierGroups.options', 'category'])
             ->orderable()
             ->find($productId);
 
@@ -573,7 +596,7 @@ class GuestMenu extends Component
         }
 
         $product = $this->shop->products()
-            ->with('modifierGroups.options')
+            ->with(['modifierGroups.options', 'category'])
             ->orderable()
             ->find($productId);
 
@@ -637,6 +660,7 @@ class GuestMenu extends Component
                     'id' => $product->id,
                     'itemKey' => $itemKey,
                     'name' => $product->translated('name'),
+                    'image' => productImage($product, 'thumb'),
                     'price' => $displayPrice,
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
@@ -652,6 +676,7 @@ class GuestMenu extends Component
                 $this->cart[$itemKey] = [
                     'id' => $product->id,
                     'name' => $product->translated('name'),
+                    'image' => productImage($product, 'thumb'),
                     'price' => $displayPrice,
                     'quantity' => 1,
                     'selectedModifiers' => $modifierIds,
@@ -1204,6 +1229,7 @@ class GuestMenu extends Component
             $newCart[$itemKey] = [
                 'id' => $product->id,
                 'name' => $product->translated('name'),
+                'image' => productImage($product, 'thumb'),
                 'price' => $displayPrice,
                 'quantity' => $quantity,
                 'selectedModifiers' => $validModifierIds,
@@ -1457,9 +1483,17 @@ class GuestMenu extends Component
 
         $popularProducts = $this->buildPopularProducts($categories);
 
+        // Home screen view-model derived from the same popular set (no extra
+        // query): the leading item is the owner's "Today's Highlight", the next
+        // four fill the popular grid so the highlight is not shown twice.
+        $homeHighlight = $popularProducts->first();
+        $homeGrid = $popularProducts->slice(1)->take(4)->values();
+
         return view('livewire.guest-menu', [
             'categories' => $categories,
             'popularProducts' => $popularProducts,
+            'homeHighlight' => $homeHighlight,
+            'homeGrid' => $homeGrid,
             'searchNames' => $this->buildSearchNames($categories),
             'locale' => $this->locale,
             'isRtl' => $this->locale === 'ar',

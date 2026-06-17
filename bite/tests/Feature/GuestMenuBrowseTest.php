@@ -79,15 +79,16 @@ class GuestMenuBrowseTest extends TestCase
         $response->assertSee('All');
     }
 
-    public function test_browse_renders_popular_rail_with_on_sale_item(): void
+    public function test_on_sale_item_surfaces_in_home_popular_grid(): void
     {
         $shop = $this->seedShop();
 
         $response = $this->get(route('guest.menu', $shop->slug));
 
         $response->assertStatus(200);
-        $response->assertSee('guest-popular');
-        // On-sale items are surfaced first in the popular rail.
+        // The popular rail moved to the home landing as a grid (buildPopularProducts
+        // surfaces on-sale items first); the full-menu screen lists every item as a row.
+        $response->assertSee('Popular today');
         $response->assertSee('Cinnamon Roll');
     }
 
