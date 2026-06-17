@@ -4,12 +4,10 @@ namespace App\Livewire;
 
 use App\Models\GroupCart;
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderItemModifier;
-use App\Models\PricingRule;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Notifications\NewOrderNotification;
+use App\Services\GuestOrderService;
 use App\Services\LoyaltyService;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\App;
@@ -700,28 +698,7 @@ class GuestMenu extends Component
      */
     protected function sanitizeNote($value): ?string
     {
-        $note = trim((string) $value);
-        if ($note === '') {
-            return null;
-        }
-
-        return mb_substr($note, 0, 255);
-    }
-
-    /**
-     * Trim and cap the untrusted order-level note. Returns null for blank input
-     * so the column stays NULL rather than an empty string. Capped at 500 to
-     * match the DB text column's practical use (longer than an item note since
-     * it can carry several instructions for the whole order).
-     */
-    protected function sanitizeOrderNote($value): ?string
-    {
-        $note = trim((string) $value);
-        if ($note === '') {
-            return null;
-        }
-
-        return mb_substr($note, 0, 500);
+        return $this->orderService()->sanitizeNote($value);
     }
 
     /**
@@ -797,290 +774,90 @@ class GuestMenu extends Component
             $this->idempotencyKey = (string) Str::uuid();
         }
 
-        // If this exact token already produced an order (double-click, network
-        // retry, replayed request), short-circuit to that order's tracker
-        // instead of creating a duplicate. Scoped to this shop.
-        $existing = Order::where('shop_id', $this->shop->id)
-            ->where('idempotency_key', $this->idempotencyKey)
-            ->first();
-        if ($existing) {
-            return $this->redirectToOrder($existing);
-        }
+        // The server-side order path (pricing, validation, caps, idempotency,
+        // persistence) lives in GuestOrderService so JSON endpoints can reuse
+        // it. This component owns only the UI mapping of the outcome.
+        $result = $this->orderService()->create($this->shop, $cartItems, [
+            'idempotency_key' => $this->idempotencyKey,
+            'customer_name' => $this->customerName,
+            'loyalty_phone' => $this->loyaltyPhone,
+            'order_note' => $this->orderNote,
+        ]);
 
-        // Caps (Phase 7a, #28): reject oversized / abusive carts early, before
-        // any order is created. Treat the cart as untrusted (the group-cart JSON
-        // especially). The total cap is checked later, once the server-side
-        // re-priced total is known.
-        if (! $this->passesQuantityAndLineCaps($cartItems)) {
-            $this->orderError = __('guest.cart_too_large');
-            $this->showReviewModal = true;
+        switch ($result['outcome']) {
+            case 'duplicate':
+                // Same token already produced an order (double-click / replay).
+            case 'raced':
+                // A concurrent request with the same token won the UNIQUE index;
+                // redirect without re-running side effects — the winner did them.
+                return $this->redirectToOrder($result['order']);
 
-            return;
-        }
+            case 'empty':
+                return;
 
-        // Fetch fresh product data to prevent price tampering and verify availability
-        $productIds = collect($cartItems)->pluck('id')->unique()->toArray();
-        $products = $this->shop->products()
-            ->with('modifierGroups.options')
-            ->orderable()
-            ->whereIn('id', $productIds)
-            ->get()
-            ->keyBy('id');
-
-        // Check for 86'd (unavailable) items
-        $unavailableNames = collect($cartItems)
-            ->filter(fn ($item) => ! $products->has($item['id']))
-            ->pluck('name')
-            ->unique()
-            ->all();
-
-        if (! empty($unavailableNames)) {
-            // Auto-remove unavailable items from cart
-            $unavailableIds = collect($cartItems)
-                ->filter(fn ($item) => ! $products->has($item['id']))
-                ->pluck('id')
-                ->unique()
-                ->all();
-
-            if ($this->isGroupMode) {
-                $groupCart = $this->groupCart;
-                if ($groupCart) {
-                    DB::transaction(function () use ($groupCart, $unavailableIds) {
-                        GroupCart::where('id', $groupCart->id)->lockForUpdate()->first();
-                        $groupCart->refresh();
-                        $items = collect($groupCart->items ?? [])
-                            ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
-                            ->values()
-                            ->all();
-                        $groupCart->update(['items' => $items]);
-                    });
-                }
-            } else {
-                $this->cart = collect($this->cart)
-                    ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
-                    ->all();
-            }
-
-            $this->orderError = __('guest.items_unavailable_removed', [
-                'items' => implode(', ', $unavailableNames),
-            ]);
-            $this->showReviewModal = true;
-
-            return;
-        }
-
-        // Pay-at-counter checkout (Phase 4, #24): name + phone are required.
-        // Runs after the availability/price-integrity guard above so a stale or
-        // tampered cart is always caught, regardless of contact entry.
-        $customerName = trim((string) $this->customerName);
-        if ($customerName === '') {
-            $this->orderError = __('guest.name_required');
-            $this->showReviewModal = true;
-
-            return;
-        }
-        $customerName = mb_substr($customerName, 0, 255);
-
-        // Phone is required and validated through the existing loyalty regex.
-        $loyaltyPhone = $this->normalizePhone($this->loyaltyPhone);
-        if (! $loyaltyPhone) {
-            $this->loyaltyError = trim((string) $this->loyaltyPhone) === ''
-                ? __('guest.phone_required')
-                : __('guest.invalid_phone');
-            $this->showReviewModal = true;
-
-            return;
-        }
-
-        $built = $this->buildOrderItems($cartItems, $products);
-        if ($built['error'] !== null) {
-            $this->orderError = $built['error'];
-            $this->showReviewModal = true;
-
-            return;
-        }
-
-        $orderItems = $built['items'];
-        $subtotalAmount = $built['subtotal'];
-        $taxAmount = $built['tax'];
-
-        if (empty($orderItems)) {
-            return;
-        }
-
-        // Total cap (Phase 7a, #28): use the server-side re-priced total, never
-        // the client-sent prices, so a tampered cart cannot slip past.
-        $totalAmount = round($subtotalAmount + $taxAmount, 3);
-        if ($totalAmount > (float) config('ordering.max_order_total', 1000)) {
-            $this->orderError = __('guest.order_total_too_high');
-            $this->showReviewModal = true;
-
-            return;
-        }
-
-        // Sanitize the untrusted order-level note before it touches the DB.
-        $orderNote = $this->sanitizeOrderNote($this->orderNote);
-
-        $persisted = $this->persistOrder($orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
-
-        // Race-replay: a concurrent request with the same token won the UNIQUE
-        // index. Redirect to that order without re-running side effects — the
-        // winning request already did them.
-        if (! $persisted['created']) {
-            return $this->redirectToOrder($persisted['order']);
-        }
-
-        $this->finalizeOrderState($persisted['order'], $cartItems, $loyaltyPhone);
-
-        return $this->redirectToOrder($persisted['order']);
-    }
-
-    /**
-     * Persist the order and its items inside a transaction. On a unique-key
-     * race (a concurrent request with the same idempotency token inserted
-     * first) the existing order is returned with `created => false` so the
-     * caller redirects without re-running side effects.
-     *
-     * @return array{order: Order, created: bool}
-     */
-    protected function persistOrder(array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
-    {
-        $idempotencyKey = $this->idempotencyKey;
-
-        try {
-            $order = DB::transaction(function () use ($subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems, $idempotencyKey) {
-                $order = Order::forceCreate([
-                    'shop_id' => $this->shop->id,
-                    'status' => 'unpaid',
-                    'customer_name' => $customerName,
-                    'loyalty_phone' => $loyaltyPhone,
-                    'order_note' => $orderNote,
-                    'subtotal_amount' => $subtotalAmount,
-                    'tax_amount' => round($taxAmount, 3),
-                    'total_amount' => $totalAmount,
-                    'tracking_token' => (string) Str::uuid(),
-                    'idempotency_key' => $idempotencyKey,
-                    'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
+            case 'unavailable':
+                $this->removeUnavailableItems($result['unavailable_ids']);
+                $this->orderError = __('guest.items_unavailable_removed', [
+                    'items' => implode(', ', $result['unavailable']),
                 ]);
+                $this->showReviewModal = true;
 
-                foreach ($orderItems as $item) {
-                    $orderItem = OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $item['product_id'],
-                        'product_name_snapshot_en' => $item['product_name_snapshot_en'],
-                        'product_name_snapshot_ar' => $item['product_name_snapshot_ar'],
-                        'price_snapshot' => $item['price_snapshot'],
-                        'quantity' => $item['quantity'],
-                        'note' => $item['note'],
-                    ]);
+                return;
 
-                    foreach ($item['modifiers'] as $mod) {
-                        OrderItemModifier::create([
-                            'order_item_id' => $orderItem->id,
-                            'modifier_option_name_snapshot_en' => $mod['name_en'],
-                            'modifier_option_name_snapshot_ar' => $mod['name_ar'],
-                            'price_adjustment_snapshot' => $mod['price'],
-                        ]);
-                    }
+            case 'invalid':
+                if (($result['error_field'] ?? 'order') === 'loyalty') {
+                    $this->loyaltyError = $result['error'];
+                } else {
+                    $this->orderError = $result['error'];
                 }
+                $this->showReviewModal = true;
 
-                return $order;
-            });
-        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-            // Race: a concurrent request with the same token inserted first and
-            // won the UNIQUE index. Return that order rather than erroring or
-            // duplicating. Scoped to this shop.
-            $existing = Order::where('shop_id', $this->shop->id)
-                ->where('idempotency_key', $idempotencyKey)
-                ->first();
+                return;
 
-            if ($existing) {
-                return ['order' => $existing, 'created' => false];
-            }
+            case 'created':
+                $this->finalizeOrderState($result['order'], $cartItems, $result['loyalty_phone']);
 
-            throw $e;
+                return $this->redirectToOrder($result['order']);
         }
-
-        return ['order' => $order, 'created' => true];
     }
 
     /**
-     * Re-price the untrusted cart server-side and assemble the persisted order
-     * items. Prices are recomputed from fresh product/modifier data (never the
-     * client-sent values) and modifier ids are validated. Returns an `error`
-     * string on the first invalid line so the caller can reject before any
-     * order is created; otherwise returns the items and the re-priced totals.
-     *
-     * @param  array  $cartItems  Untrusted cart lines (POS or group JSON).
-     * @param  \Illuminate\Support\Collection  $products  Fresh products keyed by id.
-     * @return array{error: ?string, items: array, subtotal: float, tax: float}
+     * Resolve the stateless order service. Resolved per call (not stored) so the
+     * component stays serializable across Livewire requests.
      */
-    protected function buildOrderItems(array $cartItems, $products): array
+    protected function orderService(): GuestOrderService
     {
-        $pricingRules = $this->loadActivePricingRules();
+        return app(GuestOrderService::class);
+    }
 
-        $subtotalAmount = 0;
-        $taxAmount = 0;
-        $orderItems = [];
-
-        foreach ($cartItems as $item) {
-            $product = $products->get($item['id']);
-            if (! $product) {
-                continue;
+    /**
+     * Prune 86'd / hidden items from the active cart after the service flags
+     * them. Group carts are pruned under a row lock; the solo cart in-place.
+     *
+     * @param  int[]  $unavailableIds
+     */
+    protected function removeUnavailableItems(array $unavailableIds): void
+    {
+        if ($this->isGroupMode) {
+            $groupCart = $this->groupCart;
+            if ($groupCart) {
+                DB::transaction(function () use ($groupCart, $unavailableIds) {
+                    GroupCart::where('id', $groupCart->id)->lockForUpdate()->first();
+                    $groupCart->refresh();
+                    $items = collect($groupCart->items ?? [])
+                        ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
+                        ->values()
+                        ->all();
+                    $groupCart->update(['items' => $items]);
+                });
             }
 
-            $quantity = (int) $item['quantity'];
-            if ($quantity < 1) {
-                continue;
-            }
-
-            $itemPrice = $pricingRules->isNotEmpty()
-                ? $product->getTimePriced($pricingRules)
-                : $product->final_price;
-            $modifiersData = [];
-
-            $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
-            $modifierError = $this->validateCartModifierIds($product, $modifierIds);
-            if ($modifierError) {
-                return ['error' => $modifierError, 'items' => [], 'subtotal' => 0, 'tax' => 0];
-            }
-
-            $validOptions = $this->getValidModifierOptions($product, $modifierIds);
-
-            foreach ($validOptions as $opt) {
-                $itemPrice += $opt->price_adjustment;
-                $modifiersData[] = [
-                    'name_en' => $opt->name_en,
-                    'name_ar' => $opt->name_ar,
-                    'price' => $opt->price_adjustment,
-                ];
-            }
-
-            $lineTotal = $itemPrice * $quantity;
-            $subtotalAmount += $lineTotal;
-
-            $taxRate = $product->tax_rate ?? $this->shop->tax_rate ?? 0;
-            if ($taxRate > 0) {
-                $taxAmount += $lineTotal * ($taxRate / 100);
-            }
-
-            $orderItems[] = [
-                'product_id' => $product->id,
-                'product_name_snapshot_en' => $product->name_en,
-                'product_name_snapshot_ar' => $product->name_ar,
-                'price_snapshot' => $itemPrice,
-                'quantity' => $quantity,
-                'note' => $this->sanitizeNote($item['note'] ?? null),
-                'modifiers' => $modifiersData,
-            ];
+            return;
         }
 
-        return [
-            'error' => null,
-            'items' => $orderItems,
-            'subtotal' => $subtotalAmount,
-            'tax' => $taxAmount,
-        ];
+        $this->cart = collect($this->cart)
+            ->filter(fn ($item) => ! in_array($item['id'], $unavailableIds))
+            ->all();
     }
 
     /**
@@ -1135,29 +912,6 @@ class GuestMenu extends Component
     protected function redirectToOrder(Order $order)
     {
         return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
-    }
-
-    /**
-     * Enforce the per-line quantity cap and the distinct-line-count cap on an
-     * untrusted cart (Phase 7a, #28). The total cap is enforced separately
-     * against the server-side re-priced total. Returns false if either cap is
-     * exceeded so the caller can reject before any order is created.
-     */
-    protected function passesQuantityAndLineCaps(array $cartItems): bool
-    {
-        $maxLines = (int) config('ordering.max_lines_per_order', 50);
-        if (count($cartItems) > $maxLines) {
-            return false;
-        }
-
-        $maxQty = (int) config('ordering.max_quantity_per_line', 99);
-        foreach ($cartItems as $item) {
-            if ((int) ($item['quantity'] ?? 0) > $maxQty) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function applyFavorite(): void
@@ -1278,111 +1032,12 @@ class GuestMenu extends Component
      */
     protected function getValidModifierOptions($product, array $modifierIds): \Illuminate\Support\Collection
     {
-        if (empty($modifierIds)) {
-            return collect();
-        }
-
-        return $product->modifierGroups
-            ->pluck('options')
-            ->flatten()
-            ->whereIn('id', $modifierIds);
+        return $this->orderService()->getValidModifierOptions($product, $modifierIds);
     }
 
     protected function validateSelectedModifierGroups(Product $product, array $selectedByGroup): ?string
     {
-        $groups = $product->modifierGroups->keyBy('id');
-
-        foreach ($selectedByGroup as $groupId => $selectedIds) {
-            $group = $groups->get((int) $groupId);
-            if (! $group) {
-                return __('guest.invalid_modifier_selection');
-            }
-
-            $selectedIds = $this->normalizeModifierIds($selectedIds);
-            if ($this->hasDuplicateModifierIds($selectedIds)) {
-                return __('guest.invalid_modifier_selection');
-            }
-
-            $allowedIds = $group->options
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-
-            if (collect($selectedIds)->diff($allowedIds)->isNotEmpty()) {
-                return __('guest.invalid_modifier_selection');
-            }
-        }
-
-        foreach ($groups as $group) {
-            $selectedIds = $this->normalizeModifierIds($selectedByGroup[$group->id] ?? []);
-            $count = count($selectedIds);
-
-            if ($group->min_selection > 0 && $count < $group->min_selection) {
-                return __('guest.select_at_least', [
-                    'count' => $group->min_selection,
-                    'group' => $group->translated('name'),
-                ]);
-            }
-
-            if ($group->max_selection > 0 && $count > $group->max_selection) {
-                return __('guest.select_at_most', [
-                    'count' => $group->max_selection,
-                    'group' => $group->translated('name'),
-                ]);
-            }
-        }
-
-        return null;
-    }
-
-    protected function validateCartModifierIds(Product $product, array $modifierIds): ?string
-    {
-        if ($this->hasDuplicateModifierIds($modifierIds)) {
-            return __('guest.invalid_modifier_selection');
-        }
-
-        $groups = $product->modifierGroups;
-        $allowedIds = $groups
-            ->pluck('options')
-            ->flatten()
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        if (collect($modifierIds)->diff($allowedIds)->isNotEmpty()) {
-            return __('guest.invalid_modifier_selection');
-        }
-
-        foreach ($groups as $group) {
-            $groupOptionIds = $group->options
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-            $count = collect($modifierIds)
-                ->intersect($groupOptionIds)
-                ->count();
-
-            if ($group->min_selection > 0 && $count < $group->min_selection) {
-                return __('guest.select_at_least', [
-                    'count' => $group->min_selection,
-                    'group' => $group->translated('name'),
-                ]);
-            }
-
-            if ($group->max_selection > 0 && $count > $group->max_selection) {
-                return __('guest.select_at_most', [
-                    'count' => $group->max_selection,
-                    'group' => $group->translated('name'),
-                ]);
-            }
-        }
-
-        return null;
-    }
-
-    protected function hasDuplicateModifierIds(array $modifierIds): bool
-    {
-        return count($modifierIds) !== count(array_unique($modifierIds));
+        return $this->orderService()->validateSelectedModifierGroups($product, $selectedByGroup);
     }
 
     /**
@@ -1390,29 +1045,17 @@ class GuestMenu extends Component
      */
     protected function sumModifierPrices($product, array $modifierIds): float
     {
-        return (float) $this->getValidModifierOptions($product, $modifierIds)
-            ->sum('price_adjustment');
+        return $this->orderService()->sumModifierPrices($product, $modifierIds);
     }
 
     protected function normalizeModifierIds($value): array
     {
-        return collect($value)
-            ->flatten()
-            ->filter(fn ($id) => $id !== null && $id !== '')
-            ->map(fn ($id) => (int) $id)
-            ->values()
-            ->all();
+        return $this->orderService()->normalizeModifierIds($value);
     }
 
     protected function normalizeModifierGroups($value): array
     {
-        $groups = [];
-        foreach ((array) $value as $groupId => $ids) {
-            $ids = is_array($ids) ? $ids : [$ids];
-            $groups[$groupId] = array_values(array_filter($ids, fn ($id) => $id !== null && $id !== ''));
-        }
-
-        return $groups;
+        return $this->orderService()->normalizeModifierGroups($value);
     }
 
     /**
@@ -1421,24 +1064,7 @@ class GuestMenu extends Component
      */
     protected function loadActivePricingRules(): \Illuminate\Support\Collection
     {
-        return PricingRule::where('shop_id', $this->shop->id)
-            ->activeNow()
-            ->get();
-    }
-
-    protected function normalizePhone(?string $value): ?string
-    {
-        $value = trim((string) $value);
-        if ($value === '') {
-            return null;
-        }
-
-        $digits = preg_replace('/[^0-9]/', '', $value);
-        if ($digits === '' || strlen($digits) < 6) {
-            return null;
-        }
-
-        return substr($digits, 0, 20);
+        return $this->orderService()->loadActivePricingRules($this->shop);
     }
 
     public function render()
