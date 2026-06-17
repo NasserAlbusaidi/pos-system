@@ -16,7 +16,7 @@ class ShopSettingsTest extends TestCase
     public function test_can_update_shop_branding()
     {
         $shop = Shop::factory()->create();
-        $user = User::factory()->create(['shop_id' => $shop->id]);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
 
         Livewire::actingAs($user)
             ->test(ShopSettings::class)

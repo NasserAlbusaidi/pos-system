@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\Shop;
@@ -15,7 +16,13 @@ use Livewire\WithFileUploads;
 
 class ProductManager extends Component
 {
+    use AuthorizesRole;
     use WithFileUploads;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
 
     public Shop $shop;
 

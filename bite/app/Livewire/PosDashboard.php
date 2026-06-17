@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Order;
@@ -23,6 +24,13 @@ use Livewire\Component;
 
 class PosDashboard extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['server', 'manager', 'admin'];
+    }
+
     public Shop $shop;
 
     public $splitOrderId = null;

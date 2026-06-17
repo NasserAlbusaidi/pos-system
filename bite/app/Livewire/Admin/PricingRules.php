@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Category;
 use App\Models\PricingRule;
 use App\Models\Product;
@@ -11,6 +12,13 @@ use Livewire\Component;
 
 class PricingRules extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public $name = '';
 
     public $discount_type = 'percentage';

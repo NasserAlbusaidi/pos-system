@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +12,14 @@ use Livewire\Component;
 
 class KitchenDisplay extends Component
 {
+    use AuthorizesRole;
+
     public int $lastOrderCount = -1;
+
+    protected function allowedRoles(): array
+    {
+        return ['kitchen', 'manager', 'admin'];
+    }
 
     public function updateStatus($orderId, $status)
     {

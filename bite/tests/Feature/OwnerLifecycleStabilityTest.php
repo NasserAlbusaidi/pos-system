@@ -38,7 +38,7 @@ class OwnerLifecycleStabilityTest extends TestCase
         $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 
         $myShop = Shop::create(['name' => 'My Shop', 'slug' => 'my-shop']);
-        $me = User::factory()->create(['shop_id' => $myShop->id]);
+        $me = User::factory()->create(['shop_id' => $myShop->id, 'role' => 'admin']);
 
         $otherShop = Shop::create(['name' => 'Other', 'slug' => 'other']);
         $otherGroup = ModifierGroup::create(['shop_id' => $otherShop->id, 'name_en' => 'Hack Me']);

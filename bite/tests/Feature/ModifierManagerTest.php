@@ -17,7 +17,7 @@ class ModifierManagerTest extends TestCase
     public function test_can_create_modifier_group()
     {
         $shop = Shop::factory()->create();
-        $user = User::factory()->create(['shop_id' => $shop->id]);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
 
         Livewire::actingAs($user)
             ->test(ModifierManager::class)
@@ -36,7 +36,7 @@ class ModifierManagerTest extends TestCase
     public function test_can_add_option_to_group()
     {
         $shop = Shop::factory()->create();
-        $user = User::factory()->create(['shop_id' => $shop->id]);
+        $user = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
         $group = ModifierGroup::create([
             'shop_id' => $shop->id,
             'name_en' => 'Sizes',

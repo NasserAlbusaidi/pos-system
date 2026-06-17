@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\Payment;
@@ -13,6 +14,13 @@ use Livewire\Component;
 
 class CashReconciliation extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public Shop $shop;
 
     public float $expectedCash = 0;

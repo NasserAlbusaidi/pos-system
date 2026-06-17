@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Shop;
@@ -12,6 +13,13 @@ use Livewire\Component;
 
 class ReportsDashboard extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['manager', 'admin'];
+    }
+
     public Shop $shop;
 
     public $rangeDays = 30;
