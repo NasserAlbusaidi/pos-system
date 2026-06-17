@@ -74,6 +74,28 @@ class AppServiceProvider extends ServiceProvider
                 ));
         });
 
+        // Guest JSON API (#51) throttles, keyed per IP. Reads/quotes are cheap
+        // (60/min); order creation is tighter (20/min) to blunt order spam.
+        RateLimiter::for('guest-api', function (Request $request) {
+            return Limit::perMinute(60)
+                ->by($request->ip())
+                ->response(fn () => response()->json(
+                    ['message' => 'Too many requests.'],
+                    429,
+                    ['Retry-After' => '60']
+                ));
+        });
+
+        RateLimiter::for('guest-orders', function (Request $request) {
+            return Limit::perMinute(20)
+                ->by($request->ip())
+                ->response(fn () => response()->json(
+                    ['message' => 'Too many requests.'],
+                    429,
+                    ['Retry-After' => '60']
+                ));
+        });
+
         if ($this->app->environment('production') || env('FORCE_HTTPS')) {
             URL::forceScheme('https');
         }
