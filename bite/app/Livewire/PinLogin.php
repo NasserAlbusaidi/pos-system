@@ -55,6 +55,11 @@ class PinLogin extends Component
         RateLimiter::clear($throttleKey);
         Auth::login($user);
 
+        // Rotate the session on the shared terminal: Auth::login already migrates
+        // the session id, but regenerate() also rotates the CSRF token (the residual
+        // fixation surface). Matches the impersonation + logout flows.
+        session()->regenerate();
+
         return $this->redirect(route('pos.dashboard'), navigate: true);
     }
 
