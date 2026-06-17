@@ -740,14 +740,22 @@ class PosDashboard extends Component
                 ->firstOrFail();
 
             $sum = round(collect($rows)->sum('amount'), 3);
-            if ($sum > $order->balance_due + 0.01) {
+            $balance = round($order->balance_due, 3);
+
+            // Pilot policy (#57): a settlement must cover the full balance, so no
+            // order is ever left part-paid and 'unpaid' forever. Split tenders are
+            // fine as long as they sum to the balance.
+            if ($sum + 0.0005 < $balance) {
+                return ['error' => 'Payment must cover the full balance ('.formatPrice($balance, $this->shop).' due).'];
+            }
+
+            if ($sum > $balance + 0.01) {
                 return ['error' => 'Payments cannot exceed the remaining balance.'];
             }
 
             $this->recordPaymentsForOrder($order, $rows);
-            $order->refresh();
 
-            return ['error' => null, 'paid' => $order->balance_due <= 0];
+            return ['error' => null];
         });
 
         if ($result['error']) {
@@ -756,7 +764,7 @@ class PosDashboard extends Component
             return;
         }
 
-        session()->flash('message', $result['paid'] ? 'Order paid.' : 'Partial payment recorded.');
+        session()->flash('message', 'Order paid.');
         $this->closePayment();
     }
 
