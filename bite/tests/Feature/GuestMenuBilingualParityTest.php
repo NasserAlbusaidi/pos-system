@@ -210,10 +210,12 @@ class GuestMenuBilingualParityTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('dir="rtl"', false);
-        $response->assertSee(__('guest.track_show_counter'), false);
+        $response->assertSee(__('guest.track_received_title'), false);
+        $response->assertSee(__('guest.track_received_body', ['shop' => $shop->name]), false);
         $response->assertSee(__('guest.track_step_received'), false);
         $response->assertSee(__('guest.track_step_preparing'), false);
-        $response->assertSee(__('guest.back_to_menu'), false);
+        $response->assertSee(__('guest.track_simulate_next'), false);
+        $response->assertSee(__('guest.rate_your_visit'), false);
 
         $this->assertNoRawTranslationKey($response->getContent());
     }

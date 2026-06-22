@@ -50,6 +50,8 @@ class GuestMenu extends Component
 
     public $showReviewModal = false;
 
+    public bool $checkoutDetailsVisible = false;
+
     public $customizingProduct = null;
 
     public $selectedModifiers = [];
@@ -66,7 +68,7 @@ class GuestMenu extends Component
 
     public $orderError = null;
 
-    // Per-checkout idempotency token (Phase 7a, #28). Set when the review sheet
+    // Per-checkout idempotency token (Phase 7a, #28). Set when checkout
     // opens and sent with submitOrder. A double-click / network retry / replayed
     // Livewire request carries the SAME token, so the order insert collides on
     // the orders.idempotency_key UNIQUE index and we redirect to the existing
@@ -86,6 +88,10 @@ class GuestMenu extends Component
     public bool $showLanguageGate = false;
 
     public string $screen = 'home';
+
+    public string $checkoutReturnScreen = 'home';
+
+    public string $productReturnScreen = 'home';
 
     public ?string $tableLabel = null;
 
@@ -117,7 +123,17 @@ class GuestMenu extends Component
                 ->toString() ?: null;
         }
 
-        $this->screen = request()->query('view') === 'menu' ? 'full_menu' : 'home';
+        $this->screen = match (request()->query('view')) {
+            'menu' => 'full_menu',
+            'checkout' => 'checkout',
+            'product' => 'product',
+            default => 'home',
+        };
+        $this->showReviewModal = $this->screen === 'checkout';
+        $this->checkoutDetailsVisible = $this->screen === 'checkout';
+        if ($this->screen === 'product') {
+            $this->openProductPageFromQuery(request()->query('product'));
+        }
 
         // Generate or retrieve a stable participant ID for this browser session
         $this->participantId = session('guest_participant_id');
@@ -159,12 +175,22 @@ class GuestMenu extends Component
     public function showFullMenu(): void
     {
         $this->screen = 'full_menu';
+        $this->checkoutReturnScreen = 'full_menu';
+        $this->productReturnScreen = 'full_menu';
+        $this->showReviewModal = false;
+        $this->showModifierModal = false;
+        $this->customizingProduct = null;
         $this->dispatch('guest-screen-changed', screen: 'full_menu');
     }
 
     public function showHome(): void
     {
         $this->screen = 'home';
+        $this->checkoutReturnScreen = 'home';
+        $this->productReturnScreen = 'home';
+        $this->showReviewModal = false;
+        $this->showModifierModal = false;
+        $this->customizingProduct = null;
         $this->dispatch('guest-screen-changed', screen: 'home');
     }
 
@@ -349,6 +375,23 @@ class GuestMenu extends Component
         return $tax;
     }
 
+    #[Computed]
+    public function checkoutServiceFee(): float
+    {
+        return $this->serviceFeeForSubtotal((float) $this->subtotal);
+    }
+
+    #[Computed]
+    public function checkoutTotal(): float
+    {
+        return $this->subtotal + $this->tax + $this->checkoutServiceFee;
+    }
+
+    protected function serviceFeeForSubtotal(float $subtotal): float
+    {
+        return $subtotal > 0 ? 0.200 : 0.0;
+    }
+
     protected function calculateTotals(): array
     {
         $cartItems = $this->getActiveCartItems();
@@ -530,17 +573,48 @@ class GuestMenu extends Component
         });
     }
 
-    public function toggleReview()
+    public function openCheckout(): void
     {
-        $this->showReviewModal = ! $this->showReviewModal;
+        if (in_array($this->screen, ['home', 'full_menu'], true)) {
+            $this->checkoutReturnScreen = $this->screen;
+        }
 
-        // Mint a per-checkout idempotency token when the review sheet opens so
+        $this->screen = 'checkout';
+        $this->showReviewModal = true;
+        $this->checkoutDetailsVisible = true;
+
+        // Mint a per-checkout idempotency token when checkout opens so
         // every submit attempt for this checkout (including a double-click) is
-        // tied to one token. Only mint if absent, so re-opening the sheet does
+        // tied to one token. Only mint if absent, so re-opening checkout does
         // not reset a token already in flight.
-        if ($this->showReviewModal && $this->idempotencyKey === null) {
+        if ($this->idempotencyKey === null) {
             $this->idempotencyKey = (string) Str::uuid();
         }
+
+        $this->dispatch('guest-screen-changed', screen: 'checkout');
+    }
+
+    public function closeCheckout(): void
+    {
+        $returnScreen = in_array($this->checkoutReturnScreen, ['home', 'full_menu'], true)
+            ? $this->checkoutReturnScreen
+            : 'home';
+
+        $this->screen = $returnScreen;
+        $this->showReviewModal = false;
+        $this->checkoutDetailsVisible = false;
+        $this->dispatch('guest-screen-changed', screen: $returnScreen);
+    }
+
+    public function toggleReview()
+    {
+        if ($this->screen === 'checkout' || $this->showReviewModal) {
+            $this->closeCheckout();
+
+            return;
+        }
+
+        $this->openCheckout();
     }
 
     public function updatedVoucherCode(mixed $value): void
@@ -582,17 +656,28 @@ class GuestMenu extends Component
         }
     }
 
+    protected function openProductPageFromQuery(mixed $productId): void
+    {
+        if (! is_scalar($productId)) {
+            $this->screen = 'home';
+            $this->showModifierModal = false;
+
+            return;
+        }
+
+        $this->openProductPage((int) $productId, shouldDispatch: false);
+    }
+
     /**
-     * Open the product-detail sheet for ANY product, with or without modifiers
-     * (Phase 7e, #23-followup). The sheet is the only place the per-item note
-     * textarea lives, so on a modifier-less bakery menu it must still be
-     * reachable for allergen-safety requests. Tapping a product card calls this;
-     * the '+' button stays a quick-add via addToCart().
+     * Open the product-detail page for ANY product, with or without modifiers
+     * (Phase 7e, #23-followup). The page is where the per-item note textarea and
+     * modifier controls live. Tapping a product card calls this; the '+' button
+     * stays a quick-add when no product options are required.
      *
      * The product is loaded shop-scoped + orderable() so a foreign or
-     * unavailable product id can never populate the sheet (tenant isolation).
+     * unavailable product id can never populate the page (tenant isolation).
      */
-    public function openProductSheet(int $productId): void
+    public function openProductPage(int $productId, bool $shouldDispatch = true): void
     {
         $product = $this->shop->products()
             ->with('modifierGroups.options')
@@ -600,14 +685,81 @@ class GuestMenu extends Component
             ->find($productId);
 
         if (! $product) {
+            if ($this->screen === 'product') {
+                $this->screen = 'home';
+            }
+            $this->showModifierModal = false;
+            $this->customizingProduct = null;
+
             return;
         }
 
+        if (in_array($this->screen, ['home', 'full_menu'], true)) {
+            $this->productReturnScreen = $this->screen;
+        }
+
         $this->customizingProduct = $product;
-        $this->selectedModifiers = [];
+        $this->selectedModifiers = $this->defaultSelectedModifiersFor($product);
         $this->itemNote = '';
         $this->modifierError = null;
         $this->showModifierModal = true;
+        $this->screen = 'product';
+
+        if ($shouldDispatch) {
+            $this->dispatch('guest-screen-changed', screen: 'product', productId: $product->id);
+        }
+    }
+
+    public function openProductSheet(int $productId): void
+    {
+        $this->openProductPage($productId);
+    }
+
+    /**
+     * The Hopresso-style product page presents base choices as selected pills.
+     * For single-choice groups, prefer the zero-price base option (Regular,
+     * Regular Milk, etc.); for required groups without one, select the first
+     * available option so the cart CTA remains usable.
+     */
+    protected function defaultSelectedModifiersFor(Product $product): array
+    {
+        $defaults = [];
+
+        foreach ($product->modifierGroups as $group) {
+            if ((int) $group->max_selection !== 1) {
+                continue;
+            }
+
+            $zeroPriceOption = $group->options->first(
+                fn ($option) => (float) $option->price_adjustment === 0.0
+            );
+            $defaultOption = $zeroPriceOption ?: ($group->min_selection > 0 ? $group->options->first() : null);
+
+            if (! $defaultOption) {
+                continue;
+            }
+
+            if ($group->min_selection > 0 || (float) $defaultOption->price_adjustment === 0.0) {
+                $defaults[$group->id] = (string) $defaultOption->id;
+            }
+        }
+
+        return $defaults;
+    }
+
+    public function closeProductPage(): void
+    {
+        $returnScreen = in_array($this->productReturnScreen, ['home', 'full_menu'], true)
+            ? $this->productReturnScreen
+            : 'home';
+
+        $this->screen = $returnScreen;
+        $this->showModifierModal = false;
+        $this->customizingProduct = null;
+        $this->selectedModifiers = [];
+        $this->itemNote = '';
+        $this->modifierError = null;
+        $this->dispatch('guest-screen-changed', screen: $returnScreen);
     }
 
     public function addToCart($productId)
@@ -625,23 +777,29 @@ class GuestMenu extends Component
             return;
         }
 
-        // If product has modifiers and we haven't opened the modal yet
-        if ($product->modifierGroups->isNotEmpty() && ! $this->showModifierModal) {
-            $this->customizingProduct = $product;
-            $this->selectedModifiers = [];
-            $this->itemNote = '';
-            $this->modifierError = null;
-            $this->showModifierModal = true;
+        // If product has modifiers and its detail page is not already open,
+        // route the guest to that product page before committing anything.
+        if (
+            $product->modifierGroups->isNotEmpty()
+            && (! $this->showModifierModal || ! $this->customizingProduct || $this->customizingProduct->id !== $product->id)
+        ) {
+            $this->openProductPage($product->id);
 
             return;
         }
+
+        $shouldCloseProductPage = $this->screen === 'product'
+            || ($this->showModifierModal && $this->customizingProduct && $this->customizingProduct->id === $product->id);
 
         $selectedByGroup = $this->normalizeModifierGroups($this->selectedModifiers);
         if ($product->modifierGroups->isNotEmpty() || ! empty($selectedByGroup)) {
             $modifierError = $this->validateSelectedModifierGroups($product, $selectedByGroup);
             if ($modifierError) {
+                $this->customizingProduct = $product;
                 $this->modifierError = $modifierError;
                 $this->showModifierModal = true;
+                $this->screen = 'product';
+                $this->dispatch('guest-screen-changed', screen: 'product', productId: $product->id);
 
                 return;
             }
@@ -711,6 +869,15 @@ class GuestMenu extends Component
         $this->selectedModifiers = [];
         $this->itemNote = '';
         $this->modifierError = null;
+
+        if ($shouldCloseProductPage) {
+            $returnScreen = in_array($this->productReturnScreen, ['home', 'full_menu'], true)
+                ? $this->productReturnScreen
+                : 'home';
+
+            $this->screen = $returnScreen;
+            $this->dispatch('guest-screen-changed', screen: $returnScreen);
+        }
     }
 
     /**
@@ -800,7 +967,7 @@ class GuestMenu extends Component
         $rateLimitKey = 'guest-order:'.request()->ip();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
             $this->orderError = __('guest.rate_limit_error');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -810,7 +977,7 @@ class GuestMenu extends Component
         $this->loyaltyError = null;
 
         // Idempotency (Phase 7a, #28). Ensure a token exists even if submit is
-        // reached without the review sheet having opened (defence in depth), so
+        // reached without checkout having opened (defence in depth), so
         // every order created here is tied to a UNIQUE key.
         if ($this->idempotencyKey === null) {
             $this->idempotencyKey = (string) Str::uuid();
@@ -832,7 +999,7 @@ class GuestMenu extends Component
         // re-priced total is known.
         if (! $this->passesQuantityAndLineCaps($cartItems)) {
             $this->orderError = __('guest.cart_too_large');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -883,7 +1050,7 @@ class GuestMenu extends Component
             $this->orderError = __('guest.items_unavailable_removed', [
                 'items' => implode(', ', $unavailableNames),
             ]);
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -894,7 +1061,7 @@ class GuestMenu extends Component
         $customerName = trim((string) $this->customerName);
         if ($customerName === '') {
             $this->orderError = __('guest.name_required');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -906,7 +1073,7 @@ class GuestMenu extends Component
             $this->loyaltyError = trim((string) $this->loyaltyPhone) === ''
                 ? __('guest.phone_required')
                 : __('guest.invalid_phone');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -914,7 +1081,7 @@ class GuestMenu extends Component
         $paymentMethod = $this->normalizePaymentMethod($this->paymentMethod);
         if ($paymentMethod === null) {
             $this->orderError = __('guest.payment_method_invalid');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -922,7 +1089,7 @@ class GuestMenu extends Component
         $built = $this->buildOrderItems($cartItems, $products);
         if ($built['error'] !== null) {
             $this->orderError = $built['error'];
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -937,10 +1104,11 @@ class GuestMenu extends Component
 
         // Total cap (Phase 7a, #28): use the server-side re-priced total, never
         // the client-sent prices, so a tampered cart cannot slip past.
-        $totalAmount = round($subtotalAmount + $taxAmount, 3);
+        $serviceAmount = $this->serviceFeeForSubtotal((float) $subtotalAmount);
+        $totalAmount = round($subtotalAmount + $taxAmount + $serviceAmount, 3);
         if ($totalAmount > (float) config('ordering.max_order_total', 1000)) {
             $this->orderError = __('guest.order_total_too_high');
-            $this->showReviewModal = true;
+            $this->openCheckout();
 
             return;
         }
@@ -1160,6 +1328,10 @@ class GuestMenu extends Component
         $this->loyaltyError = null;
         $this->recognizedCustomer = null;
         $this->showWelcomeBack = false;
+        $this->showReviewModal = false;
+        $this->screen = 'home';
+        $this->checkoutReturnScreen = 'home';
+        $this->productReturnScreen = 'home';
 
         // Regenerate the idempotency token so a fresh checkout creates a new,
         // distinct order rather than colliding with the one just placed.
@@ -1172,7 +1344,12 @@ class GuestMenu extends Component
      */
     protected function redirectToOrder(Order $order)
     {
-        return $this->redirect(route('guest.track', $order->tracking_token), navigate: true);
+        $url = route('guest.track', $order->tracking_token);
+        if ($this->tableLabel) {
+            $url .= '?'.http_build_query(['table' => $this->tableLabel]);
+        }
+
+        return $this->redirect($url, navigate: true);
     }
 
     /**

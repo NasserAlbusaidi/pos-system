@@ -22,8 +22,8 @@ use Tests\TestCase;
  *
  * Covers the pilot guarantees: order is created 'unpaid' while storing the
  * guest's preferred payment path, checkout requires name + phone, the order-level note
- * persists end-to-end and reaches the kitchen, and the totals expose no service
- * fee / VAT lines (hidden per scope #29).
+ * persists end-to-end and reaches the kitchen, and the totals expose the
+ * checkout service / VAT display while omitting waiter-call.
  */
 class GuestMenuCheckoutTest extends TestCase
 {
@@ -173,22 +173,104 @@ class GuestMenuCheckoutTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
-    public function test_review_screen_shows_voucher_field_but_no_service_fee_or_vat_lines(): void
+    public function test_checkout_details_step_shows_voucher_field_and_cart_summary(): void
     {
         [$shop, $product] = $this->createMenu();
 
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
-            ->set('showReviewModal', true)
-            ->assertDontSee('Service fee')
-            ->assertDontSee('Service Fee')
-            ->assertDontSee('VAT')
+            ->call('toggleReview')
             ->assertSee(__('guest.voucher'))
             ->assertSee(__('guest.promo_code'))
             ->assertSee(__('guest.voucher_placeholder'))
             ->assertSee(__('guest.apply_voucher'))
             ->assertSee(__('guest.subtotal'))
+            ->assertSee(__('guest.service'))
+            ->assertSee(__('guest.vat_5'))
             ->assertSee(__('guest.total'));
+    }
+
+    public function test_review_order_opens_a_full_checkout_screen_instead_of_the_cart_sheet(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->call('toggleReview')
+            ->assertSet('screen', 'checkout')
+            ->assertSet('showReviewModal', true)
+            ->assertSeeHtml('data-route-name="checkout"')
+            ->assertSeeHtml('bite-checkout-screen')
+            ->assertSeeHtml('bite-checkout-main')
+            ->assertDontSeeHtml('bite-sheet--cart')
+            ->assertDontSeeHtml('bite-cart-status')
+            ->assertSee(__('guest.your_cart'))
+            ->assertSet('checkoutDetailsVisible', true)
+            ->assertSee(__('guest.place_order'))
+            ->assertSee(__('guest.payment_method_label'))
+            ->assertSee(__('guest.voucher'))
+            ->assertDontSeeHtml('wire:click="showCheckoutDetails"');
+    }
+
+    public function test_checkout_screen_uses_cart_review_layout(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->call('toggleReview')
+            ->assertSeeHtml('bite-cart-top')
+            ->assertDontSeeHtml('bite-cart-status')
+            ->assertSeeHtml('bite-checkout-card')
+            ->assertSeeHtml('bite-checkout-qty')
+            ->assertSeeHtml('bite-checkout-note')
+            ->assertSeeHtml('bite-checkout-total-card')
+            ->assertSeeHtml('bite-checkout-powered')
+            ->assertSee(__('guest.your_cart'))
+            ->assertSee('AR')
+            ->assertSee(__('guest.order_note'))
+            ->assertSee(__('guest.service'))
+            ->assertSee(__('guest.vat_5'))
+            ->assertSee(__('guest.place_order'))
+            ->assertDontSeeHtml('wire:click="showCheckoutDetails"');
+    }
+
+    public function test_powered_by_footer_renders_after_checkout_fields(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        $html = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->call('toggleReview')
+            ->html();
+
+        $paymentPosition = strpos($html, __('guest.payment_method_label'));
+        $namePosition = strpos($html, __('guest.your_name'));
+        $phonePosition = strpos($html, __('guest.phone_label'));
+        $poweredPosition = strpos($html, 'bite-checkout-powered');
+
+        $this->assertNotFalse($paymentPosition);
+        $this->assertNotFalse($namePosition);
+        $this->assertNotFalse($phonePosition);
+        $this->assertNotFalse($poweredPosition);
+        $this->assertGreaterThan($paymentPosition, $poweredPosition);
+        $this->assertGreaterThan($namePosition, $poweredPosition);
+        $this->assertGreaterThan($phonePosition, $poweredPosition);
+    }
+
+    public function test_submitted_order_total_includes_checkout_service_fee(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
+            ->call('submitOrder');
+
+        $order = Order::firstOrFail();
+        $this->assertEqualsWithDelta(0.500, (float) $order->subtotal_amount, 0.001);
+        $this->assertEqualsWithDelta(0.700, (float) $order->total_amount, 0.001);
     }
 
     public function test_checkout_voucher_code_can_be_entered_and_applied(): void
@@ -198,6 +280,7 @@ class GuestMenuCheckoutTest extends TestCase
         Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
             ->set('showReviewModal', true)
+            ->set('checkoutDetailsVisible', true)
             ->set('voucherCode', ' pickup10 ')
             ->assertSet('voucherCode', ' PICKUP10 ')
             ->assertSet('voucherApplied', false)
@@ -210,10 +293,8 @@ class GuestMenuCheckoutTest extends TestCase
     /**
      * Phase 7b (#29) scope guard: the guest checkout must STRIP — not just hide —
      * every out-of-scope feature. The pilot excludes Thawani gateway wiring,
-     * coupon discount calculation, a service-fee line, a separate VAT line item,
-     * and waiter-call. This asserts none of those controls render and that the
-     * only payment paths offered are counter payment and online payment. Legitimate per-product tax
-     * (the summary "Tax" row) is in scope and intentionally NOT asserted absent.
+     * coupon discount calculation and waiter-call. Voucher entry, service,
+     * VAT display, and the two payment paths are in scope.
      */
     public function test_checkout_strips_all_out_of_scope_features(): void
     {
@@ -221,7 +302,8 @@ class GuestMenuCheckoutTest extends TestCase
 
         $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
             ->call('addToCart', $product->id)
-            ->set('showReviewModal', true);
+            ->set('showReviewModal', true)
+            ->set('checkoutDetailsVisible', true);
 
         // Voucher entry is in scope, but coupon calculation plumbing is not.
         $component->assertSee(__('guest.voucher'))
@@ -235,14 +317,10 @@ class GuestMenuCheckoutTest extends TestCase
             ->assertDontSeeHtml('wire:model="couponCode')
             ->assertDontSeeHtml('applyCoupon');
 
-        // No extra service-fee summary line.
-        $component->assertDontSee('Service fee')
-            ->assertDontSee('Service Fee')
+        $component->assertSee(__('guest.service'))
+            ->assertSee(__('guest.vat_5'))
             ->assertDontSee('service_fee', false)
             ->assertDontSee('serviceFee', false);
-
-        // No separate VAT summary line item (legitimate per-product Tax row stays).
-        $component->assertDontSee('VAT');
 
         // No waiter-call control.
         $component->assertDontSee('waiter', false)
@@ -257,15 +335,18 @@ class GuestMenuCheckoutTest extends TestCase
             ->assertDontSee('Pay now')
             ->assertDontSeeHtml('wire:model="payment_method')
             ->assertDontSeeHtml('payOnline')
-            ->assertSeeHtml('wire:model.live="paymentMethod"')
-            ->assertSeeHtml('<select');
+            ->assertDontSeeHtml('<select')
+            ->assertSeeHtml('bite-payment-picker')
+            ->assertSeeHtml('role="listbox"')
+            ->assertSeeHtml('wire:click="$set(\'paymentMethod\', \'counter\')"')
+            ->assertSeeHtml('wire:click="$set(\'paymentMethod\', \'online\')"');
 
         // The only payment paths shown are counter payment and online payment.
         $component->assertSee(__('guest.payment_method_label'))
             ->assertSee(__('guest.payment_method_counter'))
             ->assertSee(__('guest.payment_method_online'))
             ->assertSee(__('guest.subtotal'))
-            ->assertSee(__('guest.tax'))
+            ->assertSee(__('guest.vat_5'))
             ->assertSee(__('guest.total'));
     }
 
@@ -281,16 +362,20 @@ class GuestMenuCheckoutTest extends TestCase
             ->call('switchLanguage', 'ar')
             ->call('addToCart', $product->id)
             ->set('showReviewModal', true)
+            ->set('checkoutDetailsVisible', true)
             ->assertDontSee('Thawani')
             ->assertSee(__('guest.voucher', [], 'ar'))
             ->assertSee(__('guest.promo_code', [], 'ar'))
             ->assertSee(__('guest.voucher_placeholder', [], 'ar'))
-            ->assertDontSee('Service fee')
-            ->assertDontSee('VAT')
+            ->assertSee(__('guest.service', [], 'ar'))
+            ->assertSee(__('guest.vat_5', [], 'ar'))
+            ->assertSee('EN')
             ->assertDontSee('Waiter')
             ->assertSeeHtml('wire:model.live.debounce.250ms="voucherCode"')
             ->assertSeeHtml('wire:click="applyVoucher"')
-            ->assertSeeHtml('wire:model.live="paymentMethod"')
+            ->assertSeeHtml('bite-payment-picker')
+            ->assertSeeHtml('wire:click="$set(\'paymentMethod\', \'counter\')"')
+            ->assertSeeHtml('wire:click="$set(\'paymentMethod\', \'online\')"')
             ->assertSee(__('guest.payment_method_label', [], 'ar'))
             ->assertSee(__('guest.payment_method_counter', [], 'ar'))
             ->assertSee(__('guest.payment_method_online', [], 'ar'));

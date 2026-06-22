@@ -32,7 +32,7 @@
                 <article class="product-card bite-popular-card" wire:key="popular-{{ $product->id }}">
                     <button
                         type="button"
-                        wire:click="openProductSheet({{ $product->id }})"
+                        wire:click="openProductPage({{ $product->id }})"
                         class="product-open bite-popular-card__image"
                         aria-label="{{ __('guest.view_details_aria', ['name' => $product->translated('name')]) }}"
                     >

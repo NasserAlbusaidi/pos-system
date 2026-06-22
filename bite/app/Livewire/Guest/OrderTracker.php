@@ -5,6 +5,8 @@ namespace App\Livewire\Guest;
 use App\Models\Order;
 use App\Models\Shop;
 use App\Support\BrandingUrl;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class OrderTracker extends Component
@@ -18,6 +20,10 @@ class OrderTracker extends Component
     public string $feedbackComment = '';
 
     public bool $feedbackSubmitted = false;
+
+    public string $locale = 'en';
+
+    public ?string $tableLabel = null;
 
     /**
      * Customer-safe visual timeline steps. Internal order statuses are mapped
@@ -41,11 +47,58 @@ class OrderTracker extends Component
         'ready' => 3,
     ];
 
+    private const SIMULATOR_NEXT_STATUS = [
+        'unpaid' => 'paid',
+        'paid' => 'preparing',
+        'preparing' => 'ready',
+        'ready' => 'completed',
+    ];
+
     public function mount(string $trackingToken): void
     {
         $this->order = Order::where('tracking_token', $trackingToken)->firstOrFail();
         $this->shop = $this->order->shop;
         $this->feedbackSubmitted = ! empty($this->order->customer_rating);
+        $this->locale = in_array(App::getLocale(), ['en', 'ar'], true) ? App::getLocale() : 'en';
+
+        $table = request()->query('table');
+        if (is_scalar($table)) {
+            $this->tableLabel = Str::of((string) $table)
+                ->squish()
+                ->limit(20, '')
+                ->toString() ?: null;
+        }
+    }
+
+    public function switchLanguage(string $lang): void
+    {
+        $lang = in_array($lang, ['en', 'ar'], true) ? $lang : 'en';
+
+        $this->locale = $lang;
+        session()->put('guest_locale', $lang);
+        App::setLocale($lang);
+
+        $this->dispatch('guest-locale-changed', direction: $lang === 'ar' ? 'rtl' : 'ltr');
+    }
+
+    public function canSimulateStatus(): bool
+    {
+        return app()->environment(['local', 'testing']) || str_contains($this->shop->slug, 'demo');
+    }
+
+    public function simulateNextStatus(): void
+    {
+        if (! $this->canSimulateStatus()) {
+            return;
+        }
+
+        $nextStatus = self::SIMULATOR_NEXT_STATUS[$this->order->status] ?? null;
+        if ($nextStatus === null) {
+            return;
+        }
+
+        $this->order->update(['status' => $nextStatus]);
+        $this->order->refresh();
     }
 
     public function submitFeedback(): void

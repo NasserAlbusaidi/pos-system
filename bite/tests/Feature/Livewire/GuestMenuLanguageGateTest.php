@@ -33,6 +33,28 @@ class GuestMenuLanguageGateTest extends TestCase
             ->assertSet('locale', 'ar');
     }
 
+    public function test_hero_language_switch_labels_the_target_language(): void
+    {
+        $shop = Shop::create(['name' => 'Sourdough', 'slug' => 'sourdough']);
+
+        session(['guest_locale' => 'ar']);
+        $arabicHtml = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->assertSet('locale', 'ar')
+            ->html();
+
+        $this->assertStringContainsString("switchLanguage('en')", $arabicHtml);
+        $this->assertStringContainsString('>EN</button>', $arabicHtml);
+        $this->assertStringNotContainsString('>AR</button>', $arabicHtml);
+
+        session(['guest_locale' => 'en']);
+        $englishHtml = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->assertSet('locale', 'en')
+            ->html();
+
+        $this->assertStringContainsString("switchLanguage('ar')", $englishHtml);
+        $this->assertStringContainsString('>AR</button>', $englishHtml);
+    }
+
     public function test_choose_language_dismisses_gate_and_persists_locale(): void
     {
         $shop = Shop::create(['name' => 'Sourdough', 'slug' => 'sourdough']);

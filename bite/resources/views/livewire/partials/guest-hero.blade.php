@@ -22,15 +22,6 @@
         aria-hidden="true"
     ></div>
 
-    <div class="status-bar bite-status-bar bite-status-bar--light" aria-hidden="true">
-        <strong lang="en" dir="ltr">9:41</strong>
-        <span class="status-icons bite-status-bar__icons" lang="en" dir="ltr">
-            <svg viewBox="0 0 24 24"><path d="M4 20h2v-5H4v5Zm4 0h2v-8H8v8Zm4 0h2V9h-2v11Zm4 0h2V6h-2v14Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M3 8.8c5.8-5 12.2-5 18 0M7 13c3.3-2.6 6.7-2.6 10 0m-6 4.2a2 2 0 0 1 2 0"/></svg>
-            <span class="battery"></span>
-        </span>
-    </div>
-
     <div class="web-hero-top bite-hero__top">
         <img src="{{ $guestLogoUrl }}" alt="{{ $shop->name }}" class="bite-hero__logo">
         <div class="bite-hero__actions">
@@ -53,7 +44,7 @@
                     type="button"
                     lang="en"
                     dir="ltr"
-                >{{ $locale === 'ar' ? 'AR' : 'EN' }}</button>
+                >{{ $locale === 'ar' ? 'EN' : 'AR' }}</button>
             </div>
         </div>
     </div>

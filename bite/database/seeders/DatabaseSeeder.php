@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
                 'paper' => '#fdfcf8',
                 'ink' => '#1a1918',
                 'onboarding_completed' => true,
+                'google_review_url' => 'https://www.google.com/maps',
+                'instagram_url' => 'https://www.instagram.com/bite.om/',
             ],
         ]);
 

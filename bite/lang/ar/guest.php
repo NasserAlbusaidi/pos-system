@@ -48,10 +48,12 @@ return [
     'add_to_order' => 'أضف إلى الطلب',
     'review_order' => 'مراجعة الطلب',
     'your_order' => 'طلبك',
+    'your_cart' => 'سلتك',
     'review_before_sending' => 'راجع العناصر قبل إرسالها إلى المطبخ',
     'items' => 'العناصر',
     'ready' => 'جاهز',
     'cancel' => 'إلغاء',
+    'checkout' => 'الدفع',
     'place_order' => 'تأكيد الطلب',
     'send_to_kitchen' => 'إرسال الطلب إلى المطبخ؟',
 
@@ -65,6 +67,7 @@ return [
     'place_order_hint' => 'بتأكيد هذا الطلب فإنك توافق على الدفع عند الكاونتر.',
 
     // Order-level note (whole order) — Phase 4 (#24)
+    'order_note' => 'ملاحظة الطلب',
     'order_note_label' => 'ملاحظة للمطبخ',
     'order_note_placeholder' => 'أي ملاحظة لكامل الطلب؟ تحسس، توقيت، طاولة…',
 
@@ -101,6 +104,8 @@ return [
 
     // Totals
     'subtotal' => 'المجموع الفرعي',
+    'service' => 'الخدمة',
+    'vat_5' => 'ضريبة 5%',
     'tax' => 'الضريبة',
     'total' => 'الإجمالي',
 
@@ -197,6 +202,12 @@ return [
 
     // Order tracking — counter card + customer-safe timeline (screen 7, #25)
     'track_pickup_order' => 'طلب الاستلام',
+    'track_received_title' => 'تم استلام الطلب',
+    'track_received_body' => 'تم إرسال طلبك إلى :shop. اترك هذه الصفحة مفتوحة أو امسح رمز الطاولة مرة أخرى للعودة.',
+    'track_order_reference' => 'طلب #:order - الطاولة :table',
+    'track_order_reference_no_table' => 'طلب #:order',
+    'track_simulate_next' => 'محاكاة الحالة التالية',
+    'rate_your_visit' => 'قيّم زيارتك',
     'track_view_detail_order' => 'عرض تفاصيل الطلب',
     'track_outlet_label' => 'الفرع',
     'track_map_alt' => 'خريطة موقع الاستلام',
@@ -218,4 +229,13 @@ return [
     'rate_on_google_hint' => 'يفتح صفحتنا على Google',
     'follow_on_instagram' => 'تابعنا على Instagram',
     'follow_on_instagram_hint' => 'مخبوزات وعروض جديدة',
+    'visit_review_before_leave' => 'قبل أن تغادر',
+    'visit_review_title' => 'كيف كانت زيارتك إلى :shop؟',
+    'visit_review_body' => 'اترك تقييماً سريعاً أو تابع المقهى لمعرفة المشروبات والعروض الجديدة.',
+    'visit_google_cta' => 'قيّم على خرائط Google',
+    'visit_google_hint' => 'يفتح صفحة المقهى',
+    'visit_instagram_cta' => 'تابعنا على Instagram',
+    'visit_instagram_hint' => 'تحديثات وعروض المقهى',
+    'visit_back_to_menu' => 'العودة للقائمة',
+    'visit_track_current_order' => 'تتبع الطلب الحالي',
 ];

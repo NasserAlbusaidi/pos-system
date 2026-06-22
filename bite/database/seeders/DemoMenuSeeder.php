@@ -235,6 +235,14 @@ class DemoMenuSeeder extends Seeder
                 'currency_code' => 'OMR',
                 'currency_symbol' => "\xD8\xB1.\xD8\xB9.",
                 'currency_decimals' => 3,
+                'branding' => [
+                    'accent' => '#cc5500',
+                    'paper' => '#fdfcf8',
+                    'ink' => '#1a1918',
+                    'onboarding_completed' => true,
+                    'google_review_url' => 'https://www.google.com/maps',
+                    'instagram_url' => 'https://www.instagram.com/bite.om/',
+                ],
             ]);
         }
 

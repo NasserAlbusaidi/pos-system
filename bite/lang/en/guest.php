@@ -48,10 +48,12 @@ return [
     'add_to_order' => 'Add to Order',
     'review_order' => 'Review Order',
     'your_order' => 'Your Order',
+    'your_cart' => 'Your cart',
     'review_before_sending' => 'Review items before sending to kitchen',
     'items' => 'Items',
     'ready' => 'Ready',
     'cancel' => 'Cancel',
+    'checkout' => 'Checkout',
     'place_order' => 'Place Order',
     'send_to_kitchen' => 'Send order to kitchen?',
 
@@ -65,6 +67,7 @@ return [
     'place_order_hint' => 'By placing this order you agree to pay at the counter.',
 
     // Order-level note (whole order) — Phase 4 (#24)
+    'order_note' => 'Order note',
     'order_note_label' => 'Note for the kitchen',
     'order_note_placeholder' => 'Anything for the whole order? Allergy, timing, table…',
 
@@ -101,6 +104,8 @@ return [
 
     // Totals
     'subtotal' => 'Subtotal',
+    'service' => 'Service',
+    'vat_5' => 'VAT 5%',
     'tax' => 'Tax',
     'total' => 'Total',
 
@@ -197,6 +202,12 @@ return [
 
     // Order tracking — counter card + customer-safe timeline (screen 7, #25)
     'track_pickup_order' => 'Pick Up Order',
+    'track_received_title' => 'Order received',
+    'track_received_body' => 'We sent your order to :shop. Keep this page open or scan the table code again to return.',
+    'track_order_reference' => 'Order #:order · Table :table',
+    'track_order_reference_no_table' => 'Order #:order',
+    'track_simulate_next' => 'Simulate next status',
+    'rate_your_visit' => 'Rate your visit',
     'track_view_detail_order' => 'View Detail Order',
     'track_outlet_label' => 'Outlet',
     'track_map_alt' => 'Pickup location map',
@@ -218,4 +229,13 @@ return [
     'rate_on_google_hint' => 'Opens our Google listing',
     'follow_on_instagram' => 'Follow on Instagram',
     'follow_on_instagram_hint' => 'New bakes and offers',
+    'visit_review_before_leave' => 'Before you go',
+    'visit_review_title' => 'How was your visit to :shop?',
+    'visit_review_body' => 'Leave a quick review or follow the cafe for new drinks and offers.',
+    'visit_google_cta' => 'Rate us on Google Maps',
+    'visit_google_hint' => 'Opens the cafe page',
+    'visit_instagram_cta' => 'Follow us on Instagram',
+    'visit_instagram_hint' => 'Updates and cafe offers',
+    'visit_back_to_menu' => 'Back to menu',
+    'visit_track_current_order' => 'Track current order',
 ];
