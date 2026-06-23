@@ -24,6 +24,7 @@ return [
     'menu_builder' => 'Menu Builder',
     'product_catalog' => 'Product Catalog',
     'modifiers' => 'Modifiers',
+    'pricing_rules' => 'Pricing Rules',
     'guest_menu' => 'Guest Menu',
     'settings' => 'Settings',
     'billing' => 'Billing',

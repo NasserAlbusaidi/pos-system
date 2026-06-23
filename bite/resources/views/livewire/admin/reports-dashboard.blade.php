@@ -21,14 +21,48 @@
         </article>
     </div>
 
+    @php
+        $revMax = max(1, collect($revenueSeries)->max('total'));
+        $hourMax = max(1, collect($ordersByHour)->max('count'));
+        $peakHour = collect($ordersByHour)->sortByDesc('count')->first();
+        $peakHourKey = ($peakHour && $peakHour['count'] > 0) ? $peakHour['hour'] : null;
+    @endphp
+
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {{-- Revenue by day — pure CSS bars (CSP-safe, no external chart lib) --}}
         <div class="surface-card p-5 sm:p-6">
-            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">{{ __('admin.revenue_by_day') }}</h2>
-            <canvas id="revenueChart" height="120"></canvas>
+            <h2 class="font-display text-xl font-bold leading-none text-forest mb-5">{{ __('admin.revenue_by_day') }}</h2>
+            <div class="flex items-end gap-[3px]" style="height: 150px;">
+                @foreach($revenueSeries as $point)
+                    @php $pct = max(2, round(($point['total'] / $revMax) * 100)); @endphp
+                    <div class="flex-1 rounded-t-[3px]"
+                         style="height: {{ $pct }}%; min-height: 2px; background: {{ $loop->last ? 'var(--bite-lime)' : 'var(--bite-green)' }}; transform-origin: bottom; animation: barRise 600ms cubic-bezier(0.22,1,0.36,1) both;"
+                         title="{{ \Illuminate\Support\Carbon::parse($point['day'])->format('D, M j') }} — {{ $shop->currency ?? 'OMR' }} {{ number_format($point['total'], 3) }}"></div>
+                @endforeach
+            </div>
+            <div class="mt-3 flex items-center justify-between font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+                <span>{{ \Illuminate\Support\Carbon::parse($revenueSeries->first()['day'])->format('M j') }}</span>
+                <span class="text-forest">{{ __('admin.today') }}</span>
+            </div>
         </div>
+
+        {{-- Orders by hour — pure CSS bars; peak hour highlighted lime --}}
         <div class="surface-card p-5 sm:p-6">
-            <h2 class="font-display text-xl font-extrabold leading-none text-ink mb-5">{{ __('admin.orders_by_hour') }}</h2>
-            <canvas id="hourChart" height="120"></canvas>
+            <h2 class="font-display text-xl font-bold leading-none text-forest mb-5">{{ __('admin.orders_by_hour') }}</h2>
+            <div class="flex items-end gap-[3px]" style="height: 150px;">
+                @foreach($ordersByHour as $slot)
+                    @php
+                        $pct = max(2, round(($slot['count'] / $hourMax) * 100));
+                        $isPeak = $peakHourKey !== null && $slot['hour'] === $peakHourKey;
+                    @endphp
+                    <div class="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+                        <div class="w-full rounded-t-[3px]"
+                             style="height: {{ $pct }}%; min-height: 2px; background: {{ $isPeak ? 'var(--bite-lime)' : 'var(--bite-green)' }}; transform-origin: bottom; animation: barRise 600ms cubic-bezier(0.22,1,0.36,1) both;"
+                             title="{{ $slot['hour'] }}:00 — {{ __('admin.order_count', ['count' => $slot['count']]) }}"></div>
+                        <span class="font-mono text-[8px] font-semibold uppercase tracking-tight text-ink-soft">{{ (int) $slot['hour'] % 6 === 0 ? $slot['hour'] : '' }}</span>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </div>
 
@@ -81,67 +115,3 @@
         </section>
     </div>
 </div>
-
-@push('scripts')
-    @once
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
-    @endonce
-    <script>
-        const revenueLabels = @json($revenueSeries->pluck('day')->map(fn ($day) => \Carbon\Carbon::parse($day)->format('M d')));
-        const revenueData = @json($revenueSeries->pluck('total'));
-        const hourLabels = @json($ordersByHour->pluck('hour'));
-        const hourData = @json($ordersByHour->pluck('count'));
-
-        const renderReportsCharts = () => {
-            const revenueCtx = document.getElementById('revenueChart');
-            if (revenueCtx && !window.revenueChartInstance) {
-                window.revenueChartInstance = new Chart(revenueCtx, {
-                    type: 'line',
-                    data: {
-                        labels: revenueLabels,
-                        datasets: [{
-                            label: @json(__('admin.chart_revenue')),
-                            data: revenueData,
-                            borderColor: '#CC5500',
-                            backgroundColor: 'rgba(204,85,0,0.15)',
-                            fill: true,
-                            tension: 0.3,
-                        }],
-                    },
-                    options: {
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { ticks: { color: '#1A1918' } },
-                            x: { ticks: { color: '#1A1918' } },
-                        },
-                    },
-                });
-            }
-
-            const hourCtx = document.getElementById('hourChart');
-            if (hourCtx && !window.hourChartInstance) {
-                window.hourChartInstance = new Chart(hourCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: hourLabels,
-                        datasets: [{
-                            label: @json(__('admin.chart_orders')),
-                            data: hourData,
-                            backgroundColor: 'rgba(26,25,24,0.8)',
-                        }],
-                    },
-                    options: {
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { ticks: { color: '#1A1918' } },
-                            x: { ticks: { color: '#1A1918' } },
-                        },
-                    },
-                });
-            }
-        };
-
-        document.addEventListener('livewire:navigated', renderReportsCharts, { once: true });
-        document.addEventListener('DOMContentLoaded', renderReportsCharts, { once: true });
-    </script>
-@endpush

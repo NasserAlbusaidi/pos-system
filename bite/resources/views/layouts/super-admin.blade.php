@@ -6,7 +6,7 @@
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
-        <meta name="theme-color" content="#EC6D2E">
+        <meta name="theme-color" content="#004225">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <title>Bite Platform Control</title>
@@ -28,14 +28,14 @@
                 </div>
 
                 <nav class="flex-1 space-y-2 overflow-y-auto p-4">
-                    <a href="{{ route('super-admin.dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200 {{ request()->routeIs('super-admin.dashboard') ? 'border-crema/60 bg-crema text-panel' : 'border-transparent text-panel/70 hover:border-panel/20 hover:bg-panel/10 hover:text-panel' }}">
+                    <a href="{{ route('super-admin.dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200 {{ request()->routeIs('super-admin.dashboard') ? 'border-lime bg-lime text-forest' : 'border-transparent text-panel/70 hover:border-panel/20 hover:bg-panel/10 hover:text-panel' }}">
                         <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-panel/15 bg-panel/10">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </span>
                         <span>Overview</span>
                     </a>
 
-                    <a href="{{ route('super-admin.shops.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200 {{ request()->routeIs('super-admin.shops.*') ? 'border-crema/60 bg-crema text-panel' : 'border-transparent text-panel/70 hover:border-panel/20 hover:bg-panel/10 hover:text-panel' }}">
+                    <a href="{{ route('super-admin.shops.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-200 {{ request()->routeIs('super-admin.shops.*') ? 'border-lime bg-lime text-forest' : 'border-transparent text-panel/70 hover:border-panel/20 hover:bg-panel/10 hover:text-panel' }}">
                         <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-panel/15 bg-panel/10">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 01-2-2h-4v4m6-4v4m-6-4v4" /></svg>
                         </span>

@@ -12,12 +12,19 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['"Rubik"', ...defaultTheme.fontFamily.sans],
-                display: ['"Rubik"', ...defaultTheme.fontFamily.sans],
+                sans: ['"Bai Jamjuree"', '"Rubik"', ...defaultTheme.fontFamily.sans],
+                display: ['"Bai Jamjuree"', '"Rubik"', ...defaultTheme.fontFamily.sans],
                 mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
                 arabic: ['"IBM Plex Sans Arabic"', '"Rubik"', ...defaultTheme.fontFamily.sans],
             },
             colors: {
+                // Bite brand primitives — fixed hex (not per-shop). Pair lime with forest text.
+                forest: '#004225',
+                pine: '#0B6B2E',
+                lime: '#7AC70C',
+                olive: '#B7C40D',
+                mist: '#ECF1E6',
+                cream: '#F6F8F1',
                 paper: 'rgb(var(--paper) / <alpha-value>)',
                 ink: 'rgb(var(--ink) / <alpha-value>)',
                 crema: 'rgb(var(--crema) / <alpha-value>)',

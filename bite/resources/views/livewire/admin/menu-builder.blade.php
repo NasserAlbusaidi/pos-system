@@ -116,6 +116,6 @@
         @endforeach
     </div>
 
-    <!-- Sortable Script -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha384-eeLEhtwdMwD3X9y+8P3Cn7Idl/M+w8H4uZqkgD/2eJVkWIN1yKzEj6XegJ9dL3q0" crossorigin="anonymous"></script>
+    {{-- Sortable is bundled in resources/js/app.js (window.Sortable) so it loads
+         under our CSP script-src 'self'; the x-init above uses it for drag-reorder. --}}
 </div>
