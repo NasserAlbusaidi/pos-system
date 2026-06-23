@@ -133,6 +133,10 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Menu Builder (v2 port)
+    'menu_structure' => 'هيكل القائمة',
+    'menu_all_saved' => 'تم حفظ جميع التغييرات',
+
     // Shop Settings
     'settings_shop_settings' => 'إعدادات المتجر',
     'settings_shop_identity' => 'هوية المتجر',

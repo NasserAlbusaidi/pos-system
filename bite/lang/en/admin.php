@@ -133,6 +133,10 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Menu Builder (v2 port)
+    'menu_structure' => 'Menu structure',
+    'menu_all_saved' => 'All changes saved',
+
     // Shop Settings
     'settings_shop_settings' => 'Shop Settings',
     'settings_shop_identity' => 'Shop Identity',
