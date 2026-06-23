@@ -69,6 +69,9 @@ return [
     'awaiting_next_stage' => 'Awaiting Next Stage',
     'no_active_orders' => 'No Active Orders',
     'active_count' => ':count active',
+    'production_queue' => 'Production Queue',
+    'kds_live_refresh' => 'Live · auto-refresh 5s',
+    'late' => 'Late',
 
     // Reports
     'export_orders' => 'Export completed orders',
