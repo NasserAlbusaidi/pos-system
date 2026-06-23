@@ -69,6 +69,9 @@ return [
     'awaiting_next_stage' => 'بانتظار المرحلة التالية',
     'no_active_orders' => 'لا توجد طلبات نشطة',
     'active_count' => ':count نشط',
+    'production_queue' => 'طابور التحضير',
+    'kds_live_refresh' => 'مباشر · تحديث كل ٥ ثوانٍ',
+    'late' => 'متأخر',
 
     // Reports
     'export_orders' => 'تصدير الطلبات المكتملة',
@@ -85,6 +88,17 @@ return [
     'payments' => 'المدفوعات',
     'order_count' => ':count طلبات',
     'no_payments_yet' => 'لا توجد مدفوعات بعد',
+    'reports_performance_summary' => 'ملخص الأداء',
+    'reports_last_days' => 'آخر :days يوم',
+    'reports_orders_short' => 'الطلبات',
+    'reports_avg_order' => 'متوسط الطلب',
+    'reports_revenue_trend' => 'اتجاه الإيرادات',
+    'reports_daily_avg' => 'المعدل اليومي',
+    'reports_days_pill' => ':days يوم',
+    'reports_peak' => 'الذروة :hour',
+    'reports_payment_mix' => 'مزيج المدفوعات',
+    'reports_by_revenue' => 'حسب الإيرادات',
+    'reports_rank' => 'الترتيب',
 
     // Audit Logs
     'audit_filter_placeholder' => 'تصفية حسب الإجراء (مثال: order.paid)',
@@ -116,6 +130,7 @@ return [
 
     // Shift Report
     'shift_end_of_day' => 'نهاية اليوم',
+    'shift_summary' => 'ملخص الوردية',
     'shift_daily_report' => 'تقرير الوردية اليومي',
     'shift_print' => 'طباعة',
     'shift_total_revenue' => 'إجمالي الإيرادات',
@@ -138,6 +153,32 @@ return [
     'product_empty' => 'لا توجد منتجات بعد',
     'product_th_product' => 'المنتج',
     'product_th_actions' => 'إجراءات',
+    // Menu Builder (v2 port)
+    'menu_structure' => 'هيكل القائمة',
+    'menu_all_saved' => 'تم حفظ جميع التغييرات',
+    // Cash Reconciliation (v2 port)
+    'end_of_day' => 'نهاية اليوم',
+    'cash_reconciliation' => 'تسوية النقد',
+    'total_orders' => 'إجمالي الطلبات',
+    'total_revenue' => 'إجمالي الإيرادات',
+    'cash_payments' => 'المدفوعات النقدية',
+    'card_payments' => 'مدفوعات البطاقة',
+    'cash_count' => 'عدّ النقد',
+    'end_of_shift' => 'نهاية الوردية',
+    'expected_cash_in_drawer' => 'النقد المتوقع في الدرج',
+    'actual_cash_counted' => 'النقد الفعلي المعدود',
+    'notes_optional' => 'ملاحظات (اختياري)',
+    'cash_count_notes_placeholder' => 'أي ملاحظات حول عدّ النقد...',
+    'reconcile' => 'تسوية',
+    'reconciliation_result' => 'نتيجة التسوية',
+    'balanced' => 'متوازن',
+    'discrepancy' => 'تباين',
+    'expected' => 'المتوقع',
+    'actual' => 'الفعلي',
+    'difference' => 'الفرق',
+    'notes' => 'ملاحظات',
+    'recount' => 'إعادة العدّ',
+    'close_shift' => 'إغلاق الوردية',
 
     // Shop Settings
     'settings_shop_settings' => 'إعدادات المتجر',
