@@ -1083,6 +1083,12 @@
     to { transform: scaleY(1); }
 }
 
+/* Pulse-hero decorative blob — slow organic morph (dashboard v2). */
+@keyframes blobDrift {
+    0%, 100% { border-radius: 42% 58% 60% 40% / 48% 42% 58% 52%; }
+    50% { border-radius: 56% 44% 43% 57% / 41% 56% 44% 59%; }
+}
+
 @keyframes nav-progress {
     0% { transform: scaleX(0); opacity: 1; }
     50% { transform: scaleX(0.7); opacity: 1; }

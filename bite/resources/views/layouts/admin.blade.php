@@ -39,30 +39,39 @@
             <livewire:layout.admin-navigation />
 
             <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
-                <header class="sticky top-0 z-40 border-b border-line bg-cream/85 backdrop-blur-xl">
-                    <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 xl:px-8">
-                        <div class="fade-rise">
-                            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--bite-green)]">Bite Operations</p>
-                            <h1 class="mt-0.5 font-display text-xl font-bold leading-none text-forest">{{ $header ?? 'Overview' }}</h1>
-                        </div>
+                {{-- Pages can opt out of this default chrome with <x-slot:chromeless>
+                     and render their own full-bleed header/content (e.g. the
+                     operations dashboard, whose header carries Livewire controls). --}}
+                @unless(isset($chromeless))
+                    <header class="sticky top-0 z-40 border-b border-line bg-cream/85 backdrop-blur-xl">
+                        <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 xl:px-8">
+                            <div class="fade-rise">
+                                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--bite-green)]">Bite Operations</p>
+                                <h1 class="mt-0.5 font-display text-xl font-bold leading-none text-forest">{{ $header ?? 'Overview' }}</h1>
+                            </div>
 
-                        <div class="flex items-center gap-2 sm:gap-3">
-                            <span class="hidden items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] sm:inline-flex"
-                                  style="border-color: color-mix(in srgb, var(--bite-green) 35%, transparent); background: var(--bite-lime-100); color: var(--bite-pine);">
-                                <span class="h-1.5 w-1.5 rounded-full" style="background: var(--bite-green); animation: pulseDot 1.8s ease-in-out infinite;"></span>
-                                Live Data
-                            </span>
-                            <span class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
-                                {{ now()->format('D, M j · H:i') }}
-                            </span>
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                <span class="hidden items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] sm:inline-flex"
+                                      style="border-color: color-mix(in srgb, var(--bite-green) 35%, transparent); background: var(--bite-lime-100); color: var(--bite-pine);">
+                                    <span class="h-1.5 w-1.5 rounded-full" style="background: var(--bite-green); animation: pulseDot 1.8s ease-in-out infinite;"></span>
+                                    Live Data
+                                </span>
+                                <span class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+                                    {{ now()->format('D, M j · H:i') }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
+                @endunless
 
                 <main class="flex-1 overflow-y-auto overflow-x-hidden">
-                    <div class="mx-auto w-full max-w-[1600px] p-4 sm:p-6 xl:p-8">
+                    @isset($chromeless)
                         {{ $slot }}
-                    </div>
+                    @else
+                        <div class="mx-auto w-full max-w-[1600px] p-4 sm:p-6 xl:p-8">
+                            {{ $slot }}
+                        </div>
+                    @endisset
                 </main>
             </div>
         </div>

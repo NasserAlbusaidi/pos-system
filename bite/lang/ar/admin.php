@@ -389,8 +389,22 @@ return [
     'total' => 'الإجمالي',
     'status' => 'الحالة',
     'time' => 'الوقت',
+    'customer' => 'العميل',
     'source_guest' => 'ضيف',
+    'source_counter' => 'الكاونتر',
     'no_recent_orders' => 'لا توجد طلبات حديثة.',
+
+    // Dashboard v2
+    'bite_operations' => 'عمليات بايت',
+    'live_data' => 'بيانات مباشرة',
+    'revenue_vs_yesterday' => 'مقابل :value أمس',
+    'in_flight' => 'قيد التنفيذ',
+    'order_pipeline' => 'مسار الطلبات',
+    'orders_count_today' => ':count اليوم',
+    'seven_day_total' => 'إجمالي 7 أيام',
+    'avg_abbr' => 'المتوسط',
+    'payments_today' => 'مدفوعات اليوم',
+    'of_target' => 'من :target',
 
     // POS extras
     'active_tickets' => 'التذاكر النشطة',
