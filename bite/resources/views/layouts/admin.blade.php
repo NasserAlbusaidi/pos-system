@@ -6,39 +6,15 @@
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
-        <meta name="theme-color" content="#EC6D2E">
+        <meta name="theme-color" content="#004225">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <title>{{ $title ?? 'Bite' }}</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @php $shop = $shop ?? Illuminate\Support\Facades\Auth::user()?->shop; @endphp
-        @if($shop)
-            @php
-                $branding = $shop->branding ?? [];
-                $paperHex = $branding['paper'] ?? '#FDFCF8';
-                $inkHex = $branding['ink'] ?? '#1A1918';
-                $cremaHex = $branding['accent'] ?? '#CC5500';
 
-                $toRgb = function ($hex) {
-                    $hex = ltrim((string) $hex, '#');
-                    if (strlen($hex) === 3) {
-                        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-                    }
-                    if (strlen($hex) !== 6) {
-                        return '0 0 0';
-                    }
-                    [$r, $g, $b] = sscanf($hex, '%02x%02x%02x');
-                    return "{$r} {$g} {$b}";
-                };
-            @endphp
-            <style>
-                :root {
-                    --paper: {{ $toRgb($paperHex) }};
-                    --ink: {{ $toRgb($inkHex) }};
-                    --crema: {{ $toRgb($cremaHex) }};
-                }
-            </style>
-        @endif
+        {{-- Bite renders in its fixed green identity (app.css :root) with Bai Jamjuree
+             (self-hosted in app.css; Arabic stays IBM Plex). Per-shop branding is scoped
+             to the customer-facing guest menu only. --}}
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="h-full font-sans text-ink">
         {{-- Navigation progress bar for wire:navigate --}}
@@ -63,18 +39,21 @@
             <livewire:layout.admin-navigation />
 
             <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
-                <header class="border-b border-line/80 bg-panel/80 backdrop-blur-xl">
-                    <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between px-4 sm:px-6 xl:px-8">
+                <header class="sticky top-0 z-40 border-b border-line bg-cream/85 backdrop-blur-xl">
+                    <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 xl:px-8">
                         <div class="fade-rise">
-                            <p class="section-headline">Bite Operations</p>
-                            <h1 class="font-display text-xl font-extrabold leading-none text-ink">{{ $header ?? 'Overview' }}</h1>
+                            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--bite-green)]">Bite Operations</p>
+                            <h1 class="mt-0.5 font-display text-xl font-bold leading-none text-forest">{{ $header ?? 'Overview' }}</h1>
                         </div>
 
                         <div class="flex items-center gap-2 sm:gap-3">
-                            <span class="tag hidden sm:inline-flex">Live Data</span>
-                            <span class="inline-flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                                <span class="status-dot status-live"></span>
-                                {{ now()->format('D, M j H:i') }}
+                            <span class="hidden items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] sm:inline-flex"
+                                  style="border-color: color-mix(in srgb, var(--bite-green) 35%, transparent); background: var(--bite-lime-100); color: var(--bite-pine);">
+                                <span class="h-1.5 w-1.5 rounded-full" style="background: var(--bite-green); animation: pulseDot 1.8s ease-in-out infinite;"></span>
+                                Live Data
+                            </span>
+                            <span class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+                                {{ now()->format('D, M j · H:i') }}
                             </span>
                         </div>
                     </div>

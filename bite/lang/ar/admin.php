@@ -24,6 +24,7 @@ return [
     'menu_builder' => 'إدارة القائمة',
     'product_catalog' => 'كتالوج المنتجات',
     'modifiers' => 'الإضافات',
+    'pricing_rules' => 'قواعد التسعير',
     'guest_menu' => 'قائمة الضيوف',
     'settings' => 'الإعدادات',
     'billing' => 'الفواتير',

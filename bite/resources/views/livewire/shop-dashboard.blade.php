@@ -1,30 +1,31 @@
-<div class="space-y-6 fade-rise" wire:poll.10s>
+<div class="space-y-5 fade-rise sm:space-y-[22px]" wire:poll.10s>
     <x-slot:header>{{ __('admin.operations_dashboard') }}</x-slot:header>
 
-    <section class="surface-card p-5 sm:p-7">
+    {{-- ===== STORE PULSE ===== --}}
+    <section class="surface-card p-5 sm:p-[26px]">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="section-headline">{{ __('admin.daily_snapshot') }}</p>
-                <h2 class="mt-2 text-3xl font-extrabold leading-none text-ink sm:text-4xl">{{ __('admin.store_pulse') }}</h2>
-                <p class="mt-2 max-w-2xl text-sm text-ink-soft">{{ __('admin.store_pulse_desc') }}</p>
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--bite-green)]">{{ __('admin.daily_snapshot') }}</p>
+                <h2 class="mt-2.5 font-display text-3xl font-bold leading-none tracking-tight text-forest sm:text-[32px]">{{ __('admin.store_pulse') }}</h2>
+                <p class="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-soft">{{ __('admin.store_pulse_desc') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
                 {{-- Notification Bell --}}
                 <div class="relative">
-                    <button wire:click="toggleNotifications" class="relative rounded-lg border border-line bg-panel p-2.5 text-ink-soft transition-colors hover:border-ink hover:text-ink">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <button wire:click="toggleNotifications" class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-white text-forest transition-colors hover:border-forest">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         @if($unreadCount > 0)
-                            <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-crema px-1 font-mono text-[9px] font-bold text-panel">{{ $unreadCount }}</span>
+                            <span class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-cream px-1 font-mono text-[10px] font-bold" style="background: var(--bite-lime); color: var(--bite-forest);">{{ $unreadCount }}</span>
                         @endif
                     </button>
 
                     @if($showNotifications)
-                        <div class="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] rounded-xl border border-line bg-panel shadow-xl sm:w-96">
+                        <div class="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] rounded-xl border border-line bg-white shadow-xl sm:w-96">
                             <div class="flex items-center justify-between border-b border-line px-4 py-3">
                                 <p class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.notifications') }}</p>
                                 @if($notifications->isNotEmpty())
-                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-alert">{{ __('admin.clear_all') }}</button>
+                                    <button wire:click="clearAllNotifications" class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft transition-colors hover:text-alert">{{ __('admin.clear_all') }}</button>
                                 @endif
                             </div>
                             <div class="max-h-72 divide-y divide-line overflow-y-auto">
@@ -54,142 +55,104 @@
                 </div>
 
                 <span wire:loading class="loading-spinner text-ink-soft" style="width: 14px; height: 14px; border-width: 1.5px;"></span>
-                <span class="tag">{{ __('admin.auto_refresh') }}</span>
-                <span class="inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
-                    <span class="status-dot status-live"></span>
-                    {{ __('admin.live') }}
+                <span class="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
+                      style="border-color: color-mix(in srgb, var(--bite-green) 35%, transparent); background: var(--bite-lime-100); color: var(--bite-pine);">
+                    <span class="h-[7px] w-[7px] rounded-full" style="background: var(--bite-green); animation: pulseDot 1.8s ease-in-out infinite;"></span>
+                    {{ __('admin.auto_refresh') }}
                 </span>
             </div>
         </div>
 
-        <div class="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4 transition-opacity duration-300" wire:loading.class="opacity-60">
-            <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">{{ __('admin.todays_revenue') }}</p>
-                <p class="metric-value mt-4"><x-price :amount="$dailyRevenue" :shop="$shop" /></p>
+        <div class="mt-6 grid gap-3 transition-opacity duration-300 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4" wire:loading.class="opacity-60">
+            <article class="rounded-2xl border border-line bg-cream p-[18px]">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.todays_revenue') }}</p>
+                <p class="metric-value mt-3.5"><x-price :amount="$dailyRevenue" :shop="$shop" /></p>
             </article>
 
-            <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">{{ __('admin.orders_today') }}</p>
-                <p class="metric-value mt-4 text-signal">{{ $ordersTodayCount }}</p>
+            <article class="rounded-2xl border border-line bg-cream p-[18px]">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.orders_today') }}</p>
+                <p class="metric-value mt-3.5 text-signal">{{ $ordersTodayCount }}</p>
             </article>
 
-            <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">{{ __('admin.active_orders') }}</p>
-                <p class="metric-value mt-4 text-crema">{{ $activeOrdersCount }}</p>
+            <article class="rounded-2xl border border-line bg-cream p-[18px]">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.active_orders') }}</p>
+                <p class="metric-value mt-3.5 text-olive">{{ $activeOrdersCount }}</p>
             </article>
 
-            <article class="rounded-xl border border-line bg-panel p-5">
-                <p class="section-headline">{{ __('admin.system_status') }}</p>
-                <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-signal">
-                    <span class="status-dot status-live"></span>
+            <article class="rounded-2xl border border-line bg-cream p-[18px]">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.system_status') }}</p>
+                <div class="mt-3.5 inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em]"
+                     style="border-color: color-mix(in srgb, var(--bite-green) 35%, transparent); background: var(--bite-lime-100); color: var(--bite-pine);">
+                    <span class="h-[7px] w-[7px] rounded-full" style="background: var(--bite-green);"></span>
                     {{ __('admin.online') }}
                 </div>
             </article>
         </div>
 
         {{-- Daily Goal Progress Bar --}}
-        <div class="mt-6" x-data="{
+        <div class="mt-4" x-data="{
             editing: false,
             goalInput: {{ $dailyGoal > 0 ? $dailyGoal : 100 }},
         }">
             @if($dailyGoal > 0)
                 @php
                     $goalPercent = min(round(($dailyRevenue / $dailyGoal) * 100), 999);
-                    $goalColorClass = $goalPercent >= 100 ? 'signal' : ($goalPercent >= 50 ? 'crema' : 'alert');
+                    $goalBarColor = $goalPercent >= 100 ? 'var(--bite-green)' : ($goalPercent >= 50 ? 'var(--bite-lime)' : 'var(--bite-olive)');
                 @endphp
-                <div class="rounded-xl border border-line bg-panel p-5">
-                    <div class="flex items-center justify-between gap-4">
+                <div class="rounded-2xl border border-line bg-cream p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
-                            <p class="section-headline">{{ __('admin.daily_goal') }}</p>
+                            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
                             @if($goalPercent >= 100)
-                                <span class="inline-flex items-center rounded-full border border-signal/30 bg-signal/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-signal">
+                                <span class="inline-flex items-center rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em]" style="background: var(--bite-lime); color: var(--bite-forest);">
                                     {{ __('admin.daily_goal_reached') }}
                                 </span>
                             @endif
                         </div>
                         <div class="flex items-center gap-3">
-                            <p class="font-mono text-xs text-ink-soft">
-                                <span class="font-bold text-ink"><x-price :amount="$dailyRevenue" :shop="$shop" /></span>
+                            <p class="text-[13px] text-ink-soft">
+                                <span class="font-bold text-forest"><x-price :amount="$dailyRevenue" :shop="$shop" /></span>
                                 <span class="mx-1">{{ __('admin.daily_goal_of') }}</span>
                                 <x-price :amount="$dailyGoal" :shop="$shop" />
                             </p>
                             <template x-if="!editing">
-                                <button
-                                    x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())"
-                                    class="btn-secondary !px-2.5 !py-1.5 !text-[10px]"
-                                >{{ __('admin.daily_goal_set') }}</button>
+                                <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_set') }}</button>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Progress bar --}}
-                    <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                            class="h-full rounded-full transition-all duration-700 ease-out"
-                            style="width: {{ min($goalPercent, 100) }}%; background: rgb(var(--{{ $goalColorClass }}));"
-                        ></div>
+                    <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-mist">
+                        <div class="h-full rounded-full transition-all duration-700 ease-out" style="width: {{ min($goalPercent, 100) }}%; background: {{ $goalBarColor }};"></div>
                     </div>
-                    <p class="mt-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                    <p class="mt-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
                         {{ __('admin.daily_goal_progress', ['percent' => $goalPercent]) }}
                     </p>
 
-                    {{-- Inline edit form --}}
                     <template x-if="editing">
                         <div class="mt-3 flex items-center gap-2" x-on:keydown.escape="editing = false">
-                            <input
-                                x-ref="goalField"
-                                x-model.number="goalInput"
-                                type="number"
-                                step="0.001"
-                                min="0"
-                                class="h-9 w-36 rounded-lg border border-line bg-panel px-3 font-mono text-sm text-ink outline-none focus:border-ink"
-                            />
-                            <button
-                                x-on:click="$wire.setDailyGoal(goalInput); editing = false"
-                                class="btn-primary !px-3 !py-1.5 !text-[10px]"
-                            >{{ __('admin.daily_goal_update') }}</button>
-                            <button
-                                x-on:click="editing = false"
-                                class="btn-secondary !px-3 !py-1.5 !text-[10px]"
-                            >{{ __('admin.daily_goal_cancel') }}</button>
+                            <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0" class="field h-9 w-36 font-mono text-sm" />
+                            <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
+                            <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
                         </div>
                     </template>
                 </div>
             @else
-                {{-- No goal set yet --}}
-                <div class="rounded-xl border border-dashed border-line bg-panel p-5" x-on:keydown.escape="editing = false">
+                <div class="rounded-2xl border border-dashed border-line bg-cream p-5" x-on:keydown.escape="editing = false">
                     <template x-if="!editing">
                         <div class="flex items-center justify-between gap-4">
                             <div>
-                                <p class="section-headline">{{ __('admin.daily_goal') }}</p>
+                                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
                                 <p class="mt-1 text-sm text-ink-soft">{{ __('admin.daily_goal_set_prompt') }}</p>
                             </div>
-                            <button
-                                x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())"
-                                class="btn-secondary !px-3 !py-2"
-                            >{{ __('admin.daily_goal_set') }}</button>
+                            <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-2">{{ __('admin.daily_goal_set') }}</button>
                         </div>
                     </template>
                     <template x-if="editing">
                         <div class="flex items-center gap-3">
-                            <p class="section-headline">{{ __('admin.daily_goal') }}</p>
-                            <input
-                                x-ref="goalField"
-                                x-model.number="goalInput"
-                                type="number"
-                                step="0.001"
-                                min="0.001"
-                                class="h-9 w-36 rounded-lg border border-line bg-panel px-3 font-mono text-sm text-ink outline-none focus:border-ink"
-                                placeholder="100.000"
-                            />
-                            <button
-                                x-on:click="$wire.setDailyGoal(goalInput); editing = false"
-                                class="btn-primary !px-3 !py-1.5 !text-[10px]"
-                            >{{ __('admin.daily_goal_update') }}</button>
-                            <button
-                                x-on:click="editing = false"
-                                class="btn-secondary !px-3 !py-1.5 !text-[10px]"
-                            >{{ __('admin.daily_goal_cancel') }}</button>
+                            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
+                            <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0.001" class="field h-9 w-36 font-mono text-sm" placeholder="100.000" />
+                            <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
+                            <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
                         </div>
                     </template>
                 </div>
@@ -197,118 +160,150 @@
         </div>
     </section>
 
-    <section class="grid gap-4 lg:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
-        <article class="surface-card p-5">
-            <p class="section-headline">{{ __('admin.items_sold_today') }}</p>
-            <p class="metric-value mt-4">{{ $itemsSoldToday }}</p>
+    {{-- ===== SECONDARY STATS ===== --}}
+    <section class="grid gap-4 transition-opacity duration-300 lg:grid-cols-[1fr_1fr_1.4fr]" wire:loading.class="opacity-60">
+        <article class="surface-card p-[22px]">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.items_sold_today') }}</p>
+            <p class="metric-value mt-3.5">{{ $itemsSoldToday }}</p>
         </article>
 
-        <article class="surface-card p-5">
-            <p class="section-headline">{{ __('admin.avg_order_value') }}</p>
-            <p class="metric-value mt-4"><x-price :amount="$avgOrderValue" :shop="$shop" /></p>
+        <article class="surface-card p-[22px]">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.avg_order_value') }}</p>
+            <p class="metric-value mt-3.5"><x-price :amount="$avgOrderValue" :shop="$shop" /></p>
         </article>
 
-        <article class="surface-card p-5">
-            <p class="section-headline">{{ __('admin.orders_by_status') }}</p>
-            <div class="mt-4 flex flex-wrap gap-2">
+        <article class="surface-card p-[22px]">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.orders_by_status') }}</p>
+            <div class="mt-3.5 flex flex-wrap gap-2">
+                @php
+                    $statusPill = [
+                        'unpaid' => 'background: var(--bite-mist); color: var(--bite-ash);',
+                        'paid' => 'background: var(--bite-lime-100); color: var(--bite-pine);',
+                        'preparing' => 'background: var(--bite-lime-100); color: var(--bite-pine);',
+                        'ready' => 'background: var(--bite-lime-100); color: var(--bite-pine);',
+                        'completed' => 'background: var(--bite-lime); color: var(--bite-forest);',
+                        'cancelled' => 'background: var(--bite-mist); color: var(--bite-ash);',
+                    ];
+                @endphp
                 @foreach(['unpaid', 'paid', 'preparing', 'ready', 'completed', 'cancelled'] as $status)
-                    <span class="tag">{{ __('admin.status_' . $status) }}: {{ $ordersByStatus[$status] ?? 0 }}</span>
+                    <span class="rounded-full px-3 py-1.5 text-xs font-semibold" style="{{ $statusPill[$status] }}">{{ __('admin.status_' . $status) }} · {{ $ordersByStatus[$status] ?? 0 }}</span>
                 @endforeach
             </div>
         </article>
     </section>
 
-    <div class="grid gap-6 xl:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
+    {{-- ===== TOP PRODUCTS + RIGHT COLUMN ===== --}}
+    <div class="grid gap-5 transition-opacity duration-300 xl:grid-cols-3 xl:gap-[22px]" wire:loading.class="opacity-60">
         <section class="surface-card xl:col-span-2">
-            <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-                <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.top_products', ['days' => 7]) }}</h2>
+            <div class="flex items-center justify-between border-b border-line bg-mist px-[22px] py-4">
+                <h2 class="font-display text-[19px] font-bold leading-none text-forest">{{ __('admin.top_products', ['days' => 7]) }}</h2>
                 <span class="tag">{{ __('admin.last_7_days') }}</span>
             </div>
 
             <div class="overflow-x-auto">
             <table class="w-full border-collapse text-left">
                 <thead>
-                    <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.product') }}</th>
-                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.qty') }}</th>
-                        <th class="whitespace-nowrap px-5 py-3">{{ __('admin.revenue') }}</th>
+                    <tr class="border-b border-line font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft">
+                        <th class="whitespace-nowrap px-[22px] py-3">{{ __('admin.product') }}</th>
+                        <th class="whitespace-nowrap px-[22px] py-3 text-right">{{ __('admin.qty') }}</th>
+                        <th class="whitespace-nowrap px-[22px] py-3 text-right">{{ __('admin.revenue') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line/65">
+                <tbody>
+                    @php
+                        $swatches = [
+                            'linear-gradient(135deg,#B7C40D,#7AC70C)',
+                            'linear-gradient(135deg,#7AC70C,#37B34A)',
+                            'linear-gradient(135deg,#0B6B2E,#37B34A)',
+                            'linear-gradient(135deg,#98D641,#B7C40D)',
+                            'linear-gradient(135deg,#37B34A,#0B6B2E)',
+                        ];
+                    @endphp
                     @forelse($topProducts as $product)
-                        <tr class="transition-colors hover:bg-muted/35">
-                            <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-semibold uppercase tracking-tight text-ink">{{ $product->product_name_snapshot_en }}</td>
-                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase">{{ $product->qty }}</td>
-                            <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase"><x-price :amount="$product->revenue" :shop="$shop" /></td>
+                        <tr class="border-b border-line transition-colors hover:bg-cream">
+                            <td class="px-[22px] py-3.5">
+                                <div class="flex items-center gap-3">
+                                    <span class="h-[30px] w-[30px] shrink-0 rounded-[9px]" style="background: {{ $swatches[$loop->index % count($swatches)] }};"></span>
+                                    <span class="text-sm font-semibold text-ink">{{ $product->product_name_snapshot_en }}</span>
+                                </div>
+                            </td>
+                            <td class="px-[22px] py-3.5 text-right font-display text-sm font-bold text-forest">{{ $product->qty }}</td>
+                            <td class="px-[22px] py-3.5 text-right font-display text-sm font-bold text-forest"><x-price :amount="$product->revenue" :shop="$shop" /></td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="3" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_sales_yet_short') }}</td>
-                        </tr>
+                        <tr><td colspan="3" class="px-[22px] py-6 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_sales_yet_short') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
             </div>
         </section>
 
-        <div class="space-y-6">
+        <div class="space-y-5 xl:space-y-[22px]">
+            {{-- Payments --}}
             <section class="surface-card">
-                <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.payments') }}</h2>
+                <div class="border-b border-line bg-mist px-5 py-4">
+                    <h2 class="font-display text-lg font-bold leading-none text-forest">{{ __('admin.payments') }}</h2>
                 </div>
-                <div class="space-y-3 p-5">
+                <div class="space-y-3 p-4">
                     @if(!empty($paymentSummary))
                         @foreach($paymentSummary as $method => $summary)
-                            <div class="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3">
+                            <div class="flex items-center justify-between rounded-2xl border border-line px-4 py-3.5">
                                 <div>
-                                    <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{{ strtoupper($method) }}</div>
-                                    <div class="mt-1 text-sm font-medium text-ink">{{ __('admin.payment_orders_count', ['count' => $summary['orders']]) }}</div>
+                                    <div class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">{{ strtoupper($method) }}</div>
+                                    <div class="mt-1 text-[13px] text-ink">{{ __('admin.payment_orders_count', ['count' => $summary['orders']]) }}</div>
                                 </div>
-                                <div class="font-mono text-sm font-bold uppercase"><x-price :amount="$summary['total']" :shop="$shop" /></div>
+                                <div class="font-display text-base font-bold text-forest"><x-price :amount="$summary['total']" :shop="$shop" /></div>
                             </div>
                         @endforeach
                     @else
-                        <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.no_payments_yet_short') }}</div>
+                        <div class="rounded-2xl border border-dashed border-line px-4 py-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.no_payments_yet_short') }}</div>
                     @endif
                 </div>
             </section>
 
+            {{-- Weekly revenue (pure CSS bars — CSP-safe, no external chart lib) --}}
             <section class="surface-card">
-                <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.weekly_revenue') }}</h2>
+                <div class="border-b border-line bg-mist px-5 py-4">
+                    <h2 class="font-display text-lg font-bold leading-none text-forest">{{ __('admin.weekly_revenue') }}</h2>
                 </div>
-                <div class="p-5" x-data="weeklyRevenueChart({{ Js::from($weeklyRevenue) }}, '{{ $shop->currency ?? 'OMR' }}')" x-init="initChart()">
-                    <canvas x-ref="revenueChart" height="220"></canvas>
+                @php $weekMax = max(1, collect($weeklyRevenue)->max('total')); @endphp
+                <div class="flex items-end justify-between gap-2 px-[18px] py-5" style="height: 170px;">
+                    @foreach($weeklyRevenue as $d)
+                        @php
+                            $pct = max(4, round(($d['total'] / $weekMax) * 100));
+                            $isToday = $loop->last;
+                        @endphp
+                        <div class="flex h-full flex-1 flex-col items-center justify-end gap-2">
+                            <div class="w-full max-w-[26px] rounded-t-[7px]"
+                                 style="height: {{ $pct }}%; min-height: 4px; background: {{ $isToday ? 'var(--bite-lime)' : 'var(--bite-green)' }}; transform-origin: bottom; animation: barRise 600ms cubic-bezier(0.22,1,0.36,1) both;"
+                                 title="{{ \Illuminate\Support\Carbon::parse($d['day'])->format('D, M j') }} — {{ $shop->currency ?? 'OMR' }} {{ number_format($d['total'], 3) }}"></div>
+                            <span class="text-[10px] font-semibold uppercase tracking-[0.08em] {{ $isToday ? 'text-forest' : 'text-ink-soft' }}">{{ \Illuminate\Support\Carbon::parse($d['day'])->format('D') }}</span>
+                        </div>
+                    @endforeach
                 </div>
             </section>
 
+            {{-- Guest menu QR --}}
             <section class="surface-card" x-data="{ copied: false }">
-                <div class="border-b border-line bg-muted/35 px-5 py-4">
-                    <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.guest_menu_qr') }}</h2>
+                <div class="border-b border-line bg-mist px-5 py-4">
+                    <h2 class="font-display text-lg font-bold leading-none text-forest">{{ __('admin.guest_menu_qr') }}</h2>
                 </div>
-                <div class="flex flex-col items-center gap-4 p-5">
-                    <div class="rounded-xl border border-line bg-white p-3">
+                <div class="flex flex-col items-center gap-3.5 p-5">
+                    <div class="rounded-2xl border border-line bg-white p-2.5">
                         <img
-                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode(url('/menu/' . $shop->slug)) }}"
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&color=004225&data={{ urlencode(url('/menu/' . $shop->slug)) }}"
                             alt="QR code for guest menu"
-                            width="200"
-                            height="200"
-                            class="block"
+                            width="180"
+                            height="180"
+                            class="block rounded-md"
                             loading="lazy"
                         />
                     </div>
-                    <p class="max-w-full break-all text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                    <p class="max-w-full break-all text-center font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
                         {{ url('/menu/' . $shop->slug) }}
                     </p>
-                    <button
-                        type="button"
-                        class="btn-secondary !px-4 !py-2"
-                        x-on:click="
-                            navigator.clipboard.writeText('{{ url('/menu/' . $shop->slug) }}');
-                            copied = true;
-                            setTimeout(() => copied = false, 2000);
-                        "
-                    >
+                    <button type="button" class="btn-secondary w-full !py-2.5"
+                        x-on:click="navigator.clipboard.writeText('{{ url('/menu/' . $shop->slug) }}'); copied = true; setTimeout(() => copied = false, 2000);">
                         <span x-show="!copied">{{ __('admin.copy_link') }}</span>
                         <span x-show="copied" x-cloak>{{ __('admin.copied') }}</span>
                     </button>
@@ -317,12 +312,12 @@
         </div>
     </div>
 
-    {{-- Revenue Heatmap --}}
+    {{-- ===== REVENUE HEATMAP ===== --}}
     <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60"
         x-data="revenueHeatmap({{ Js::from($revenueHeatmap) }}, '{{ $shop->currency ?? 'OMR' }}')"
     >
-        <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-            <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.revenue_heatmap') }}</h2>
+        <div class="flex items-center justify-between border-b border-line bg-mist px-[22px] py-4">
+            <h2 class="font-display text-[19px] font-bold leading-none text-forest">{{ __('admin.revenue_heatmap') }}</h2>
             <span class="tag">{{ __('admin.revenue_heatmap_desc') }}</span>
         </div>
 
@@ -351,12 +346,11 @@
                                                 x-on:mouseenter="activeCell = { dow: dayIdx, hour: h }"
                                                 x-on:mouseleave="activeCell = null"
                                             >
-                                                {{-- Tooltip --}}
                                                 <div
                                                     x-show="activeCell && activeCell.dow === dayIdx && activeCell.hour === h"
                                                     x-cloak
                                                     class="pointer-events-none absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-1 font-mono text-[10px] font-bold text-white shadow-lg"
-                                                    style="background: rgb(var(--ink));"
+                                                    style="background: var(--bite-forest);"
                                                     x-text="getCellTooltip(dayIdx, h)"
                                                 ></div>
                                             </div>
@@ -371,11 +365,8 @@
                     <div class="mt-4 flex items-center justify-end gap-2">
                         <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.no_sales_yet_short') }}</span>
                         <div class="flex gap-0.5">
-                            <template x-for="opacity in [0.08, 0.25, 0.45, 0.65, 0.85, 1]" :key="opacity">
-                                <div
-                                    class="h-3 w-3 rounded-[2px]"
-                                    :style="'background: rgb(var(--crema) / ' + opacity + ');'"
-                                ></div>
+                            <template x-for="opacity in [0.10, 0.30, 0.55, 0.80, 1]" :key="opacity">
+                                <div class="h-[13px] w-[13px] rounded-[3px]" :style="'background: rgb(122 199 12 / ' + opacity + ');'"></div>
                             </template>
                         </div>
                         <span class="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.revenue') }}</span>
@@ -384,57 +375,52 @@
             </template>
 
             <template x-if="!hasData">
-                <div class="rounded-xl border border-dashed border-line bg-panel px-4 py-8 text-center">
+                <div class="rounded-2xl border border-dashed border-line px-4 py-8 text-center">
                     <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{{ __('admin.heatmap_no_data') }}</p>
                 </div>
             </template>
         </div>
     </section>
 
+    {{-- ===== RECENT ACTIVITY ===== --}}
     <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60">
-        <div class="flex items-center justify-between border-b border-line bg-muted/35 px-5 py-4">
-            <h2 class="font-display text-2xl font-extrabold leading-none">{{ __('admin.recent_activity') }}</h2>
-            <a href="{{ route('pos.dashboard') }}" class="btn-secondary !px-3 !py-2" wire:navigate>
-                {{ __('admin.open_pos') }}
-            </a>
+        <div class="flex items-center justify-between border-b border-line bg-mist px-[22px] py-4">
+            <h2 class="font-display text-[19px] font-bold leading-none text-forest">{{ __('admin.recent_activity') }}</h2>
+            <a href="{{ route('pos.dashboard') }}" class="btn-secondary !px-4 !py-2" wire:navigate>{{ __('admin.open_pos') }}</a>
         </div>
 
         <div class="overflow-x-auto">
         <table class="w-full border-collapse text-left">
             <thead>
-                <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.order_id') }}</th>
-                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.source') }}</th>
-                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.total') }}</th>
-                    <th class="whitespace-nowrap px-5 py-3">{{ __('admin.status') }}</th>
-                    <th class="whitespace-nowrap px-5 py-3 text-right">{{ __('admin.time') }}</th>
+                <tr class="border-b border-line font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft">
+                    <th class="whitespace-nowrap px-[22px] py-3">{{ __('admin.order_id') }}</th>
+                    <th class="whitespace-nowrap px-[22px] py-3">{{ __('admin.source') }}</th>
+                    <th class="whitespace-nowrap px-[22px] py-3 text-right">{{ __('admin.total') }}</th>
+                    <th class="whitespace-nowrap px-[22px] py-3">{{ __('admin.status') }}</th>
+                    <th class="whitespace-nowrap px-[22px] py-3 text-right">{{ __('admin.time') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-line/65">
+            <tbody>
                 @forelse($recentOrders as $order)
-                    <tr class="transition-colors hover:bg-muted/35">
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-soft">#{{ $order->id }}</td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 text-sm font-medium text-ink">{{ __('admin.source_guest') }}</td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 font-mono text-xs font-bold uppercase text-ink"><x-price :amount="$order->total_amount" :shop="$shop" /></td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4">
-                            @php
-                                $statusClass = match ($order->status) {
-                                    'completed' => 'border-signal/35 bg-signal/10 text-signal',
-                                    'cancelled' => 'border-alert/35 bg-alert/10 text-alert',
-                                    'ready' => 'border-crema/40 bg-crema/10 text-crema',
-                                    default => 'border-line bg-muted text-ink-soft',
-                                };
-                            @endphp
-                            <span class="inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] {{ $statusClass }}">
-                                {{ __('admin.status_' . $order->status) }}
-                            </span>
+                    @php
+                        $badge = match ($order->status) {
+                            'completed' => 'background: var(--bite-lime); color: var(--bite-forest);',
+                            'ready', 'preparing', 'paid' => 'background: var(--bite-lime-100); color: var(--bite-pine);',
+                            'cancelled' => 'background: var(--bite-mist); color: var(--bite-ash);',
+                            default => 'background: var(--bite-mist); color: var(--bite-ash);',
+                        };
+                    @endphp
+                    <tr class="border-b border-line transition-colors hover:bg-cream">
+                        <td class="px-[22px] py-3.5 font-mono text-xs font-bold uppercase tracking-[0.06em] text-ink-soft">#{{ $order->id }}</td>
+                        <td class="px-[22px] py-3.5 text-sm text-ink">{{ __('admin.source_guest') }}</td>
+                        <td class="px-[22px] py-3.5 text-right font-display text-sm font-bold text-forest"><x-price :amount="$order->total_amount" :shop="$shop" /></td>
+                        <td class="px-[22px] py-3.5">
+                            <span class="inline-flex rounded-full px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.1em]" style="{{ $badge }}">{{ __('admin.status_' . $order->status) }}</span>
                         </td>
-                        <td class="px-3 py-3 sm:px-5 sm:py-4 text-right font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ $order->created_at->format('H:i:s') }}</td>
+                        <td class="px-[22px] py-3.5 text-right font-mono text-xs font-semibold tracking-[0.04em] text-ink-soft">{{ $order->created_at->format('H:i:s') }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="px-3 py-3 sm:px-5 sm:py-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_recent_orders') }}</td>
-                    </tr>
+                    <tr><td colspan="5" class="px-[22px] py-6 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">{{ __('admin.no_recent_orders') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -461,99 +447,7 @@
         } catch (e) { /* Audio not available */ }
     });
 
-    // Register Alpine component (handles wire:navigate re-execution)
-    Alpine.data('weeklyRevenueChart', (revenueData, currency) => ({
-        chart: null,
-
-        async initChart() {
-            // Dynamically load Chart.js if not already loaded
-            if (typeof Chart === 'undefined') {
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
-                    script.integrity = 'sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4';
-                    script.crossOrigin = 'anonymous';
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.head.appendChild(script);
-                });
-            }
-
-            const canvas = this.$refs.revenueChart;
-            const style = getComputedStyle(document.documentElement);
-            const crema = style.getPropertyValue('--crema').trim();
-            const ink = style.getPropertyValue('--ink').trim();
-
-            const labels = revenueData.map(row => {
-                const d = new Date(row.day + 'T00:00:00');
-                return d.toLocaleDateString('en-US', { weekday: 'short' });
-            });
-            const values = revenueData.map(row => parseFloat(row.total) || 0);
-
-            this.chart = new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: `rgb(${crema} / 0.75)`,
-                        hoverBackgroundColor: `rgb(${crema})`,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        maxBarThickness: 40,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: `rgb(${ink})`,
-                            titleFont: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
-                            bodyFont: { family: 'ui-monospace, monospace', size: 12, weight: '700' },
-                            padding: 10,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: ctx => currency + ' ' + ctx.parsed.y.toFixed(3)
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            border: { display: false },
-                            ticks: {
-                                color: `rgb(${ink} / 0.45)`,
-                                font: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
-                                padding: 4,
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: `rgb(${ink} / 0.07)`,
-                                drawTicks: false,
-                            },
-                            border: { display: false },
-                            ticks: {
-                                color: `rgb(${ink} / 0.4)`,
-                                font: { family: 'ui-monospace, monospace', size: 10, weight: '600' },
-                                padding: 8,
-                                callback: val => currency + ' ' + val.toFixed(0)
-                            },
-                            beginAtZero: true,
-                        }
-                    }
-                }
-            });
-        },
-
-        destroy() {
-            if (this.chart) this.chart.destroy();
-        }
-    }));
-
-    // Revenue heatmap Alpine component
+    // Revenue heatmap Alpine component — lime intensity ramp (Bite brand).
     Alpine.data('revenueHeatmap', (rawData, currency) => ({
         grid: {},
         maxRevenue: 0,
@@ -571,7 +465,6 @@
         ],
 
         init() {
-            // Build a lookup: grid[dow][hour] = total
             const grid = {};
             let max = 0;
             for (const entry of rawData) {
@@ -594,12 +487,11 @@
         getCellStyle(dow, hour) {
             const rev = this.getRevenue(dow, hour);
             if (rev === 0 || this.maxRevenue === 0) {
-                return 'background: rgb(var(--crema) / 0.06);';
+                return 'background: rgb(122 199 12 / 0.08);';
             }
-            // Scale opacity from 0.15 to 1 based on revenue proportion
             const ratio = rev / this.maxRevenue;
             const opacity = 0.15 + (ratio * 0.85);
-            return `background: rgb(var(--crema) / ${opacity.toFixed(2)});`;
+            return `background: rgb(122 199 12 / ${opacity.toFixed(2)});`;
         },
 
         getCellTooltip(dow, hour) {

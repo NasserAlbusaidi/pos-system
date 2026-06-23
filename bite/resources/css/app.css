@@ -158,24 +158,85 @@
     font-display: swap;
 }
 
+/* ── Bai Jamjuree (self-hosted, latin) — Bite's primary admin typeface.
+   Self-hosted (not Google CDN) because the app CSP is font-src 'self'. ── */
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/BaiJamjuree-400.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/BaiJamjuree-500.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/BaiJamjuree-600.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/BaiJamjuree-700.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('/fonts/BaiJamjuree-700Italic.woff2') format('woff2');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
     :root {
-        --paper: 247 246 241;
-        --ink: 18 25 36;
-        --crema: 236 105 46;
+        /* ── Bite brand primitives (hex) — the locked-in design system.
+           Source: Claude Design "Bite design system foundation" (tokens/colors.css).
+           Use directly in inline styles, or via Tailwind aliases (bg-forest, text-lime…). ── */
+        --bite-forest: #004225;   /* primary anchor — sidebar, headings, primary text */
+        --bite-pine:   #0B6B2E;   /* deeper accent / status text on lime tint */
+        --bite-green:  #37B34A;   /* success / live / accent that pairs with white */
+        --bite-lime:   #7AC70C;   /* signature pop — primary CTA fill (with forest text) */
+        --bite-olive:  #B7C40D;   /* warm yellow-green, used sparingly */
+        --bite-lime-300: #98D641;
+        --bite-lime-200: #C3E88A;
+        --bite-lime-100: #E6F4CE; /* lime tint surface for status pills */
+        --bite-cream:  #F6F8F1;   /* page wash */
+        --bite-mist:   #ECF1E6;   /* subtle surface tint */
+        --bite-line:   #DCE4D2;   /* hairline on light */
+        --bite-ash:    #6E7A66;   /* muted text on light */
+        --bite-charcoal: #16241B; /* near-black with green cast — body text */
 
-        --canvas: 238 236 229;
-        --panel: 255 255 252;
-        --panel-muted: 228 227 220;
-        --ink-soft: 79 86 97;
-        --line: 195 199 203;
-        --signal: 33 138 111;
-        --alert: 186 59 48;
-        --focus: 250 129 72;
+        /* ── Semantic tokens (rgb triplets, consumed as rgb(var(--x) / a)) — re-pointed
+           to the Bite green palette. The whole admin/POS console reads these. ── */
+        --paper: 246 248 241;        /* cream */
+        --ink: 22 36 27;             /* charcoal */
+        --crema: 122 199 12;         /* lime — signature accent (pair with forest text) */
+
+        --canvas: 236 241 230;       /* mist */
+        --panel: 255 255 255;        /* white card surface */
+        --panel-muted: 236 241 230;  /* mist — skeleton / muted */
+        --ink-soft: 110 122 102;     /* ash */
+        --line: 220 228 210;         /* bite line */
+        --signal: 55 179 74;         /* green — success / live */
+        --alert: 200 68 43;          /* bite danger */
+        --focus: 122 199 12;         /* lime focus ring */
 
         /* Typography scale — see docs/design-system.md (added in Phase 10 / DS-03).
            Rounded whole-px values for crisp rendering on POS hardware (D-06).
@@ -218,12 +279,17 @@
         --radius-sm: 10px;
         --radius-md: 16px;
         --radius-lg: 22px;
+        --radius-xl: 32px;
         --radius-pill: 999px;
 
         /* Elevation — shadows keyed to --ink so they respect per-shop branding. */
         --shadow-sm: 0 1px 2px rgb(var(--ink) / 0.06), 0 1px 3px rgb(var(--ink) / 0.05);
         --shadow-md: 0 6px 20px rgb(var(--ink) / 0.08), 0 2px 6px rgb(var(--ink) / 0.05);
         --shadow-lg: 0 18px 48px rgb(var(--ink) / 0.16);
+
+        /* Bite signature: playful bounce easing + hard-offset shadow (logo lockup). */
+        --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --shadow-offset: 6px 6px 0 var(--bite-pine);
     }
 
     /* Arabic line-height override (D-08) — IBM Plex Sans Arabic ascenders are taller
@@ -263,12 +329,12 @@
     h3,
     h4 {
         @apply font-display;
-        letter-spacing: 0.01em;
+        letter-spacing: -0.01em;
     }
 
     ::selection {
-        background: rgb(var(--crema) / 0.25);
-        color: rgb(var(--ink));
+        background: var(--bite-lime);
+        color: var(--bite-forest);
     }
 
     *:focus-visible {
@@ -282,37 +348,50 @@
 }
 
 @layer components {
+    /* Buttons — full pills + playful scale-to-0.96 press (bounce).
+       .btn-primary uses semantic tokens so it adapts per-shop on the guest menu
+       (the customer surface, e.g. the group-share modal) while reading as dark-green
+       on the Bite admin console. The lime signature lives in nav/accents/status pills,
+       matching the dashboard design (which uses outline buttons, not filled lime ones).
+       .btn-secondary / .btn-danger are admin-only, so they carry the fixed Bite palette. */
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
         color: rgb(var(--panel));
         background-color: rgb(var(--ink));
         border-color: rgb(var(--ink));
-        box-shadow: 0 8px 24px -14px rgb(10 15 24 / 0.9);
+        box-shadow: 0 10px 22px -14px rgb(var(--ink) / 0.7);
     }
 
     .btn-primary:hover {
         transform: translateY(-1px);
-        background-color: rgb(var(--crema));
-        border-color: rgb(var(--crema));
-        box-shadow: 0 12px 24px -12px rgb(var(--crema) / 0.55);
+        filter: brightness(1.1);
+    }
+
+    .btn-primary:active {
+        transform: scale(0.96);
+        transition: transform var(--dur-fast, 140ms) var(--ease-bounce);
     }
 
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
-        color: rgb(var(--ink));
-        background-color: rgb(var(--panel));
-        border-color: rgb(var(--line));
+        @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        color: var(--bite-forest);
+        background-color: transparent;
+        border-color: var(--bite-forest);
     }
 
     .btn-secondary:hover {
         transform: translateY(-1px);
-        border-color: rgb(var(--ink));
-        box-shadow: 0 8px 16px -14px rgb(10 15 24 / 0.7);
+        background-color: rgb(var(--panel-muted));
+    }
+
+    .btn-secondary:active {
+        transform: scale(0.97);
+        transition: transform var(--dur-fast, 140ms) var(--ease-bounce);
     }
 
     .btn-danger {
-        @apply inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
-        color: rgb(var(--panel));
+        @apply inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-200;
+        color: #fff;
         background-color: rgb(var(--alert));
         border-color: rgb(var(--alert));
     }
@@ -320,6 +399,11 @@
     .btn-danger:hover {
         transform: translateY(-1px);
         box-shadow: 0 12px 24px -12px rgb(var(--alert) / 0.6);
+    }
+
+    .btn-danger:active {
+        transform: scale(0.96);
+        transition: transform var(--dur-fast, 140ms) var(--ease-bounce);
     }
 
     .tag {
@@ -330,21 +414,21 @@
     }
 
     .surface-card {
-        @apply relative overflow-hidden rounded-2xl border backdrop-blur-sm;
-        border-color: rgb(var(--line) / 0.95);
-        background-color: rgb(var(--panel) / 0.96);
-        box-shadow:
-            0 24px 40px -30px rgb(8 13 23 / 0.95),
-            0 1px 0 rgb(255 255 255 / 0.75) inset;
+        @apply relative overflow-hidden rounded-2xl border;
+        border-color: rgb(var(--line));
+        background-color: rgb(var(--panel));
+        box-shadow: var(--shadow-sm);
     }
 
+    /* Top-accent line removed for the Bite look (clean white card + hairline).
+       Selector kept transparent so RTL/print overrides stay valid + harmless. */
     .surface-card::before {
         content: '';
         position: absolute;
         inset: 0 auto auto 0;
         width: 100%;
         height: 1px;
-        background: linear-gradient(90deg, rgb(var(--crema) / 0.9), transparent 70%);
+        background: transparent;
         pointer-events: none;
     }
 
@@ -355,7 +439,7 @@
 
     .metric-value {
         @apply font-display text-3xl font-extrabold leading-none md:text-[2.2rem];
-        color: rgb(var(--ink));
+        color: var(--bite-forest);
     }
 
     .field {
@@ -987,6 +1071,18 @@
     to { transform: rotate(360deg); }
 }
 
+/* Live-status dot pulse (header + dashboard live pills). */
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+/* Weekly-revenue bar rise-in. */
+@keyframes barRise {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+
 @keyframes nav-progress {
     0% { transform: scaleX(0); opacity: 1; }
     50% { transform: scaleX(0.7); opacity: 1; }
@@ -1110,15 +1206,16 @@
 }
 
 .lang-toggle-active {
-    background-color: rgb(var(--ink));
-    color: rgb(var(--panel));
-    border-color: rgb(var(--ink));
+    background-color: var(--bite-lime);
+    color: var(--bite-forest);
+    border-color: var(--bite-lime);
 }
 
 .lang-toggle-active:hover {
-    background-color: rgb(var(--crema));
-    border-color: rgb(var(--crema));
-    color: rgb(var(--panel));
+    background-color: var(--bite-lime);
+    border-color: var(--bite-lime);
+    color: var(--bite-forest);
+    filter: brightness(1.05);
 }
 
 /* ==========================================================================
