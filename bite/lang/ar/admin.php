@@ -69,6 +69,9 @@ return [
     'awaiting_next_stage' => 'بانتظار المرحلة التالية',
     'no_active_orders' => 'لا توجد طلبات نشطة',
     'active_count' => ':count نشط',
+    'production_queue' => 'طابور التحضير',
+    'kds_live_refresh' => 'مباشر · تحديث كل ٥ ثوانٍ',
+    'late' => 'متأخر',
 
     // Reports
     'export_orders' => 'تصدير الطلبات المكتملة',
