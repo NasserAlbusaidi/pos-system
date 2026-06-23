@@ -133,6 +133,10 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'Rules run automatically at checkout in priority order.',
+    'pro_feature' => 'Pro feature',
+
     // Shop Settings
     'settings_shop_settings' => 'Shop Settings',
     'settings_shop_identity' => 'Shop Identity',

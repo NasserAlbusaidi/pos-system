@@ -133,6 +133,10 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'تُطبَّق القواعد تلقائيًا عند الدفع حسب ترتيب الأولوية.',
+    'pro_feature' => 'ميزة Pro',
+
     // Shop Settings
     'settings_shop_settings' => 'إعدادات المتجر',
     'settings_shop_identity' => 'هوية المتجر',
