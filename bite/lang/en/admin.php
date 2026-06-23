@@ -104,6 +104,15 @@ return [
     'audit_tab_products' => 'Products',
     'audit_tab_operations' => 'Operations',
     'audit_tab_auth' => 'Auth',
+    'audit_filters' => 'Filters',
+    'audit_events_count' => ':count events',
+    'audit_search' => 'Search',
+    'audit_badge_created' => 'Created',
+    'audit_badge_updated' => 'Updated',
+    'audit_badge_deleted' => 'Deleted',
+    'audit_badge_auth' => 'Auth',
+    'audit_badge_event' => 'Event',
+    'audit_showing_count' => 'Showing :shown of :total',
 
     // Shift Report
     'shift_end_of_day' => 'End of Day',

@@ -104,6 +104,15 @@ return [
     'audit_tab_products' => 'المنتجات',
     'audit_tab_operations' => 'العمليات',
     'audit_tab_auth' => 'المصادقة',
+    'audit_filters' => 'عوامل التصفية',
+    'audit_events_count' => ':count حدث',
+    'audit_search' => 'بحث',
+    'audit_badge_created' => 'إنشاء',
+    'audit_badge_updated' => 'تحديث',
+    'audit_badge_deleted' => 'حذف',
+    'audit_badge_auth' => 'مصادقة',
+    'audit_badge_event' => 'حدث',
+    'audit_showing_count' => 'عرض :shown من :total',
 
     // Shift Report
     'shift_end_of_day' => 'نهاية اليوم',
