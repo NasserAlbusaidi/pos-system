@@ -130,6 +130,7 @@ return [
 
     // Shift Report
     'shift_end_of_day' => 'نهاية اليوم',
+    'shift_summary' => 'ملخص الوردية',
     'shift_daily_report' => 'تقرير الوردية اليومي',
     'shift_print' => 'طباعة',
     'shift_total_revenue' => 'إجمالي الإيرادات',
