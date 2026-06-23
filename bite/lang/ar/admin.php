@@ -133,6 +133,10 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Modifiers (v2 port)
+    'modifier_no_options' => 'لا توجد خيارات بعد',
+    'modifier_no_groups' => 'لا توجد مجموعات إضافات بعد',
+
     // Shop Settings
     'settings_shop_settings' => 'إعدادات المتجر',
     'settings_shop_identity' => 'هوية المتجر',
