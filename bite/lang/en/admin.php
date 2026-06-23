@@ -85,6 +85,17 @@ return [
     'payments' => 'Payments',
     'order_count' => ':count orders',
     'no_payments_yet' => 'No payments yet',
+    'reports_performance_summary' => 'Performance Summary',
+    'reports_last_days' => 'Last :days days',
+    'reports_orders_short' => 'Orders',
+    'reports_avg_order' => 'Avg Order',
+    'reports_revenue_trend' => 'Revenue Trend',
+    'reports_daily_avg' => 'Daily avg',
+    'reports_days_pill' => ':days days',
+    'reports_peak' => 'Peak :hour',
+    'reports_payment_mix' => 'Payment Mix',
+    'reports_by_revenue' => 'By Revenue',
+    'reports_rank' => 'Rank',
 
     // Audit Logs
     'audit_filter_placeholder' => 'Filter by action (e.g. order.paid)',

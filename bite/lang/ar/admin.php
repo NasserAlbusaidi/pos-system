@@ -85,6 +85,17 @@ return [
     'payments' => 'المدفوعات',
     'order_count' => ':count طلبات',
     'no_payments_yet' => 'لا توجد مدفوعات بعد',
+    'reports_performance_summary' => 'ملخص الأداء',
+    'reports_last_days' => 'آخر :days يوم',
+    'reports_orders_short' => 'الطلبات',
+    'reports_avg_order' => 'متوسط الطلب',
+    'reports_revenue_trend' => 'اتجاه الإيرادات',
+    'reports_daily_avg' => 'المعدل اليومي',
+    'reports_days_pill' => ':days يوم',
+    'reports_peak' => 'الذروة :hour',
+    'reports_payment_mix' => 'مزيج المدفوعات',
+    'reports_by_revenue' => 'حسب الإيرادات',
+    'reports_rank' => 'الترتيب',
 
     // Audit Logs
     'audit_filter_placeholder' => 'تصفية حسب الإجراء (مثال: order.paid)',
