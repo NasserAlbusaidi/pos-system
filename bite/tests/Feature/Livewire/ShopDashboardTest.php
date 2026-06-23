@@ -46,6 +46,29 @@ class ShopDashboardTest extends TestCase
         Livewire::actingAs($user)
             ->test(ShopDashboard::class)
             ->assertSet('dailyRevenue', 50.00)
-            ->assertSet('ordersTodayCount', 2);
+            ->assertSet('ordersTodayCount', 2)
+            // Yesterday's completed revenue is tracked for the hero "vs yesterday" delta.
+            ->assertSet('yesterdayRevenue', 100.00)
+            // today 50 vs yesterday 100 → -50%
+            ->assertSet('revenueDelta', -50);
+    }
+
+    public function test_revenue_delta_is_null_when_no_yesterday_revenue(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $user = User::factory()->create(['shop_id' => $shop->id]);
+
+        Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'completed',
+            'total_amount' => 50.00,
+            'paid_at' => now(),
+        ]);
+
+        // No yesterday revenue → delta is undefined, never a fabricated number.
+        Livewire::actingAs($user)
+            ->test(ShopDashboard::class)
+            ->assertSet('yesterdayRevenue', 0.0)
+            ->assertSet('revenueDelta', null);
     }
 }

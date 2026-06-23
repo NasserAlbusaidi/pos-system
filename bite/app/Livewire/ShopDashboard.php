@@ -16,6 +16,10 @@ class ShopDashboard extends Component
 
     public $dailyRevenue = 0;
 
+    public $yesterdayRevenue = 0;
+
+    public ?int $revenueDelta = null;
+
     public $ordersTodayCount = 0;
 
     public $activeOrdersCount = 0;
@@ -63,6 +67,18 @@ class ShopDashboard extends Component
             ->where('status', 'completed')
             ->whereDate('paid_at', today())
             ->sum('total_amount');
+
+        // Yesterday's completed revenue powers the hero "vs yesterday" delta.
+        $this->yesterdayRevenue = (float) Order::where('shop_id', $shopId)
+            ->where('status', 'completed')
+            ->whereDate('paid_at', today()->subDay())
+            ->sum('total_amount');
+
+        // Percentage change vs yesterday — null (not 0/∞) when there is no
+        // baseline, so the view never renders a fabricated delta.
+        $this->revenueDelta = $this->yesterdayRevenue > 0
+            ? (int) round((($this->dailyRevenue - $this->yesterdayRevenue) / $this->yesterdayRevenue) * 100)
+            : null;
 
         $this->ordersTodayCount = Order::where('shop_id', $shopId)
             ->whereDate('created_at', today())

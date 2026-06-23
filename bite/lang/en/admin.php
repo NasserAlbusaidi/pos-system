@@ -392,8 +392,22 @@ return [
     'total' => 'Total',
     'status' => 'Status',
     'time' => 'Time',
+    'customer' => 'Customer',
     'source_guest' => 'Guest',
+    'source_counter' => 'Counter',
     'no_recent_orders' => 'No recent orders found.',
+
+    // Dashboard v2
+    'bite_operations' => 'Bite Operations',
+    'live_data' => 'Live Data',
+    'revenue_vs_yesterday' => 'vs :value yesterday',
+    'in_flight' => 'in flight',
+    'order_pipeline' => 'Order Pipeline',
+    'orders_count_today' => ':count today',
+    'seven_day_total' => '7-day total',
+    'avg_abbr' => 'avg',
+    'payments_today' => 'Payments Today',
+    'of_target' => 'of :target',
 
     // POS extras
     'active_tickets' => 'Active Tickets',
