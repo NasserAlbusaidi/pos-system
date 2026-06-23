@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Modifiers (v2 port)
+    'modifier_no_options' => 'لا توجد خيارات بعد',
+    'modifier_no_groups' => 'لا توجد مجموعات إضافات بعد',
     // Product Catalog (v2 port)
     'product_count_label' => 'منتجات',
     'product_empty' => 'لا توجد منتجات بعد',

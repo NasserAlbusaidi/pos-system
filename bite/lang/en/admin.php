@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Modifiers (v2 port)
+    'modifier_no_options' => 'No options yet',
+    'modifier_no_groups' => 'No modifier groups yet',
     // Product Catalog (v2 port)
     'product_count_label' => 'products',
     'product_empty' => 'No products yet',
