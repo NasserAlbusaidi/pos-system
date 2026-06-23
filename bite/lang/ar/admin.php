@@ -133,6 +133,12 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Product Catalog (v2 port)
+    'product_count_label' => 'منتجات',
+    'product_empty' => 'لا توجد منتجات بعد',
+    'product_th_product' => 'المنتج',
+    'product_th_actions' => 'إجراءات',
+
     // Shop Settings
     'settings_shop_settings' => 'إعدادات المتجر',
     'settings_shop_identity' => 'هوية المتجر',

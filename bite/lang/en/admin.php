@@ -133,6 +133,12 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Product Catalog (v2 port)
+    'product_count_label' => 'products',
+    'product_empty' => 'No products yet',
+    'product_th_product' => 'Product',
+    'product_th_actions' => 'Actions',
+
     // Shop Settings
     'settings_shop_settings' => 'Shop Settings',
     'settings_shop_identity' => 'Shop Identity',
