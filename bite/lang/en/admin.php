@@ -116,6 +116,7 @@ return [
 
     // Shift Report
     'shift_end_of_day' => 'End of Day',
+    'shift_summary' => 'Shift Summary',
     'shift_daily_report' => 'Daily Shift Report',
     'shift_print' => 'Print',
     'shift_total_revenue' => 'Total Revenue',
