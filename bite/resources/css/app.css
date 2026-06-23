@@ -486,17 +486,17 @@
     }
 
     /* Guest special-request note on a KDS card. Safety-critical (allergens) —
-       highlighted in crema so the kitchen cannot miss it. */
+       highlighted in alert red on the light v2 ticket so the kitchen cannot miss it. */
     .kds-note {
         display: flex;
         align-items: flex-start;
         gap: 6px;
         margin-top: 6px;
         padding: 6px 8px;
-        border: 1px solid rgb(var(--crema) / 0.5);
+        border: 1px solid rgb(var(--alert) / 0.35);
         border-radius: var(--radius-sm);
-        background: rgb(var(--crema) / 0.15);
-        color: rgb(var(--crema));
+        background: rgb(var(--alert) / 0.1);
+        color: rgb(var(--alert));
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         font-weight: var(--font-weight-bold);
@@ -513,17 +513,17 @@
     }
 
     /* Guest order-level note on a KDS card (Phase 4). Spans the whole card and
-       uses the signal accent so it reads as an order-wide instruction, distinct
-       from the per-item crema notes above it. */
+       uses the green signal accent so it reads as an order-wide instruction, distinct
+       from the per-item red allergen notes above it. */
     .kds-order-note {
         display: flex;
         align-items: flex-start;
         gap: 6px;
         padding: 8px 10px;
-        border: 1px solid rgb(var(--signal) / 0.5);
+        border: 1px solid rgb(var(--signal) / 0.4);
         border-radius: var(--radius-sm);
-        background: rgb(var(--signal) / 0.16);
-        color: rgb(var(--paper));
+        background: rgb(var(--signal) / 0.12);
+        color: var(--bite-pine);
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         font-weight: var(--font-weight-bold);
