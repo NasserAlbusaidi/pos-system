@@ -51,6 +51,21 @@ class ShopSettings extends Component
     // Menu theme
     public $theme = 'warm';
 
+    // Shop profile (stored in branding JSON; consumed by receipt/guest menu in follow-ups)
+    public $phone = '';
+
+    public $address = '';
+
+    public $about = '';
+
+    // Business hours + timezone (stored in branding JSON)
+    public $timezone = 'Asia/Muscat';
+
+    /** @var array<string, array{open: string, close: string, closed: bool}> */
+    public $businessHours = [];
+
+    public const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
     // Staff management
     public $staffName = '';
 
@@ -92,6 +107,37 @@ class ShopSettings extends Component
         $this->theme = in_array($branding['theme'] ?? '', ['warm', 'modern', 'dark'])
             ? $branding['theme']
             : 'warm';
+
+        // Shop profile
+        $this->phone = $branding['phone'] ?? '';
+        $this->address = $branding['address'] ?? '';
+        $this->about = $branding['about'] ?? '';
+
+        // Timezone + business hours
+        $this->timezone = $branding['timezone'] ?? 'Asia/Muscat';
+        $this->businessHours = $this->normalizeBusinessHours($branding['business_hours'] ?? []);
+    }
+
+    /**
+     * Ensure every weekday is present with sane defaults, so the form always
+     * renders 7 rows regardless of what (if anything) was previously saved.
+     *
+     * @param  array<string, mixed>  $saved
+     * @return array<string, array{open: string, close: string, closed: bool}>
+     */
+    protected function normalizeBusinessHours(array $saved): array
+    {
+        $hours = [];
+        foreach (self::DAYS as $day) {
+            $entry = is_array($saved[$day] ?? null) ? $saved[$day] : [];
+            $hours[$day] = [
+                'open' => is_string($entry['open'] ?? null) ? $entry['open'] : '09:00',
+                'close' => is_string($entry['close'] ?? null) ? $entry['close'] : '22:00',
+                'closed' => (bool) ($entry['closed'] ?? false),
+            ];
+        }
+
+        return $hours;
     }
 
     protected function normalizeHex(string $value, string $fallback): string
@@ -144,6 +190,14 @@ class ShopSettings extends Component
             'whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]*$/'],
             'whatsapp_notifications_enabled' => 'boolean',
             'theme' => 'required|in:warm,modern,dark',
+            'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]*$/'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'about' => ['nullable', 'string', 'max:1000'],
+            'timezone' => ['required', 'timezone'],
+            'businessHours' => ['array'],
+            'businessHours.*.open' => ['nullable', 'date_format:H:i'],
+            'businessHours.*.close' => ['nullable', 'date_format:H:i'],
+            'businessHours.*.closed' => ['boolean'],
         ]);
 
         $shop = Auth::user()->shop;
@@ -166,6 +220,11 @@ class ShopSettings extends Component
                 'language' => $this->language,
                 'whatsapp_number' => $this->whatsapp_number ?? '',
                 'whatsapp_notifications_enabled' => (bool) $this->whatsapp_notifications_enabled,
+                'phone' => $this->phone ?? '',
+                'address' => $this->address ?? '',
+                'about' => $this->about ?? '',
+                'timezone' => $this->timezone,
+                'business_hours' => $this->normalizeBusinessHours($this->businessHours),
             ]),
         ]);
 
