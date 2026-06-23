@@ -171,6 +171,9 @@ return [
     'menu_eng_class_puzzle' => 'Puzzle',
     'menu_eng_class_dog' => 'Dog',
     'menu_eng_empty' => 'No products found — add products to your menu to see the engineering matrix',
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'Rules run automatically at checkout in priority order.',
+    'pro_feature' => 'Pro feature',
     // Modifiers (v2 port)
     'modifier_no_options' => 'No options yet',
     'modifier_no_groups' => 'No modifier groups yet',

@@ -171,6 +171,9 @@ return [
     'menu_eng_class_puzzle' => 'لغز',
     'menu_eng_class_dog' => 'كلب',
     'menu_eng_empty' => 'لا توجد منتجات — أضف منتجات إلى قائمتك لرؤية مصفوفة الهندسة',
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'تُطبَّق القواعد تلقائيًا عند الدفع حسب ترتيب الأولوية.',
+    'pro_feature' => 'ميزة Pro',
     // Modifiers (v2 port)
     'modifier_no_options' => 'لا توجد خيارات بعد',
     'modifier_no_groups' => 'لا توجد مجموعات إضافات بعد',

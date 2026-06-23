@@ -1,4 +1,4 @@
-<div class="space-y-6 fade-rise">
+<div class="space-y-[18px] fade-rise">
     <x-slot:header>Pricing Rules</x-slot:header>
 
     @if(session()->has('message'))
@@ -7,123 +7,140 @@
         </div>
     @endif
 
+    <!-- Intro / Pro feature banner -->
+    <section class="surface-card">
+        <div class="flex items-center justify-between gap-4 px-[22px] py-4">
+            <div class="flex items-center gap-2.5">
+                <span class="h-[18px] w-1 rounded-sm" style="background: var(--bite-lime);"></span>
+                <span class="text-sm text-ink">{{ __('admin.pricing_rules_intro') }}</span>
+            </div>
+            <span class="tag">{{ __('admin.pro_feature') }}</span>
+        </div>
+    </section>
+
     <!-- Form -->
-    <div class="surface-card p-5 sm:p-6">
-        <div class="border-b border-line pb-4 mb-5">
-            <h2 class="font-display text-xl font-extrabold leading-none text-ink">
-                {{ $editingId ? 'Edit Rule' : 'New Pricing Rule' }}
-            </h2>
-            <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                Auto-apply discounts during specific time windows
-            </p>
+    <section class="surface-card">
+        <div class="flex items-center justify-between border-b border-line px-[22px] py-4">
+            <div class="flex items-center gap-2.5">
+                <span class="h-[18px] w-1 rounded-sm" style="background: var(--bite-lime);"></span>
+                <h2 class="font-display text-[18px] font-bold leading-none text-forest">
+                    {{ $editingId ? 'Edit Rule' : 'New Pricing Rule' }}
+                </h2>
+            </div>
+            <span class="tag">Auto-apply discounts during specific time windows</span>
         </div>
 
-        <form wire:submit="save" class="space-y-5">
-            <!-- Rule Name -->
-            <div>
-                <label class="section-headline mb-2 block">Rule Name</label>
-                <input type="text" wire:model="name" class="field text-sm" placeholder="e.g. Happy Hour Cold Drinks">
-                @error('name') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-            </div>
-
-            <!-- Target: Category or Product -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-[22px]">
+            <form wire:submit="save" class="space-y-5">
+                <!-- Rule Name -->
                 <div>
-                    <label class="section-headline mb-2 block">Category (optional)</label>
-                    <select wire:model="category_id" class="field text-sm">
-                        <option value="">All categories</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name_en }}</option>
+                    <label class="section-headline mb-2 block">Rule Name</label>
+                    <input type="text" wire:model="name" class="field text-sm" placeholder="e.g. Happy Hour Cold Drinks">
+                    @error('name') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Target: Category or Product -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="section-headline mb-2 block">Category (optional)</label>
+                        <select wire:model="category_id" class="field text-sm">
+                            <option value="">All categories</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name_en }}</option>
+                            @endforeach
+                        </select>
+                        @error('category_id') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="section-headline mb-2 block">Product (optional, overrides category)</label>
+                        <select wire:model="product_id" class="field text-sm">
+                            <option value="">No specific product</option>
+                            @foreach($products as $prod)
+                                <option value="{{ $prod->id }}">{{ $prod->name_en }}</option>
+                            @endforeach
+                        </select>
+                        @error('product_id') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <!-- Discount Type + Value -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="section-headline mb-2 block">Discount Type</label>
+                        <select wire:model="discount_type" class="field text-sm">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (OMR)</option>
+                        </select>
+                        @error('discount_type') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="section-headline mb-2 block">Discount Value</label>
+                        <input type="number" wire:model="discount_value" class="field text-sm" step="0.001" min="0" placeholder="e.g. 30 for 30%">
+                        @error('discount_value') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <!-- Time Window -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="section-headline mb-2 block">Start Time</label>
+                        <input type="time" wire:model="start_time" class="field text-sm">
+                        @error('start_time') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="section-headline mb-2 block">End Time</label>
+                        <input type="time" wire:model="end_time" class="field text-sm">
+                        @error('end_time') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <!-- Days of Week -->
+                <div>
+                    <label class="section-headline mb-2 block">Days of Week</label>
+                    <p class="mb-3 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft">Leave all unchecked for every day</p>
+                    <div class="flex flex-wrap gap-3">
+                        @php
+                            $dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                        @endphp
+                        @foreach($dayLabels as $dayIndex => $dayLabel)
+                            <label class="flex items-center gap-2 cursor-pointer rounded-lg border border-line bg-cream px-3 py-2 hover:border-olive transition-colors">
+                                <input type="checkbox" wire:model="days_of_week" value="{{ $dayIndex }}" class="rounded border-line">
+                                <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink">{{ $dayLabel }}</span>
+                            </label>
                         @endforeach
-                    </select>
-                    @error('category_id') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                    </div>
+                    @error('days_of_week') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label class="section-headline mb-2 block">Product (optional, overrides category)</label>
-                    <select wire:model="product_id" class="field text-sm">
-                        <option value="">No specific product</option>
-                        @foreach($products as $prod)
-                            <option value="{{ $prod->id }}">{{ $prod->name_en }}</option>
-                        @endforeach
-                    </select>
-                    @error('product_id') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
+                <!-- Actions -->
+                <div class="flex items-center gap-3 pt-2">
+                    <button type="submit" class="btn-primary" style="background: var(--bite-forest); border-color: var(--bite-forest);">
+                        {{ $editingId ? 'Update Rule' : 'Create Rule' }}
+                    </button>
+                    @if($editingId)
+                        <button type="button" wire:click="cancelEdit" class="btn-secondary">Cancel</button>
+                    @endif
                 </div>
-            </div>
-
-            <!-- Discount Type + Value -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="section-headline mb-2 block">Discount Type</label>
-                    <select wire:model="discount_type" class="field text-sm">
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount (OMR)</option>
-                    </select>
-                    @error('discount_type') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="section-headline mb-2 block">Discount Value</label>
-                    <input type="number" wire:model="discount_value" class="field text-sm" step="0.001" min="0" placeholder="e.g. 30 for 30%">
-                    @error('discount_value') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Time Window -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="section-headline mb-2 block">Start Time</label>
-                    <input type="time" wire:model="start_time" class="field text-sm">
-                    @error('start_time') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="section-headline mb-2 block">End Time</label>
-                    <input type="time" wire:model="end_time" class="field text-sm">
-                    @error('end_time') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Days of Week -->
-            <div>
-                <label class="section-headline mb-2 block">Days of Week</label>
-                <p class="mb-3 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft">Leave all unchecked for every day</p>
-                <div class="flex flex-wrap gap-3">
-                    @php
-                        $dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    @endphp
-                    @foreach($dayLabels as $dayIndex => $dayLabel)
-                        <label class="flex items-center gap-2 cursor-pointer rounded-lg border border-line bg-panel px-3 py-2 hover:border-crema transition-colors">
-                            <input type="checkbox" wire:model="days_of_week" value="{{ $dayIndex }}" class="rounded border-line">
-                            <span class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink">{{ $dayLabel }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                @error('days_of_week') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="btn-primary">
-                    {{ $editingId ? 'Update Rule' : 'Create Rule' }}
-                </button>
-                @if($editingId)
-                    <button type="button" wire:click="cancelEdit" class="btn-secondary">Cancel</button>
-                @endif
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
+    </section>
 
     <!-- Rules List -->
-    <div class="surface-card overflow-hidden">
-        <div class="border-b border-line bg-muted/35 px-5 py-4 flex items-center justify-between">
-            <h2 class="font-display text-xl font-extrabold leading-none">Pricing Rules</h2>
+    <section class="surface-card overflow-hidden">
+        <div class="flex items-center justify-between border-b border-line px-[22px] py-4">
+            <div class="flex items-center gap-2.5">
+                <span class="h-[18px] w-1 rounded-sm" style="background: var(--bite-lime);"></span>
+                <h2 class="font-display text-[18px] font-bold leading-none text-forest">Pricing Rules</h2>
+            </div>
             <span class="tag">{{ $rules->count() }} {{ $rules->count() === 1 ? 'rule' : 'rules' }}</span>
         </div>
 
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="border-b border-line bg-panel font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                <tr class="border-b border-line bg-cream font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
                     <th class="px-5 py-4">Status</th>
                     <th class="px-5 py-4">Name</th>
                     <th class="px-5 py-4">Target</th>
@@ -138,7 +155,7 @@
                     @php
                         $isNow = $rule->isActiveNow();
                     @endphp
-                    <tr class="hover:bg-muted/35 transition-colors">
+                    <tr class="hover:bg-cream transition-colors">
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-2">
                                 <button wire:click="toggleActive({{ $rule->id }})" class="flex items-center gap-1.5" title="{{ $rule->is_active ? 'Click to deactivate' : 'Click to activate' }}">
@@ -166,7 +183,7 @@
                                 All items
                             @endif
                         </td>
-                        <td class="px-5 py-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink">
+                        <td class="px-5 py-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-forest">
                             @if($rule->discount_type === 'percentage')
                                 {{ rtrim(rtrim(number_format($rule->discount_value, 3), '0'), '.') }}%
                             @else
@@ -189,7 +206,7 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-3">
-                                <button wire:click="edit({{ $rule->id }})" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-crema transition-colors">
+                                <button wire:click="edit({{ $rule->id }})" class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-forest transition-colors">
                                     Edit
                                 </button>
                                 <button
@@ -218,5 +235,5 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
+    </section>
 </div>
