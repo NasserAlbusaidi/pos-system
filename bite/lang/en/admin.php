@@ -69,6 +69,9 @@ return [
     'awaiting_next_stage' => 'Awaiting Next Stage',
     'no_active_orders' => 'No Active Orders',
     'active_count' => ':count active',
+    'production_queue' => 'Production Queue',
+    'kds_live_refresh' => 'Live · auto-refresh 5s',
+    'late' => 'Late',
 
     // Reports
     'export_orders' => 'Export completed orders',
@@ -85,6 +88,17 @@ return [
     'payments' => 'Payments',
     'order_count' => ':count orders',
     'no_payments_yet' => 'No payments yet',
+    'reports_performance_summary' => 'Performance Summary',
+    'reports_last_days' => 'Last :days days',
+    'reports_orders_short' => 'Orders',
+    'reports_avg_order' => 'Avg Order',
+    'reports_revenue_trend' => 'Revenue Trend',
+    'reports_daily_avg' => 'Daily avg',
+    'reports_days_pill' => ':days days',
+    'reports_peak' => 'Peak :hour',
+    'reports_payment_mix' => 'Payment Mix',
+    'reports_by_revenue' => 'By Revenue',
+    'reports_rank' => 'Rank',
 
     // Audit Logs
     'audit_filter_placeholder' => 'Filter by action (e.g. order.paid)',
@@ -116,6 +130,7 @@ return [
 
     // Shift Report
     'shift_end_of_day' => 'End of Day',
+    'shift_summary' => 'Shift Summary',
     'shift_daily_report' => 'Daily Shift Report',
     'shift_print' => 'Print',
     'shift_total_revenue' => 'Total Revenue',
@@ -136,6 +151,40 @@ return [
     // Pricing Rules (v2 port)
     'pricing_rules_intro' => 'Rules run automatically at checkout in priority order.',
     'pro_feature' => 'Pro feature',
+    // Modifiers (v2 port)
+    'modifier_no_options' => 'No options yet',
+    'modifier_no_groups' => 'No modifier groups yet',
+    // Product Catalog (v2 port)
+    'product_count_label' => 'products',
+    'product_empty' => 'No products yet',
+    'product_th_product' => 'Product',
+    'product_th_actions' => 'Actions',
+    // Menu Builder (v2 port)
+    'menu_structure' => 'Menu structure',
+    'menu_all_saved' => 'All changes saved',
+    // Cash Reconciliation (v2 port)
+    'end_of_day' => 'End of Day',
+    'cash_reconciliation' => 'Cash Reconciliation',
+    'total_orders' => 'Total Orders',
+    'total_revenue' => 'Total Revenue',
+    'cash_payments' => 'Cash Payments',
+    'card_payments' => 'Card Payments',
+    'cash_count' => 'Cash Count',
+    'end_of_shift' => 'End of Shift',
+    'expected_cash_in_drawer' => 'Expected Cash in Drawer',
+    'actual_cash_counted' => 'Actual Cash Counted',
+    'notes_optional' => 'Notes (Optional)',
+    'cash_count_notes_placeholder' => 'Any observations about the cash count...',
+    'reconcile' => 'Reconcile',
+    'reconciliation_result' => 'Reconciliation Result',
+    'balanced' => 'Balanced',
+    'discrepancy' => 'Discrepancy',
+    'expected' => 'Expected',
+    'actual' => 'Actual',
+    'difference' => 'Difference',
+    'notes' => 'Notes',
+    'recount' => 'Recount',
+    'close_shift' => 'Close Shift',
 
     // Shop Settings
     'settings_shop_settings' => 'Shop Settings',
