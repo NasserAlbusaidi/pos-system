@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'تُطبَّق القواعد تلقائيًا عند الدفع حسب ترتيب الأولوية.',
+    'pro_feature' => 'ميزة Pro',
     // Modifiers (v2 port)
     'modifier_no_options' => 'لا توجد خيارات بعد',
     'modifier_no_groups' => 'لا توجد مجموعات إضافات بعد',

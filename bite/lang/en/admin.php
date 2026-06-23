@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Pricing Rules (v2 port)
+    'pricing_rules_intro' => 'Rules run automatically at checkout in priority order.',
+    'pro_feature' => 'Pro feature',
     // Modifiers (v2 port)
     'modifier_no_options' => 'No options yet',
     'modifier_no_groups' => 'No modifier groups yet',
