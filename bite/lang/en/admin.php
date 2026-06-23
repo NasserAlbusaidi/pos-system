@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'No orders for this date',
     'shift_generated' => 'Generated :datetime | Powered by Bite',
 
+    // Menu Builder (v2 port)
+    'menu_structure' => 'Menu structure',
+    'menu_all_saved' => 'All changes saved',
     // Cash Reconciliation (v2 port)
     'end_of_day' => 'End of Day',
     'cash_reconciliation' => 'Cash Reconciliation',

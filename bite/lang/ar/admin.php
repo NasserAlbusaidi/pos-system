@@ -148,6 +148,9 @@ return [
     'shift_no_orders_date' => 'لا توجد طلبات لهذا التاريخ',
     'shift_generated' => 'تم الإنشاء :datetime | بواسطة Bite',
 
+    // Menu Builder (v2 port)
+    'menu_structure' => 'هيكل القائمة',
+    'menu_all_saved' => 'تم حفظ جميع التغييرات',
     // Cash Reconciliation (v2 port)
     'end_of_day' => 'نهاية اليوم',
     'cash_reconciliation' => 'تسوية النقد',
