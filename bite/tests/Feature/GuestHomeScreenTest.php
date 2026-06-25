@@ -112,4 +112,18 @@ class GuestHomeScreenTest extends TestCase
             ->assertSeeHtml('menu-row')
             ->assertSee('Croissant');
     }
+
+    public function test_pilot_guest_menu_does_not_render_group_order_entry_points(): void
+    {
+        $this->product('Croissant', 1);
+        $this->product('Sourdough', 2);
+
+        $component = Livewire::test(GuestMenu::class, ['shop' => $this->shop])
+            ->assertSet('screen', 'home')
+            ->assertDontSeeHtml('wire:click="createGroup"');
+
+        $component->call('showMenu')
+            ->assertSet('screen', 'menu')
+            ->assertDontSeeHtml('wire:click="createGroup"');
+    }
 }
