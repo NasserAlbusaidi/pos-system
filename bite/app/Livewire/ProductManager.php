@@ -123,6 +123,7 @@ class ProductManager extends Component
         if ($this->editingProductId) {
             $product = Product::where('shop_id', Auth::user()->shop_id)
                 ->findOrFail($this->editingProductId);
+            $previousSnapshot = $product->auditSnapshot();
 
             $oldImageUrl = $product->image_url;
             $imageUrl = $product->image_url;
@@ -152,6 +153,12 @@ class ProductManager extends Component
             ]);
 
             $product->modifierGroups()->sync($this->selectedModifierGroups ?? []);
+            $product->refresh()->load('modifierGroups');
+
+            AuditLog::record('product.updated', $product, array_merge(
+                $product->auditSnapshot(),
+                ['previous' => $previousSnapshot],
+            ));
 
             $this->reset(['editingProductId', 'currentImageUrl', 'name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
             session()->flash('message', 'Product updated successfully.');
@@ -184,6 +191,9 @@ class ProductManager extends Component
         ]);
 
         $product->modifierGroups()->sync($this->selectedModifierGroups ?? []);
+        $product->load('modifierGroups');
+
+        AuditLog::record('product.created', $product, $product->auditSnapshot());
 
         $this->reset(['name_en', 'name_ar', 'description_en', 'description_ar', 'price', 'tax_rate', 'category_id', 'image', 'selectedModifierGroups']);
         session()->flash('message', 'Product added successfully.');
@@ -199,7 +209,7 @@ class ProductManager extends Component
         AuditLog::record(
             $product->is_available ? 'product.restored' : 'product.86d',
             $product,
-            ['product_name' => $product->name_en]
+            $product->auditSnapshot()
         );
 
         $this->dispatch('toast',

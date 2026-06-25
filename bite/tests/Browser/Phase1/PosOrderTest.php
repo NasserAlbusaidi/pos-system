@@ -22,7 +22,7 @@ class PosOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($admin, $order) {
             $browser->loginAs($admin)
                 ->visit('/pos')
-                ->waitForText('OMR 3.500')
+                ->waitForText('3.500')
                 ->assertSeeIn('.surface-card', 'Cappuccino')
                 ->click('button[wire\\:click="markAsPaid('.$order->id.', \'cash\')"]')
                 ->waitUntilMissing('button[wire\\:click="markAsPaid('.$order->id.', \'cash\')"]');
@@ -69,8 +69,8 @@ class PosOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($admin) {
             $browser->loginAs($admin)
                 ->visit('/pos')
-                ->waitForText('OMR 1.750')
-                ->assertSee('OMR 1.750');
+                ->waitForText('1.750')
+                ->assertSee('1.750');
         });
     }
 }

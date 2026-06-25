@@ -24,12 +24,10 @@ class GuestOrderTrackingTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($token) {
             $browser->visit('/track/'.$token)
-                ->waitForText('OMR 2.500')
-                ->assertSee('OMR 2.500')
-                // Status timeline shows PAID as active
-                ->assertSee('PAID')
-                // Status message for paid orders
-                ->assertSee('Payment confirmed');
+                ->waitForText('2.500')
+                ->assertSee('2.500')
+                ->assertSee('Confirmed')
+                ->assertSee('Payment confirmed at the counter');
         });
     }
 
@@ -53,15 +51,15 @@ class GuestOrderTrackingTest extends DuskTestCase
             $order->update(['status' => 'preparing']);
 
             $browser->refresh()
-                ->waitForText('Kitchen is actively preparing')
-                ->assertSee('Kitchen is actively preparing');
+                ->waitForText('Preparing')
+                ->assertSee('The kitchen is making your order.');
 
             // Transition to ready
             $order->update(['status' => 'ready']);
 
             $browser->refresh()
-                ->waitForText('Order is complete')
-                ->assertSee('Order is complete');
+                ->waitForText('Ready for pickup')
+                ->assertSee('Your order is ready');
         });
     }
 }

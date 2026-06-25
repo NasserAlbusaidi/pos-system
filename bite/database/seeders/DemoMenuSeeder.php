@@ -7,10 +7,51 @@ use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Services\ImageService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DemoMenuSeeder extends Seeder
 {
+    /**
+     * Pexels photo IDs used for demo menu seed data.
+     *
+     * These are downloaded into public storage so a fresh demo restaurant has
+     * visible menu photos without depending on third-party image hosts at
+     * customer ordering time.
+     *
+     * @var array<string, int>
+     */
+    private const PHOTO_IDS = [
+        'Karak Tea' => 9050518,
+        'Turkish Coffee' => 9050518,
+        'Cappuccino' => 30707443,
+        'Latte' => 12703064,
+        'Hot Chocolate' => 5464634,
+        'Iced Latte' => 12703064,
+        'Fresh Juice' => 5946790,
+        'Smoothie' => 5946790,
+        'Iced Tea' => 1484678,
+        'Club Sandwich' => 9624298,
+        'Chicken Shawarma' => 1396660,
+        'Beef Burger' => 1639557,
+        'Caesar Salad' => 12557608,
+        'French Fries' => 1583884,
+        'Kunafa' => 3026808,
+        'Cheesecake' => 1098592,
+        'Luqaimat' => 3951306,
+        'Ice Cream' => 1352278,
+        'Smoked Date Short Rib' => 675951,
+        'Cardamom Sea Bass' => 262959,
+        'Zaatar Fattoush Crunch' => 12557608,
+        'Saffron Chicken Skewer' => 1396660,
+        'Rose Pistachio Kunafa' => 3026808,
+        'Tamarind Mint Fizz' => 1484678,
+        'Omani Cold Brew' => 12703064,
+    ];
+
     /**
      * Seed a demo cafe menu for a specific shop.
      *
@@ -82,36 +123,40 @@ class DemoMenuSeeder extends Seeder
 
         $order = 1;
         foreach ($hotDrinkProducts as $p) {
-            $createdProducts->push(Product::create(array_merge($p, [
+            $createdProducts->push(Product::forceCreate(array_merge($p, [
                 'shop_id' => $shop->id,
                 'category_id' => $hotDrinks->id,
+                'image_url' => null,
                 'sort_order' => $order++,
             ])));
         }
 
         $order = 1;
         foreach ($coldDrinkProducts as $p) {
-            $createdProducts->push(Product::create(array_merge($p, [
+            $createdProducts->push(Product::forceCreate(array_merge($p, [
                 'shop_id' => $shop->id,
                 'category_id' => $coldDrinks->id,
+                'image_url' => null,
                 'sort_order' => $order++,
             ])));
         }
 
         $order = 1;
         foreach ($foodProducts as $p) {
-            $createdProducts->push(Product::create(array_merge($p, [
+            $createdProducts->push(Product::forceCreate(array_merge($p, [
                 'shop_id' => $shop->id,
                 'category_id' => $food->id,
+                'image_url' => null,
                 'sort_order' => $order++,
             ])));
         }
 
         $order = 1;
         foreach ($dessertProducts as $p) {
-            $createdProducts->push(Product::create(array_merge($p, [
+            $createdProducts->push(Product::forceCreate(array_merge($p, [
                 'shop_id' => $shop->id,
                 'category_id' => $desserts->id,
+                'image_url' => null,
                 'sort_order' => $order++,
             ])));
         }
@@ -218,6 +263,83 @@ class DemoMenuSeeder extends Seeder
         foreach ($foodItems as $product) {
             $product->modifierGroups()->attach($extrasGroup->id);
         }
+
+        $this->ensureDemoImagesForShop($shop);
+    }
+
+    /**
+     * Backfill known demo photos for an existing shop without replacing uploads.
+     * Legacy seeded Pexels URLs are treated as replaceable because the handoff
+     * menu must not depend on a third-party image host.
+     */
+    public function ensureDemoImagesForShop(Shop $shop): void
+    {
+        $imageService = app(ImageService::class);
+
+        Product::where('shop_id', $shop->id)
+            ->get()
+            ->each(function (Product $product) use ($imageService): void {
+                $photoId = $this->photoIdFor((string) $product->name_en);
+
+                if ($photoId === null) {
+                    return;
+                }
+
+                $currentImageUrl = trim((string) $product->image_url);
+                $legacyRemoteUrl = $this->photoUrlFor((string) $product->name_en);
+
+                if ($currentImageUrl !== '' && $currentImageUrl !== $legacyRemoteUrl) {
+                    return;
+                }
+
+                $imageUrl = $this->downloadAndProcessPhoto($photoId, $imageService);
+
+                if ($imageUrl === null) {
+                    return;
+                }
+
+                $product->forceFill(['image_url' => $imageUrl])->save();
+            });
+    }
+
+    private function photoIdFor(string $name): ?int
+    {
+        return self::PHOTO_IDS[trim($name)] ?? null;
+    }
+
+    private function photoUrlFor(string $name): ?string
+    {
+        $photoId = $this->photoIdFor($name);
+
+        if ($photoId === null) {
+            return null;
+        }
+
+        return "https://images.pexels.com/photos/{$photoId}/pexels-photo-{$photoId}.jpeg?auto=compress&cs=tinysrgb&w=800";
+    }
+
+    private function downloadAndProcessPhoto(int $photoId, ImageService $imageService): ?string
+    {
+        $url = "https://images.pexels.com/photos/{$photoId}/pexels-photo-{$photoId}.jpeg?auto=compress&cs=tinysrgb&w=800";
+
+        try {
+            $response = Http::timeout(15)->accept('image/jpeg,image/*')->get($url);
+
+            if (! $response->successful()) {
+                $this->command?->warn("    Failed to download Pexels photo {$photoId} (HTTP {$response->status()})");
+
+                return null;
+            }
+
+            $filename = 'products/demo-'.Str::random(16).'.jpg';
+            Storage::disk('public')->put($filename, $response->body());
+
+            return $imageService->processUpload($filename, 'public');
+        } catch (\Throwable $e) {
+            $this->command?->warn("    Photo download failed for Pexels {$photoId}: {$e->getMessage()}");
+
+            return null;
+        }
     }
 
     /**
@@ -226,16 +348,28 @@ class DemoMenuSeeder extends Seeder
      */
     public function run(): void
     {
-        $shop = Shop::first();
-
-        if (! $shop) {
-            $shop = Shop::create([
+        $shop = Shop::firstOrCreate(
+            ['slug' => 'demo'],
+            [
                 'name' => 'Bite Demo Coffee',
-                'slug' => 'demo',
                 'currency_code' => 'OMR',
                 'currency_symbol' => "\xD8\xB1.\xD8\xB9.",
                 'currency_decimals' => 3,
-            ]);
+                'tax_rate' => 0,
+                'trial_ends_at' => now()->addYears(10),
+                'branding' => [
+                    'accent' => '#cc5500',
+                    'paper' => '#fdfcf8',
+                    'ink' => '#1a1918',
+                    'onboarding_completed' => true,
+                ],
+            ]
+        );
+
+        if ($shop->products()->exists()) {
+            $this->ensureDemoImagesForShop($shop);
+
+            return;
         }
 
         $this->seedForShop($shop);

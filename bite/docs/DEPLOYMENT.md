@@ -1,6 +1,16 @@
-# Bite-POS Deployment Guide
+# Bite-POS Cloud Run Deployment Reference (Paused)
 
-Production runs on **Google Cloud Run** (single container: Nginx + PHP-FPM + supervisord), with **Cloud SQL (MySQL 8.0)** for data and **Google Cloud Storage** for product images and Livewire uploads. CI/CD is handled by GitHub Actions with Workload Identity Federation — there are no long-lived service-account keys.
+> **Current pilot target is Laravel Forge, not Cloud Run.** The Sourdough pilot
+> deploys to a single Forge VPS with local-disk images — see
+> [`DEPLOYMENT-FORGE.md`](./DEPLOYMENT-FORGE.md). The Cloud Run path below is
+> paused but kept for reference / future multi-tenant scale-out. Do not use this
+> guide for the active restaurant handoff.
+
+If this path is revived, production would run on **Google Cloud Run** (single
+container: Nginx + PHP-FPM + supervisord), with **Cloud SQL (MySQL 8.0)** for
+data and **Google Cloud Storage** for product images and Livewire uploads. CI/CD
+would be handled by GitHub Actions with Workload Identity Federation — there are
+no long-lived service-account keys.
 
 ## Infrastructure
 

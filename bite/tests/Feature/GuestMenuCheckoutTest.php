@@ -5,12 +5,16 @@ namespace Tests\Feature;
 use App\Livewire\GuestMenu;
 use App\Livewire\KitchenDisplay;
 use App\Models\Category;
+use App\Models\LoyaltyCustomer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ShiftClosure;
 use App\Models\Shop;
 use App\Models\User;
 use App\Services\PrintNodeService;
+use App\Services\WhatsAppService;
+use App\Support\ShopClock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
@@ -126,6 +130,33 @@ class GuestMenuCheckoutTest extends TestCase
         $this->assertSame('Layla', Order::firstOrFail()->customer_name);
     }
 
+    public function test_first_guest_order_saves_customer_favorites_for_reorder(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla Al-Busaidi')
+            ->set('loyaltyPhone', '+968 9512 3456')
+            ->call('submitOrder');
+
+        $customer = LoyaltyCustomer::where('shop_id', $shop->id)
+            ->where('phone', '96895123456')
+            ->first();
+
+        $this->assertNotNull($customer);
+        $this->assertSame('Layla Al-Busaidi', $customer->name);
+        $this->assertSame([
+            [
+                'id' => $product->id,
+                'name' => 'Country Loaf',
+                'quantity' => 1,
+                'selectedModifiers' => [],
+            ],
+        ], $customer->getFavorites());
+        $this->assertSame(0, (int) $customer->points);
+    }
+
     public function test_order_created_unpaid_with_no_payment_method(): void
     {
         [$shop, $product] = $this->createMenu();
@@ -139,6 +170,51 @@ class GuestMenuCheckoutTest extends TestCase
         $order = Order::firstOrFail();
         $this->assertSame('unpaid', $order->status);
         $this->assertNull($order->payment_method);
+    }
+
+    public function test_guest_checkout_after_shift_close_keeps_review_open_and_creates_no_order(): void
+    {
+        [$shop, $product] = $this->createMenu();
+        $this->closeShiftFor($shop);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
+            ->call('submitOrder')
+            ->assertSet('showReviewModal', true)
+            ->assertSet('orderError', __('guest.shift_closed'));
+
+        $this->assertSame(0, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_whatsapp_notification_failure_does_not_block_guest_order_redirect(): void
+    {
+        [$shop, $product] = $this->createMenu();
+
+        $this->app->instance(WhatsAppService::class, new class extends WhatsAppService
+        {
+            public function isEnabled(Shop $shop): bool
+            {
+                return true;
+            }
+
+            public function buildOrderLink(Shop $shop, Order $order): ?string
+            {
+                throw new \RuntimeException('WhatsApp link builder unavailable');
+            }
+        });
+
+        $component = Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('addToCart', $product->id)
+            ->set('customerName', 'Layla')
+            ->set('loyaltyPhone', '95123456')
+            ->call('submitOrder');
+
+        $order = Order::firstOrFail();
+
+        $component->assertRedirect(route('guest.track', $order->tracking_token));
+        $this->assertSame('unpaid', $order->status);
     }
 
     public function test_review_screen_shows_no_service_fee_vat_or_voucher_lines(): void
@@ -392,5 +468,25 @@ class GuestMenuCheckoutTest extends TestCase
         ]);
 
         return [$shop, $product];
+    }
+
+    private function closeShiftFor(Shop $shop): void
+    {
+        ShiftClosure::forceCreate([
+            'shop_id' => $shop->id,
+            'business_date' => ShopClock::localDate($shop),
+            'closed_by' => null,
+            'expected_cash' => 0.000,
+            'actual_cash' => 0.000,
+            'difference' => 0.000,
+            'shift_summary' => [
+                'total_orders' => 0,
+                'total_revenue' => 0.000,
+                'cash_total' => 0.000,
+                'card_total' => 0.000,
+                'voucher_total' => 0.000,
+            ],
+            'closed_at' => now(),
+        ]);
     }
 }

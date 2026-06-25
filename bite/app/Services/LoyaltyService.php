@@ -22,6 +22,10 @@ class LoyaltyService
             return;
         }
 
+        if ($this->loyaltyAlreadyAwarded($order)) {
+            return;
+        }
+
         $customer = LoyaltyCustomer::firstOrCreate([
             'shop_id' => $order->shop_id,
             'phone' => $phone,
@@ -35,6 +39,79 @@ class LoyaltyService
             'points' => $points,
             'total_points' => $customer->points,
         ]);
+    }
+
+    public function reverseAwardForRefundedOrder(Order $order): void
+    {
+        $phone = $this->normalizePhone($order->loyalty_phone);
+        if (! $phone) {
+            return;
+        }
+
+        if ($this->loyaltyAlreadyReversed($order)) {
+            return;
+        }
+
+        $points = (int) AuditLog::where('auditable_type', Order::class)
+            ->where('auditable_id', $order->id)
+            ->where('action', 'loyalty.awarded')
+            ->get()
+            ->sum(fn (AuditLog $log): int => (int) ($log->meta['points'] ?? 0));
+
+        if ($points <= 0) {
+            return;
+        }
+
+        $customer = LoyaltyCustomer::where('shop_id', $order->shop_id)
+            ->where('phone', $phone)
+            ->first();
+
+        if (! $customer) {
+            return;
+        }
+
+        $previousPoints = (int) $customer->points;
+        $pointsReversed = min($points, $previousPoints);
+        $customer->points = max(0, $previousPoints - $points);
+
+        if ((int) ($customer->visit_count ?? 0) > 0) {
+            $customer->visit_count = (int) $customer->visit_count - 1;
+        }
+
+        $customer->save();
+
+        AuditLog::record('loyalty.reversed', $order, [
+            'phone' => $phone,
+            'points' => $pointsReversed,
+            'awarded_points' => $points,
+            'previous_points' => $previousPoints,
+            'total_points' => (int) $customer->points,
+        ]);
+    }
+
+    public function rememberFavorites(?string $phone, int $shopId, ?string $name, array $cartItems): ?LoyaltyCustomer
+    {
+        $normalized = $this->normalizePhone($phone);
+        if (! $normalized) {
+            return null;
+        }
+
+        $customer = LoyaltyCustomer::firstOrCreate(
+            [
+                'shop_id' => $shopId,
+                'phone' => $normalized,
+            ],
+            [
+                'name' => $this->cleanName($name),
+            ],
+        );
+
+        if (blank($customer->name) && filled($name)) {
+            $customer->name = $this->cleanName($name);
+            $customer->save();
+        }
+
+        return $customer->saveFavorites($cartItems);
     }
 
     /**
@@ -65,7 +142,7 @@ class LoyaltyService
 
         return Order::where('shop_id', $shopId)
             ->where('loyalty_phone', $normalized)
-            ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
+            ->whereIn('status', Order::REVENUE_STATUSES)
             ->with('items')
             ->orderByDesc('created_at')
             ->limit($limit)
@@ -85,5 +162,28 @@ class LoyaltyService
         }
 
         return substr($digits, 0, 20);
+    }
+
+    protected function cleanName(?string $value): ?string
+    {
+        $name = trim((string) $value);
+
+        return $name === '' ? null : mb_substr($name, 0, 255);
+    }
+
+    private function loyaltyAlreadyReversed(Order $order): bool
+    {
+        return AuditLog::where('auditable_type', Order::class)
+            ->where('auditable_id', $order->id)
+            ->where('action', 'loyalty.reversed')
+            ->exists();
+    }
+
+    private function loyaltyAlreadyAwarded(Order $order): bool
+    {
+        return AuditLog::where('auditable_type', Order::class)
+            ->where('auditable_id', $order->id)
+            ->where('action', 'loyalty.awarded')
+            ->exists();
     }
 }

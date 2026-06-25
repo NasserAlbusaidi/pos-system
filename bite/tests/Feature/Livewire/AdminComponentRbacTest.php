@@ -15,6 +15,7 @@ use App\Livewire\OnboardingWizard;
 use App\Livewire\PosDashboard;
 use App\Livewire\ProductManager;
 use App\Livewire\ShiftReport;
+use App\Livewire\ShopDashboard;
 use App\Livewire\ShopSettings;
 use App\Models\Shop;
 use App\Models\User;
@@ -43,6 +44,12 @@ class AdminComponentRbacTest extends TestCase
         MenuBuilder::class,
         ReportsDashboard::class,
         AuditLogs::class,
+        MenuEngineering::class,
+        PricingRules::class,
+    ];
+
+    private const PRO_ONLY = [
+        ReportsDashboard::class,
         MenuEngineering::class,
         PricingRules::class,
     ];
@@ -79,6 +86,7 @@ class AdminComponentRbacTest extends TestCase
     public function test_kitchen_is_forbidden_from_pos_and_server_from_kds(): void
     {
         $this->assertForbidden(PosDashboard::class, $this->makeUser('kitchen'));
+        $this->assertForbidden(ShopDashboard::class, $this->makeUser('kitchen'));
         $this->assertForbidden(KitchenDisplay::class, $this->makeUser('server'));
     }
 
@@ -110,6 +118,74 @@ class AdminComponentRbacTest extends TestCase
         $admin = $this->makeUser('admin');
 
         foreach ([...self::MANAGER_ADMIN, PosDashboard::class, KitchenDisplay::class, BillingSettings::class, OnboardingWizard::class] as $component) {
+            $this->assertAllowed($component, $admin);
+        }
+    }
+
+    public function test_server_can_reach_shop_dashboard_component(): void
+    {
+        $this->assertAllowed(ShopDashboard::class, $this->makeUser('server'));
+    }
+
+    public function test_suspended_shop_cannot_hydrate_operational_component(): void
+    {
+        $this->shop->forceFill(['status' => 'suspended'])->save();
+
+        $this->actingAs($this->makeUser('admin'));
+
+        Livewire::test(PosDashboard::class)->assertForbidden();
+    }
+
+    public function test_lapsed_subscription_cannot_hydrate_operational_component(): void
+    {
+        $this->shop->forceFill(['trial_ends_at' => null])->save();
+
+        $this->shop->subscriptions()->create([
+            'type' => 'default',
+            'stripe_id' => 'sub_lapsed_livewire',
+            'stripe_status' => 'canceled',
+            'stripe_price' => 'price_test',
+            'quantity' => 1,
+            'ends_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($this->makeUser('admin'));
+
+        Livewire::test(PosDashboard::class)->assertForbidden();
+    }
+
+    public function test_lapsed_subscription_admin_can_still_hydrate_billing_component(): void
+    {
+        $this->shop->forceFill(['trial_ends_at' => null])->save();
+
+        $this->shop->subscriptions()->create([
+            'type' => 'default',
+            'stripe_id' => 'sub_lapsed_billing_livewire',
+            'stripe_status' => 'canceled',
+            'stripe_price' => 'price_test',
+            'quantity' => 1,
+            'ends_at' => now()->subDay(),
+        ]);
+
+        $this->assertAllowed(BillingSettings::class, $this->makeUser('admin'));
+    }
+
+    public function test_free_plan_cannot_hydrate_pro_only_components(): void
+    {
+        $this->shop->forceFill(['trial_ends_at' => null])->save();
+        $admin = $this->makeUser('admin');
+
+        foreach (self::PRO_ONLY as $component) {
+            $this->assertForbidden($component, $admin);
+        }
+    }
+
+    public function test_free_plan_can_still_hydrate_non_pro_manager_components(): void
+    {
+        $this->shop->forceFill(['trial_ends_at' => null])->save();
+        $admin = $this->makeUser('admin');
+
+        foreach ([ProductManager::class, ModifierManager::class, ShopSettings::class, ShiftReport::class, CashReconciliation::class, MenuBuilder::class, AuditLogs::class] as $component) {
             $this->assertAllowed($component, $admin);
         }
     }

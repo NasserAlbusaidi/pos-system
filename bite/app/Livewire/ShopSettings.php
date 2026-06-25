@@ -3,8 +3,11 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\BillingService;
+use App\Services\PinCodePolicy;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -71,7 +74,7 @@ class ShopSettings extends Component
 
     public $staffEmail = '';
 
-    public $staffRole = 'cashier';
+    public $staffRole = 'server';
 
     public $staffPin = '';
 
@@ -154,6 +157,11 @@ class ShopSettings extends Component
         return '#'.strtolower($hex);
     }
 
+    protected function normalizedWhatsAppNumber(): ?string
+    {
+        return WhatsAppService::normalizeNumber($this->whatsapp_number);
+    }
+
     /**
      * Sanitize color properties on every client-side update to prevent CSS injection.
      * Livewire public properties can be set by the client via wire protocol,
@@ -200,6 +208,21 @@ class ShopSettings extends Component
             'businessHours.*.closed' => ['boolean'],
         ]);
 
+        $whatsappNumber = $this->normalizedWhatsAppNumber();
+        $hasWhatsAppInput = trim((string) $this->whatsapp_number) !== '';
+
+        if ((bool) $this->whatsapp_notifications_enabled && $whatsappNumber === null) {
+            $this->addError('whatsapp_number', 'Enter a WhatsApp number with country code to enable alerts.');
+
+            return;
+        }
+
+        if ($hasWhatsAppInput && $whatsappNumber === null) {
+            $this->addError('whatsapp_number', 'Enter a WhatsApp number with country code.');
+
+            return;
+        }
+
         $shop = Auth::user()->shop;
         $paper = $this->normalizeHex($this->paper, '#FDFCF8');
         $ink = $this->normalizeHex($this->ink, '#1A1918');
@@ -218,8 +241,8 @@ class ShopSettings extends Component
                 'theme' => $this->theme,
                 'receipt_header' => $this->receipt_header ?? '',
                 'language' => $this->language,
-                'whatsapp_number' => $this->whatsapp_number ?? '',
-                'whatsapp_notifications_enabled' => (bool) $this->whatsapp_notifications_enabled,
+                'whatsapp_number' => $whatsappNumber ?? '',
+                'whatsapp_notifications_enabled' => (bool) $this->whatsapp_notifications_enabled && $whatsappNumber !== null,
                 'phone' => $this->phone ?? '',
                 'address' => $this->address ?? '',
                 'about' => $this->about ?? '',
@@ -231,6 +254,8 @@ class ShopSettings extends Component
         $this->paper = $paper;
         $this->ink = $ink;
         $this->accent = $accent;
+        $this->whatsapp_number = $whatsappNumber ?? '';
+        $this->whatsapp_notifications_enabled = (bool) $this->whatsapp_notifications_enabled && $whatsappNumber !== null;
 
         $this->dispatch('toast', message: 'Shop settings saved.', variant: 'success');
     }
@@ -240,8 +265,8 @@ class ShopSettings extends Component
     public function addStaff()
     {
         $allowedRoles = Auth::user()->role === 'admin'
-            ? 'manager,cashier,kitchen,server'
-            : 'cashier,kitchen,server';
+            ? 'manager,kitchen,server'
+            : 'kitchen,server';
 
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
@@ -251,6 +276,12 @@ class ShopSettings extends Component
         ]);
 
         $shop = Auth::user()->shop;
+
+        if ($this->staffPin && ! app(PinCodePolicy::class)->isUniqueForShop($shop->id, $this->staffPin)) {
+            $this->addError('staffPin', 'This PIN is already assigned to another staff member.');
+
+            return;
+        }
 
         // Check plan limits before adding staff.
         $billing = app(BillingService::class);
@@ -265,7 +296,7 @@ class ShopSettings extends Component
             return;
         }
 
-        User::forceCreate([
+        $staff = User::forceCreate([
             'shop_id' => $shop->id,
             'name' => $this->staffName,
             'email' => $this->staffEmail,
@@ -274,30 +305,35 @@ class ShopSettings extends Component
             'password' => Hash::make(str()->random(16)),
         ]);
 
+        AuditLog::record('staff.created', $staff, [
+            'name' => $staff->name,
+            'email' => $staff->email,
+            'role' => $staff->role,
+            'pin_set' => $this->staffPin !== '',
+        ]);
+
         $this->resetStaffForm();
         $this->dispatch('toast', message: 'Staff member added.', variant: 'success');
     }
 
     public function editStaff($userId)
     {
-        $shop = Auth::user()->shop;
-        $user = User::where('id', $userId)->where('shop_id', $shop->id)->firstOrFail();
+        $user = $this->staffMemberForManagement($userId);
 
         $this->editingStaffId = $user->id;
         $this->staffName = $user->name;
         $this->staffEmail = $user->email;
-        $this->staffRole = $user->role ?? 'cashier';
+        $this->staffRole = $user->role ?? 'server';
         $this->staffPin = '';
     }
 
     public function updateStaff()
     {
-        $shop = Auth::user()->shop;
-        $user = User::where('id', $this->editingStaffId)->where('shop_id', $shop->id)->firstOrFail();
+        $user = $this->staffMemberForManagement($this->editingStaffId);
 
         $allowedRoles = Auth::user()->role === 'admin'
-            ? 'manager,cashier,kitchen,server'
-            : 'cashier,kitchen,server';
+            ? 'manager,kitchen,server'
+            : 'kitchen,server';
 
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
@@ -305,6 +341,16 @@ class ShopSettings extends Component
             'staffRole' => "required|in:{$allowedRoles}",
             'staffPin' => 'nullable|digits:4',
         ]);
+
+        if ($this->staffPin && ! app(PinCodePolicy::class)->isUniqueForShop($user->shop_id, $this->staffPin, $user->id)) {
+            $this->addError('staffPin', 'This PIN is already assigned to another staff member.');
+
+            return;
+        }
+
+        $previousRole = $user->role;
+        $previousEmail = $user->email;
+        $pinChanged = $this->staffPin !== '';
 
         $data = [
             'name' => $this->staffName,
@@ -316,7 +362,17 @@ class ShopSettings extends Component
             $data['pin_code'] = Hash::make($this->staffPin);
         }
 
-        $user->update($data);
+        $user->forceFill($data)->save();
+        $user->refresh();
+
+        AuditLog::record('staff.updated', $user, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'previous_email' => $previousEmail,
+            'role' => $user->role,
+            'previous_role' => $previousRole,
+            'pin_changed' => $pinChanged,
+        ]);
 
         $this->resetStaffForm();
         $this->dispatch('toast', message: 'Staff member updated.', variant: 'success');
@@ -324,8 +380,7 @@ class ShopSettings extends Component
 
     public function removeStaff($userId)
     {
-        $shop = Auth::user()->shop;
-        $user = User::where('id', $userId)->where('shop_id', $shop->id)->firstOrFail();
+        $user = $this->staffMemberForManagement($userId);
 
         // Prevent removing yourself
         if ($user->id === Auth::id()) {
@@ -334,8 +389,39 @@ class ShopSettings extends Component
             return;
         }
 
+        AuditLog::record('staff.removed', $user, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ]);
+
         $user->delete();
         $this->dispatch('toast', message: 'Staff member removed.', variant: 'success');
+    }
+
+    protected function staffMemberForManagement($userId): User
+    {
+        $shop = Auth::user()->shop;
+        $user = User::where('id', $userId)->where('shop_id', $shop->id)->firstOrFail();
+
+        abort_unless($this->canManageStaffMember($user), 403, 'This staff record cannot be managed by your role.');
+
+        return $user;
+    }
+
+    protected function canManageStaffMember(User $user): bool
+    {
+        $actorRole = Auth::user()?->role;
+
+        if ($actorRole === 'admin') {
+            return $user->role !== 'admin';
+        }
+
+        if ($actorRole === 'manager') {
+            return in_array($user->role, ['server', 'kitchen'], true);
+        }
+
+        return false;
     }
 
     public function cancelEditStaff()
@@ -348,7 +434,7 @@ class ShopSettings extends Component
         $this->editingStaffId = null;
         $this->staffName = '';
         $this->staffEmail = '';
-        $this->staffRole = 'cashier';
+        $this->staffRole = 'server';
         $this->staffPin = '';
         $this->resetValidation();
     }

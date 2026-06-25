@@ -37,10 +37,9 @@ class KdsMultiOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kitchen) {
             $browser->loginAs($kitchen)
                 ->visit('/kds')
-                // Both orders visible (product names are CSS uppercase)
-                ->waitForText('COFFEE')
-                ->assertSee('COFFEE')
-                ->assertSee('TEA');
+                ->waitForText('Coffee')
+                ->assertSee('Coffee')
+                ->assertSee('Tea');
         });
     }
 

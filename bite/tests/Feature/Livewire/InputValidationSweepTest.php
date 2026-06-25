@@ -144,6 +144,20 @@ class InputValidationSweepTest extends TestCase
             ->assertHasErrors(['max_selection']);
     }
 
+    public function test_modifier_manager_rejects_max_selection_below_min_selection(): void
+    {
+        $shop = Shop::create(['name' => 'My Shop', 'slug' => 'my-shop']);
+        $admin = User::factory()->create(['shop_id' => $shop->id, 'role' => 'admin']);
+
+        Livewire::actingAs($admin)
+            ->test(ModifierManager::class)
+            ->set('name_en', 'Toppings')
+            ->set('min_selection', 3)
+            ->set('max_selection', 1)
+            ->call('save')
+            ->assertHasErrors(['max_selection']);
+    }
+
     // ── KitchenDisplay — enum allowlist ────────────────────────────────────
 
     public function test_kitchen_display_rejects_arbitrary_status_string(): void

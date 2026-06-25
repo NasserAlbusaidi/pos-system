@@ -73,4 +73,26 @@ class CurrencyDisplayTest extends TestCase
         $this->assertSame('OMR', $shop->currency_symbol);
         $this->assertSame(3, (int) $shop->currency_decimals);
     }
+
+    public function test_price_delta_displays_modifier_adjustment_signs(): void
+    {
+        $shop = Shop::create([
+            'name' => 'Delta Shop',
+            'slug' => 'delta-shop',
+            'currency_decimals' => 3,
+        ]);
+
+        $this->blade('<x-price-delta :amount="0.250" :shop="$shop" />', ['shop' => $shop])
+            ->assertSee('+', false)
+            ->assertSee('0.250')
+            ->assertSeeHtml('class="omr-symbol"');
+
+        $this->blade('<x-price-delta :amount="-0.250" :shop="$shop" />', ['shop' => $shop])
+            ->assertSee('-', false)
+            ->assertSee('0.250')
+            ->assertDontSee('+-', false);
+
+        $this->blade('<x-price-delta :amount="0" :shop="$shop" />', ['shop' => $shop])
+            ->assertDontSee('price-delta');
+    }
 }

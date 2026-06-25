@@ -7,11 +7,20 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Support\BrandingUrl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class GuestMenuHeroTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     private function seedShop(array $branding = []): Shop
     {
@@ -57,6 +66,24 @@ class GuestMenuHeroTest extends TestCase
         $response->assertSee('Dine-in');
     }
 
+    public function test_home_hero_renders_closed_pill_when_shop_is_closed(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        $shop = $this->seedShop([
+            'timezone' => 'Asia/Muscat',
+            'business_hours' => [
+                'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => true],
+            ],
+        ]);
+
+        $response = $this->get(route('guest.menu', $shop->slug));
+
+        $response->assertStatus(200);
+        $response->assertSee(__('guest.status_closed'));
+        $response->assertDontSee(__('guest.status_open'));
+    }
+
     public function test_malicious_branding_url_is_not_rendered_in_src(): void
     {
         $shop = $this->seedShop([
@@ -85,9 +112,7 @@ class GuestMenuHeroTest extends TestCase
         $response->assertSee('https://storage.googleapis.com/bite/logo.webp', false);
     }
 
-    /**
-     * @dataProvider brandingUrlCases
-     */
+    #[DataProvider('brandingUrlCases')]
     public function test_branding_url_sanitizer(mixed $input, ?string $expected): void
     {
         $this->assertSame($expected, BrandingUrl::safe($input));

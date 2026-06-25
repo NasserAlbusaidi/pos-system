@@ -13,6 +13,7 @@ return [
 
     // Hero (screen 2)
     'status_open' => 'Open now',
+    'status_closed' => 'Closed for online orders',
     'dine_in' => 'Dine-in',
 
     // Menu
@@ -78,8 +79,11 @@ return [
     'phone_hint' => 'for order updates & points',
     'name_required' => 'Please enter your name.',
     'phone_required' => 'Please enter your phone number.',
+    'shop_closed' => 'This restaurant is currently closed for online orders. Please check back during opening hours.',
+    'shift_closed' => 'Online orders are paused for today because the restaurant has closed its shift. Please ask the staff or come back next business day.',
     'cart_too_large' => 'Your order is too large to place. Please reduce the quantities or split it into a smaller order.',
     'order_total_too_high' => 'Your order total is too high to place online. Please order at the counter or split it into a smaller order.',
+    'idempotency_conflict' => 'This checkout request was already used for a different order. Please refresh and try again.',
     'rate_limit_error' => "You're ordering too quickly. Please wait a moment and try again.",
     'payment' => 'Payment',
     'pay_at_counter' => 'Pay at the counter',

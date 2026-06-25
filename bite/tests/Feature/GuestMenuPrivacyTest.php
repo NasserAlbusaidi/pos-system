@@ -118,6 +118,27 @@ class GuestMenuPrivacyTest extends TestCase
             ]);
     }
 
+    public function test_order_usual_caps_stored_favorite_quantity_before_loading_cart(): void
+    {
+        config(['ordering.max_quantity_per_line' => 3]);
+
+        [$shop, $product] = $this->createMenu();
+        $this->createCustomer($shop, [
+            [
+                'id' => $product->id,
+                'name' => 'Stale Bulk Favorite',
+                'quantity' => 99,
+                'selectedModifiers' => [],
+            ],
+        ]);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->set('loyaltyPhone', '99887766')
+            ->call('recognizeCustomer')
+            ->call('orderUsual')
+            ->assertSet('cart.'.$product->id.'-plain.quantity', 3);
+    }
+
     /**
      * @return array{0: Shop, 1: Product}
      */

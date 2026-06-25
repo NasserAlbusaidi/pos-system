@@ -25,6 +25,7 @@ class OrderStatusResource extends JsonResource
         return [
             'tracking_token' => $this->tracking_token,
             'status' => $this->customerStatus(),
+            'source' => $this->source ?? 'guest',
             'customer_name' => $this->customer_name,
             'order_note' => $this->order_note,
             'subtotal' => round((float) $this->subtotal_amount, 3),

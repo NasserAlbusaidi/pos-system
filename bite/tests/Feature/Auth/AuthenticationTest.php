@@ -37,6 +37,32 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_kitchen_user_password_login_redirects_to_kds(): void
+    {
+        $user = User::factory()->create(['role' => 'kitchen']);
+
+        $component = Volt::test('pages.auth.login')
+            ->set('form.email', $user->email)
+            ->set('form.password', 'password');
+
+        $component->call('login');
+
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect(route('kds.view', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_authenticated_kitchen_user_is_redirected_from_login_to_kds(): void
+    {
+        $user = User::factory()->create(['role' => 'kitchen']);
+
+        $this->actingAs($user)
+            ->get('/login')
+            ->assertRedirect(route('kds.view'));
+    }
+
     public function test_admin_with_incomplete_onboarding_is_redirected_to_onboarding(): void
     {
         $user = User::factory()->create(['role' => 'admin']);

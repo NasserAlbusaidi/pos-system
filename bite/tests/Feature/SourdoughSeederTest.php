@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Models\User;
 use App\Services\BillingService;
 use App\Services\ImageService;
 use Database\Seeders\SourdoughMenuSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Tests\TestCase;
 
 /**
@@ -66,6 +69,10 @@ class SourdoughSeederTest extends TestCase
             $billing->canAccess($shop, 'add_product'),
             'Pilot shop must keep full product access despite exceeding the Free cap'
         );
+
+        $admin = User::where('email', 'admin@sourdough.om')->firstOrFail();
+        $this->assertSame($shop->id, $admin->shop_id);
+        $this->assertTrue(Hash::check('password', $admin->password));
     }
 
     public function test_seeder_is_idempotent(): void
@@ -79,5 +86,36 @@ class SourdoughSeederTest extends TestCase
         $this->assertSame(1, Shop::where('slug', 'sourdough')->count());
         $shop = Shop::where('slug', 'sourdough')->first();
         $this->assertSame(33, Product::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_production_seed_requires_explicit_sourdough_admin_password(): void
+    {
+        $this->stubImagePipeline();
+        $this->app->detectEnvironment(fn () => 'production');
+        config(['services.sourdough.admin_password' => null]);
+
+        try {
+            (new SourdoughMenuSeeder)->run();
+            $this->fail('Sourdough production seed should require an explicit admin password.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('SOURDOUGH_ADMIN_PASSWORD', $e->getMessage());
+        }
+
+        $this->assertSame(0, Shop::where('slug', 'sourdough')->count());
+        $this->assertSame(0, User::where('email', 'admin@sourdough.om')->count());
+    }
+
+    public function test_production_seed_uses_configured_handoff_password(): void
+    {
+        $this->stubImagePipeline();
+        $this->app->detectEnvironment(fn () => 'production');
+        config(['services.sourdough.admin_password' => 'strong-handoff-password']);
+
+        (new SourdoughMenuSeeder)->run();
+
+        $admin = User::where('email', 'admin@sourdough.om')->firstOrFail();
+
+        $this->assertTrue(Hash::check('strong-handoff-password', $admin->password));
+        $this->assertFalse(Hash::check('password', $admin->password));
     }
 }

@@ -10,7 +10,7 @@
     </div>
 
     @php
-        $payTotal = max(0.001, (float) collect($paymentBreakdown)->sum('total'));
+        $payTotal = max(0.001, (float) collect($paymentBreakdown)->sum(fn ($row) => abs((float) $row->total)));
         $payColors = ['card' => 'var(--bite-green)', 'cash' => 'var(--bite-lime-300)'];
         $payFallback = ['var(--bite-olive)', 'var(--bite-pine)', 'var(--bite-lime)', 'var(--bite-lime-200)'];
         $tpMaxQty = max(1, (int) collect($topProducts)->max('qty'));
@@ -67,21 +67,27 @@
                 @if($paymentBreakdown->isNotEmpty())
                     <div class="flex h-3.5 overflow-hidden rounded-full bg-mist">
                         @foreach($paymentBreakdown as $row)
-                            @php $fill = $payColors[strtolower($row->method)] ?? $payFallback[$loop->index % count($payFallback)]; @endphp
-                            @if($row->total > 0)
-                                <div style="width: {{ round(($row->total / $payTotal) * 100, 1) }}%; background: {{ $fill }};" title="{{ ucfirst($row->method) }}"></div>
+                            @php
+                                $fill = $payColors[strtolower($row->method)] ?? $payFallback[$loop->index % count($payFallback)];
+                                $rowTotalAbs = abs((float) $row->total);
+                            @endphp
+                            @if($rowTotalAbs > 0)
+                                <div style="width: {{ round(($rowTotalAbs / $payTotal) * 100, 1) }}%; background: {{ $fill }};" title="{{ ucfirst($row->method) }}"></div>
                             @endif
                         @endforeach
                     </div>
                     <div class="mt-5 flex flex-col gap-3">
                         @foreach($paymentBreakdown as $row)
-                            @php $fill = $payColors[strtolower($row->method)] ?? $payFallback[$loop->index % count($payFallback)]; @endphp
+                            @php
+                                $fill = $payColors[strtolower($row->method)] ?? $payFallback[$loop->index % count($payFallback)];
+                                $rowPct = $payTotal > 0 ? round((abs((float) $row->total) / $payTotal) * 100) : 0;
+                            @endphp
                             <div class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-cream px-4 py-3.5">
                                 <div class="flex items-center gap-2.5">
                                     <span class="h-2.5 w-2.5 rounded-full" style="background: {{ $fill }};"></span>
                                     <div>
                                         <div class="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-ink">{{ ucfirst($row->method) }}</div>
-                                        <div class="mt-1 font-mono text-[10px] font-medium tracking-[0.04em] text-ink-soft">{{ __('admin.shift_count') }} {{ $row->count }} · {{ round(($row->total / $payTotal) * 100) }}%</div>
+                                        <div class="mt-1 font-mono text-[10px] font-medium tracking-[0.04em] text-ink-soft">{{ __('admin.shift_count') }} {{ $row->count }} · {{ $rowPct }}%</div>
                                     </div>
                                 </div>
                                 <div class="font-display text-lg font-bold text-forest"><x-price :amount="$row->total" :shop="$shop" /></div>

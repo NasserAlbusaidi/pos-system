@@ -149,4 +149,36 @@ class GuestMenuReskinContractTest extends TestCase
             ->assertSeeHtml('guest-paysel')
             ->assertSee(__('guest.pay_at_counter'));
     }
+
+    public function test_checkout_confirmation_dispatches_guest_confirm_surface(): void
+    {
+        $shop = $this->seedShop();
+        $product = $shop->products()->first();
+        $group = $product->modifierGroups()->first();
+        $option = $group->options()->first();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('openProductSheet', $product->id)
+            ->call('selectModifier', $group->id, $option->id, false)
+            ->call('addToCart', $product->id)
+            ->call('toggleReview')
+            ->assertSeeHtml("surface: 'guest'")
+            ->assertSeeHtml('confirmLabel:')
+            ->assertSeeHtml('cancelLabel:')
+            ->assertDontSeeHtml('Please confirm this action');
+    }
+
+    public function test_group_share_modal_uses_guest_sheet_surface(): void
+    {
+        $shop = $this->seedShop();
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->call('createGroup')
+            ->assertSet('showGroupShareModal', true)
+            ->assertSeeHtml('guest-sheet guest-share')
+            ->assertSeeHtml('guest-share__url')
+            ->assertSeeHtml('guest-share__copy')
+            ->assertDontSeeHtml('surface-card flex w-full max-w-md')
+            ->assertDontSeeHtml('btn-primary w-full justify-center');
+    }
 }

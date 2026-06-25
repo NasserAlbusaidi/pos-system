@@ -17,6 +17,7 @@ class CurrencyHelperTest extends TestCase
         $this->assertSame('OMR 0.250', formatPrice(0.25, $shop));
         $this->assertSame('OMR 0.000', formatPrice(0, $shop));
         $this->assertSame('OMR 1,234.500', formatPrice(1234.5, $shop));
+        $this->assertSame('-OMR 0.500', formatPrice(-0.5, $shop));
     }
 
     public function test_format_price_with_usd_config(): void

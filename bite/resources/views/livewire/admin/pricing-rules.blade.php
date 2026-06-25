@@ -77,7 +77,7 @@
 
                     <div>
                         <label class="section-headline mb-2 block">Discount Value</label>
-                        <input type="number" wire:model="discount_value" class="field text-sm" step="0.001" min="0" placeholder="e.g. 30 for 30%">
+                        <input type="number" wire:model="discount_value" class="field text-sm" step="0.001" min="0" @if($discount_type === 'percentage') max="100" @endif placeholder="e.g. 30 for 30%">
                         @error('discount_value') <p class="mt-1 text-xs text-alert">{{ $message }}</p> @enderror
                     </div>
                 </div>

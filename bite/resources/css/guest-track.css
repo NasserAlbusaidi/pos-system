@@ -12,59 +12,122 @@
    ────────────────────────────────────────────────────────────── */
 
 .guest-track {
-    min-height: 100%;
-    padding: var(--space-8) var(--space-4);
+    min-height: 100dvh;
+    padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+    background: var(--white);
 }
 
 .guest-track__inner {
     width: 100%;
-    max-width: 32rem;
+    max-width: 100%;
     margin-inline: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-6);
+    gap: 18px;
+}
+
+.guest-track__mast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0 2px;
+}
+
+.guest-track__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.guest-track__mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: var(--radius);
+    background: var(--primary-50);
+    color: var(--primary-500);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.guest-track__brand-copy {
+    min-width: 0;
+}
+
+.guest-track__brand-copy small,
+.guest-track__pill {
+    display: block;
+    color: var(--neutral-500);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.guest-track__brand-copy strong {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: var(--neutral-900);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.guest-track__pill {
+    flex: none;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    background: var(--primary-50);
+    color: var(--primary-500);
 }
 
 /* Counter code card — espresso gradient, the thing the guest shows */
 .guest-codecard {
-    padding: var(--space-5);
-    border-radius: var(--radius-lg);
+    padding: 22px 18px;
+    border-radius: var(--radius);
     text-align: center;
-    color: rgb(var(--paper));
-    background: linear-gradient(160deg, rgb(var(--ink)), rgb(var(--crema) / 0.55));
-    box-shadow: var(--shadow-md);
+    color: var(--white);
+    background: linear-gradient(160deg, var(--primary-900), var(--primary-500));
+    box-shadow: var(--shadow);
 }
 
 .guest-codecard__lab {
     font-size: 10px;
-    letter-spacing: 0.22em;
+    font-weight: 800;
     text-transform: uppercase;
-    color: rgb(var(--paper) / 0.6);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .guest-codecard__code {
-    margin: var(--space-2) 0 var(--space-1);
-    font-family: var(--theme-display-font, 'Playfair Display', Georgia, serif);
-    font-size: var(--font-size-3xl, 2.25rem);
-    font-weight: var(--font-weight-bold);
+    margin: 10px 0 6px;
+    font-size: 40px;
+    font-weight: 800;
     letter-spacing: 0.04em;
     line-height: 1;
 }
 
 .guest-codecard__sub {
-    font-size: var(--font-size-xs);
-    color: rgb(var(--paper) / 0.78);
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 /* Cancelled — distinct, clear state */
 .guest-track__cancelled {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    border: 1px solid rgb(var(--alert) / 0.35);
-    border-radius: var(--radius-md);
-    background: rgb(var(--alert) / 0.08);
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid rgba(162, 25, 22, 0.25);
+    border-radius: var(--radius);
+    background: var(--red-50);
 }
 
 .guest-track__cancelled-icon {
@@ -73,9 +136,9 @@
     width: 36px;
     height: 36px;
     flex: none;
-    border-radius: var(--radius-pill);
-    background: rgb(var(--alert) / 0.14);
-    color: rgb(var(--alert));
+    border-radius: var(--radius);
+    background: rgba(162, 25, 22, 0.12);
+    color: var(--red-600);
 }
 
 .guest-track__cancelled-icon svg {
@@ -85,30 +148,34 @@
 
 .guest-track__cancelled b {
     display: block;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgb(var(--alert));
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--red-600);
 }
 
 .guest-track__cancelled small {
     display: block;
     margin-top: 2px;
-    font-size: var(--font-size-xs);
+    font-size: 12px;
     line-height: 1.45;
-    color: rgb(var(--ink-soft));
+    color: var(--neutral-600);
 }
 
 /* Vertical step timeline */
 .guest-timeline {
     display: flex;
     flex-direction: column;
+    padding: 18px 16px;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius);
+    background: var(--neutral-100);
 }
 
 .guest-tnode {
     position: relative;
     display: flex;
-    gap: var(--space-3);
-    padding-bottom: var(--space-6);
+    gap: 12px;
+    padding-bottom: 22px;
 }
 
 .guest-tnode:last-child {
@@ -123,11 +190,11 @@
     top: 28px;
     bottom: 0;
     width: 2px;
-    background: rgb(var(--line));
+    background: var(--neutral-200);
 }
 
 .guest-tnode--done .guest-tnode__rail {
-    background: rgb(var(--signal));
+    background: var(--primary-500);
 }
 
 .guest-tnode__bub {
@@ -138,12 +205,12 @@
     width: 28px;
     height: 28px;
     flex: none;
-    border-radius: var(--radius-pill);
-    border: 2px solid rgb(var(--line));
-    background: rgb(var(--panel));
-    color: rgb(var(--ink-soft));
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
+    border-radius: var(--radius);
+    border: 2px solid var(--neutral-200);
+    background: var(--white);
+    color: var(--neutral-500);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .guest-tnode__bub svg {
@@ -152,23 +219,23 @@
 }
 
 .guest-tnode--done .guest-tnode__bub {
-    border-color: rgb(var(--signal));
-    background: rgb(var(--signal));
-    color: rgb(var(--paper));
+    border-color: var(--primary-500);
+    background: var(--primary-500);
+    color: var(--white);
 }
 
 .guest-tnode--now .guest-tnode__bub {
-    border-color: rgb(var(--crema));
-    background: rgb(var(--crema));
-    color: rgb(var(--paper));
-    box-shadow: 0 0 0 5px rgb(var(--crema) / 0.18);
+    border-color: var(--orange-500);
+    background: var(--orange-500);
+    color: var(--white);
+    box-shadow: 0 0 0 5px rgba(250, 124, 0, 0.14);
 }
 
 .guest-tnode__pulse {
     width: 8px;
     height: 8px;
-    border-radius: var(--radius-pill);
-    background: rgb(var(--paper));
+    border-radius: 999px;
+    background: var(--white);
 }
 
 .guest-tnode__tx {
@@ -178,14 +245,14 @@
 
 .guest-tnode__tx b {
     display: block;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgb(var(--ink));
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--neutral-900);
 }
 
 .guest-tnode--pending .guest-tnode__tx b {
-    font-weight: var(--font-weight-medium);
-    color: rgb(var(--ink-soft));
+    font-weight: 700;
+    color: var(--neutral-500);
 }
 
 .guest-tnode__tx small {
@@ -193,34 +260,34 @@
     margin-top: 2px;
     font-size: 11px;
     line-height: 1.45;
-    color: rgb(var(--ink-soft));
+    color: var(--neutral-500);
 }
 
 /* Post-order review invite */
 .guest-review {
-    padding: var(--space-5);
-    border: 1px solid rgb(var(--line) / 0.7);
-    border-radius: var(--radius-md);
-    background: rgb(var(--panel));
+    padding: 18px;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius);
+    background: var(--neutral-100);
     text-align: center;
 }
 
 .guest-review__q {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    color: rgb(var(--ink));
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--neutral-900);
 }
 
 .guest-review__stars {
     display: inline-flex;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .guest-review__star {
     display: grid;
     place-items: center;
-    color: rgb(var(--line));
+    color: var(--neutral-300);
 }
 
 .guest-review__star svg {
@@ -246,61 +313,61 @@
 }
 
 .guest-review__star.is-on {
-    color: rgb(var(--crema));
+    color: var(--orange-500);
 }
 
 .guest-review__form {
-    margin-top: var(--space-4);
+    margin-top: 16px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
     text-align: start;
 }
 
 .guest-review__error {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: rgb(var(--alert));
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--red-600);
 }
 
 .guest-review__done {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-2);
+    gap: 8px;
 }
 
 .guest-review__thanks {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgb(var(--signal));
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary-500);
 }
 
 /* Branding-driven review/social links */
 .guest-review__links {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    margin-top: var(--space-5);
+    gap: 8px;
+    margin-top: 18px;
     text-align: start;
 }
 
 .guest-review__link {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid rgb(var(--line) / 0.7);
-    border-radius: var(--radius-md);
-    background: rgb(var(--paper));
-    color: rgb(var(--ink));
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--neutral-900);
     text-decoration: none;
     transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .guest-review__link:hover {
     transform: translateY(-1px);
-    border-color: rgb(var(--crema) / 0.6);
+    border-color: var(--primary-200);
 }
 
 .guest-review__link-ic {
@@ -309,9 +376,9 @@
     width: 36px;
     height: 36px;
     flex: none;
-    border-radius: var(--radius-sm);
-    background: rgb(var(--crema) / 0.12);
-    color: rgb(var(--crema));
+    border-radius: var(--radius);
+    background: var(--primary-50);
+    color: var(--primary-500);
 }
 
 .guest-review__link-ic svg {
@@ -321,15 +388,15 @@
 
 .guest-review__link strong {
     display: block;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    font-weight: 800;
 }
 
 .guest-review__link small {
     display: block;
     margin-top: 2px;
     font-size: 11px;
-    color: rgb(var(--ink-soft));
+    color: var(--neutral-500);
 }
 
 .guest-track__back {
@@ -344,6 +411,6 @@
 
 @media (min-width: 640px) {
     .guest-track {
-        padding-block: var(--space-12);
+        padding-block: 24px;
     }
 }

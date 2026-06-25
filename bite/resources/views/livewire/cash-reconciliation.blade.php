@@ -13,7 +13,7 @@
     </div>
 
     {{-- Shift Summary Cards --}}
-    <div class="grid gap-[14px] sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-[14px] sm:grid-cols-2 xl:grid-cols-5">
         <div class="rounded-2xl border border-line bg-cream p-[18px]">
             <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.total_orders') }}</div>
             <div class="mt-3 font-display text-[32px] font-bold leading-none text-forest">{{ $shiftSummary['total_orders'] }}</div>
@@ -29,6 +29,10 @@
         <div class="rounded-2xl border border-line bg-cream p-[18px]">
             <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.card_payments') }}</div>
             <div class="mt-3 font-display text-[32px] font-bold leading-none text-olive"><x-price :amount="$shiftSummary['card_total']" :shop="$shop" /></div>
+        </div>
+        <div class="rounded-2xl border border-line bg-cream p-[18px]">
+            <div class="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.voucher_payments') }}</div>
+            <div class="mt-3 font-display text-[32px] font-bold leading-none text-signal"><x-price :amount="$shiftSummary['voucher_total']" :shop="$shop" /></div>
         </div>
     </div>
 

@@ -24,6 +24,13 @@ class OptimizeImages extends Command
         $this->info("Found {$products->count()} products with images.");
 
         foreach ($products as $product) {
+            if ($this->isRemoteImageUrl($product->image_url)) {
+                $skipped++;
+                $this->line("  SKIP: {$product->name_en} (remote image URL)");
+
+                continue;
+            }
+
             // Skip already-processed images (contain -full. in the path)
             if (str_contains($product->image_url, '-full.')) {
                 $skipped++;
@@ -63,5 +70,12 @@ class OptimizeImages extends Command
         $this->info("Done. Processed: {$processed}, Skipped: {$skipped}, Failed: {$failed}");
 
         return self::SUCCESS;
+    }
+
+    private function isRemoteImageUrl(string $imageUrl): bool
+    {
+        $scheme = parse_url($imageUrl, PHP_URL_SCHEME);
+
+        return $scheme !== null && in_array(strtolower($scheme), ['http', 'https'], true);
     }
 }

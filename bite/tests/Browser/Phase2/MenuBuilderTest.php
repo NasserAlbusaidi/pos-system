@@ -40,12 +40,14 @@ class MenuBuilderTest extends DuskTestCase
             'name_ar' => 'عنصر مخفي',
             'is_visible' => true,
         ]);
+        $this->createAdditionalProduct($shop, $category);
 
         $this->browse(function (Browser $browser) use ($admin, $shop, $product) {
             // Verify product is initially visible on guest menu
             $browser->visit('/menu/'.$shop->slug)
-                ->waitForText('HIDDEN ITEM')
-                ->assertSee('HIDDEN ITEM');
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
+                ->waitForText('Hidden Item')
+                ->assertSee('Hidden Item');
 
             // Toggle visibility off in menu builder
             $productRow = 'div[data-id="'.$product->id.'"]';
@@ -65,8 +67,9 @@ class MenuBuilderTest extends DuskTestCase
 
             // Verify product is now hidden on guest menu
             $browser->visit('/menu/'.$shop->slug)
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
                 ->pause(500)
-                ->assertDontSee('HIDDEN ITEM');
+                ->assertDontSee('Hidden Item');
 
             // Toggle visibility back on
             $browser->visit('/menu-builder')
@@ -82,8 +85,9 @@ class MenuBuilderTest extends DuskTestCase
 
             // Verify product is visible again on guest menu
             $browser->visit('/menu/'.$shop->slug)
-                ->waitForText('HIDDEN ITEM')
-                ->assertSee('HIDDEN ITEM');
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
+                ->waitForText('Hidden Item')
+                ->assertSee('Hidden Item');
         });
     }
 }

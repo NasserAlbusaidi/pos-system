@@ -7,8 +7,9 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Validates the untrusted cart + contact details for the public order-create
  * endpoint. Shape only — GuestOrderService owns repricing, modifier validation,
- * caps, phone normalization and idempotency. A client-supplied idempotency_key
- * is honored so network retries replay the same order rather than duplicating.
+ * caps, phone normalization and idempotency. Public API clients must send an
+ * idempotency_key so network retries replay the same order rather than
+ * duplicating it.
  */
 class StoreOrderRequest extends FormRequest
 {
@@ -29,12 +30,11 @@ class StoreOrderRequest extends FormRequest
             'cart.*.quantity' => ['required', 'integer', 'min:1'],
             'cart.*.name' => ['nullable', 'string', 'max:255'],
             'cart.*.selectedModifiers' => ['nullable', 'array'],
-            'cart.*.selectedModifiers.*' => ['integer'],
             'cart.*.note' => ['nullable', 'string', 'max:255'],
             'customer_name' => ['required', 'string', 'max:255'],
             'loyalty_phone' => ['required', 'string', 'max:30'],
             'order_note' => ['nullable', 'string', 'max:500'],
-            'idempotency_key' => ['nullable', 'uuid'],
+            'idempotency_key' => ['required', 'uuid'],
         ];
     }
 

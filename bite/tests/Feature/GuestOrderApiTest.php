@@ -3,10 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\ModifierGroup;
+use App\Models\ModifierOption;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ShiftClosure;
 use App\Models\Shop;
+use App\Support\ShopClock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -19,6 +24,13 @@ use Tests\TestCase;
 class GuestOrderApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     /**
      * @return array{0: Shop, 1: Product}
@@ -121,6 +133,23 @@ class GuestOrderApiTest extends TestCase
         ])->assertStatus(422);
     }
 
+    public function test_quote_accepts_grouped_modifier_selection(): void
+    {
+        [$shop, $product] = $this->makeMenu(2.000);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Size', 'min_selection' => 1, 'max_selection' => 1]);
+        $large = ModifierOption::create(['modifier_group_id' => $group->id, 'name_en' => 'Large', 'price_adjustment' => 0.400]);
+        $product->modifierGroups()->attach($group->id);
+
+        $response = $this->postJson('/api/guest/orders/quote', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1, [$group->id => [$large->id]])],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.items.0.modifiers.0.name', 'Large');
+        $this->assertEqualsWithDelta(2.400, (float) $response->json('data.total'), 0.0001);
+    }
+
     public function test_unknown_shop_returns_404(): void
     {
         $this->postJson('/api/guest/orders/quote', [
@@ -145,7 +174,8 @@ class GuestOrderApiTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('data.status', 'received')
-            ->assertJsonPath('data.customer_name', 'Sara');
+            ->assertJsonPath('data.customer_name', 'Sara')
+            ->assertJsonPath('data.source', 'guest');
         $this->assertEqualsWithDelta(4.0, (float) $response->json('data.total'), 0.0001);
 
         $token = $response->json('data.tracking_token');
@@ -178,6 +208,99 @@ class GuestOrderApiTest extends TestCase
             'customer_name' => 'Sara',
             'loyalty_phone' => '12',
         ])->assertStatus(422);
+    }
+
+    public function test_store_requires_idempotency_key(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+
+        $this->postJson('/api/guest/orders', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+            'customer_name' => 'Sara',
+            'loyalty_phone' => '99887766',
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors('idempotency_key');
+    }
+
+    public function test_store_rejects_guest_order_when_shop_is_closed(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => true],
+                ],
+            ],
+        ]);
+
+        $this->postJson('/api/guest/orders', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+            'customer_name' => 'Sara',
+            'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
+        ])->assertStatus(422)
+            ->assertJsonPath('message', __('guest.shop_closed'))
+            ->assertJsonPath('field', 'order');
+
+        $this->assertSame(0, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_quote_rejects_guest_cart_when_shop_is_closed(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => true],
+                ],
+            ],
+        ]);
+
+        $this->postJson('/api/guest/orders/quote', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+        ])->assertStatus(422)
+            ->assertJsonPath('message', __('guest.shop_closed'))
+            ->assertJsonPath('field', 'order');
+    }
+
+    public function test_quote_rejects_guest_cart_after_shift_close(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $this->closeShiftFor($shop);
+
+        $this->postJson('/api/guest/orders/quote', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+        ])->assertStatus(422)
+            ->assertJsonPath('message', __('guest.shift_closed'))
+            ->assertJsonPath('field', 'order');
+    }
+
+    public function test_store_rejects_guest_order_after_shift_close(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $this->closeShiftFor($shop);
+
+        $this->postJson('/api/guest/orders', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+            'customer_name' => 'Sara',
+            'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
+        ])->assertStatus(422)
+            ->assertJsonPath('message', __('guest.shift_closed'))
+            ->assertJsonPath('field', 'order');
+
+        $this->assertSame(0, Order::where('shop_id', $shop->id)->count());
     }
 
     public function test_store_is_idempotent_on_repeated_key(): void
@@ -221,9 +344,32 @@ class GuestOrderApiTest extends TestCase
             'total' => 0.001,
             'customer_name' => 'Sara',
             'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
         ])->assertCreated();
 
         $this->assertEqualsWithDelta(6.0, (float) $response->json('data.total'), 0.0001);
+    }
+
+    public function test_store_accepts_grouped_modifier_selection(): void
+    {
+        [$shop, $product] = $this->makeMenu(2.000);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Size', 'min_selection' => 1, 'max_selection' => 1]);
+        $large = ModifierOption::create(['modifier_group_id' => $group->id, 'name_en' => 'Large', 'price_adjustment' => 0.400]);
+        $product->modifierGroups()->attach($group->id);
+
+        $line = $this->line($product, 1, [$group->id => [$large->id]]);
+
+        $response = $this->postJson('/api/guest/orders', [
+            'shop' => $shop->slug,
+            'cart' => [$line],
+            'customer_name' => 'Sara',
+            'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.items.0.modifiers.0.name', 'Large');
+        $this->assertEqualsWithDelta(2.400, (float) $response->json('data.total'), 0.0001);
     }
 
     // ---- show ------------------------------------------------------------
@@ -237,6 +383,7 @@ class GuestOrderApiTest extends TestCase
             'cart' => [$this->line($product, 1)],
             'customer_name' => 'Sara',
             'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
         ])->json('data.tracking_token');
 
         $this->getJson("/api/guest/orders/{$token}")
@@ -266,8 +413,72 @@ class GuestOrderApiTest extends TestCase
             ->assertJsonPath('data.status', 'preparing');
     }
 
+    public function test_pay_at_counter_guest_order_stays_received_after_short_counter_wait(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu(2.000);
+
+        $token = $this->postJson('/api/guest/orders', [
+            'shop' => $shop->slug,
+            'cart' => [$this->line($product, 1)],
+            'customer_name' => 'Sara',
+            'loyalty_phone' => '99887766',
+            'idempotency_key' => (string) Str::uuid(),
+        ])->assertCreated()->json('data.tracking_token');
+
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:07:00', 'Asia/Muscat'));
+
+        $this->getJson("/api/guest/orders/{$token}")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'received');
+
+        $this->assertSame('unpaid', Order::where('tracking_token', $token)->firstOrFail()->status);
+    }
+
+    public function test_show_cancels_expired_unpaid_order_before_returning_status(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $order = Order::forceCreate([
+            'shop_id' => $shop->id,
+            'status' => 'unpaid',
+            'customer_name' => 'Sara',
+            'subtotal_amount' => 2.0,
+            'tax_amount' => 0,
+            'total_amount' => 2.0,
+            'tracking_token' => (string) Str::uuid(),
+            'expires_at' => now()->subMinute(),
+        ]);
+
+        $this->getJson("/api/guest/orders/{$order->tracking_token}")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'cancelled');
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+    }
+
     public function test_show_unknown_token_returns_404(): void
     {
         $this->getJson('/api/guest/orders/'.Str::uuid())->assertStatus(404);
+    }
+
+    private function closeShiftFor(Shop $shop): void
+    {
+        ShiftClosure::forceCreate([
+            'shop_id' => $shop->id,
+            'business_date' => ShopClock::localDate($shop),
+            'closed_by' => null,
+            'expected_cash' => 0.000,
+            'actual_cash' => 0.000,
+            'difference' => 0.000,
+            'shift_summary' => [
+                'total_orders' => 0,
+                'total_revenue' => 0.000,
+                'cash_total' => 0.000,
+                'card_total' => 0.000,
+                'voucher_total' => 0.000,
+            ],
+            'closed_at' => now(),
+        ]);
     }
 }

@@ -35,6 +35,10 @@
             <span>{{ $order->customer_name ?: 'Walk-in' }}</span>
             <span>{{ $order->created_at->format('H:i') }}</span>
         </div>
+        <div class="receipt-row">
+            <span>Order type</span>
+            <span>{{ $order->sourceLabel() }}</span>
+        </div>
     </div>
 
     <div class="receipt-divider"></div>
@@ -56,9 +60,6 @@
                     @foreach($item->modifiers as $modifier)
                         <div class="receipt-modifier">
                             <span>+ {{ $modifier->modifier_option_name_snapshot_en }}</span>
-                            @if($modifier->price_adjustment_snapshot > 0)
-                                <span>{{ formatPrice($modifier->price_adjustment_snapshot, $shop) }}</span>
-                            @endif
                         </div>
                     @endforeach
                 @endif
@@ -96,15 +97,23 @@
             <span>TOTAL</span>
             <span>{{ formatPrice($order->total_amount, $shop) }}</span>
         </div>
+        @if($order->balance_due > 0)
+            <div class="receipt-row receipt-balance-row">
+                <span>Balance due</span>
+                <span>{{ formatPrice($order->balance_due, $shop) }}</span>
+            </div>
+            <div class="receipt-unpaid-banner">UNPAID</div>
+        @endif
     </div>
 
     <div class="receipt-divider"></div>
 
     {{-- Payments --}}
-    @if($order->payments->isNotEmpty())
+    @php($trustedPayments = $order->trustedPayments())
+    @if($trustedPayments->isNotEmpty())
         <div class="receipt-payments">
             <p class="receipt-section-label">Payment</p>
-            @foreach($order->payments as $payment)
+            @foreach($trustedPayments as $payment)
                 <div class="receipt-row">
                     <span>{{ ucfirst($payment->method) }}</span>
                     <span>{{ formatPrice($payment->amount, $shop) }}</span>

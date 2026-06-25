@@ -20,9 +20,8 @@ class KdsLifecycleTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kitchen) {
             $browser->loginAs($kitchen)
                 ->visit('/kds')
-                // Product names are CSS uppercase
-                ->waitForText('BURGER')
-                ->assertSee('BURGER');
+                ->waitForText('Burger')
+                ->assertSee('Burger');
         });
     }
 
@@ -36,8 +35,8 @@ class KdsLifecycleTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kitchen, $order) {
             $browser->loginAs($kitchen)
                 ->visit('/kds')
-                ->waitForText('SANDWICH')
-                ->assertSee('SANDWICH')
+                ->waitForText('Sandwich')
+                ->assertSee('Sandwich')
                 // paid -> preparing: click "Start Preparing"
                 ->click('button[wire\\:click="updateStatus('.$order->id.', \'preparing\')"]')
                 // After transition, button changes to "Order Ready"
@@ -45,7 +44,7 @@ class KdsLifecycleTest extends DuskTestCase
                 // preparing -> ready: click "Order Ready"
                 ->click('button[wire\\:click="updateStatus('.$order->id.', \'ready\')"]')
                 // After ready, order disappears from KDS (only paid+preparing shown)
-                ->waitUntilMissingText('SANDWICH');
+                ->waitUntilMissingText('Sandwich');
         });
 
         $order->refresh();

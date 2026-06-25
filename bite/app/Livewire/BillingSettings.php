@@ -18,6 +18,11 @@ class BillingSettings extends Component
         return ['admin'];
     }
 
+    protected function requiresActiveSubscribedShop(): bool
+    {
+        return false;
+    }
+
     public bool $showCancelModal = false;
 
     protected BillingService $billing;
@@ -42,6 +47,28 @@ class BillingSettings extends Component
 
         $shop = Auth::user()->shop;
         $planConfig = config("billing.plans.{$plan}");
+
+        if ($plan === 'free') {
+            if ($this->billing->getCurrentPlan($shop) === 'free') {
+                $this->dispatch('toast', message: 'You are already on this plan.', variant: 'error');
+
+                return;
+            }
+
+            try {
+                if ($this->billing->cancelSubscription($shop)) {
+                    $this->dispatch('toast', message: 'Subscription cancelled. You will have access until the end of your billing period.', variant: 'success');
+
+                    return;
+                }
+            } catch (\Exception $e) {
+                Log::error('Free plan switch failed', ['error' => $e->getMessage(), 'shop_id' => $shop->id]);
+            }
+
+            $this->dispatch('toast', message: 'Unable to switch to Free plan. Please try again.', variant: 'error');
+
+            return;
+        }
 
         if (! $planConfig || ! $planConfig['stripe_price_id']) {
             $this->dispatch('toast', message: 'Invalid plan selected.', variant: 'error');
@@ -74,13 +101,14 @@ class BillingSettings extends Component
 
         // Create a new Stripe Checkout session for subscription.
         try {
-            return $shop->newSubscription('default', $planConfig['stripe_price_id'])
-                ->trialDays(config('billing.trial_days', 14))
-                ->checkout([
-                    'success_url' => route('billing').'?checkout=success',
-                    'cancel_url' => route('billing').'?checkout=cancelled',
-                ])
-                ->redirect();
+            $checkoutUrl = $this->billing->startSubscriptionCheckout(
+                $shop,
+                $plan,
+                route('billing').'?checkout=success',
+                route('billing').'?checkout=cancelled',
+            );
+
+            return $this->redirect($checkoutUrl);
         } catch (\Exception $e) {
             Log::error('Checkout session creation failed', ['error' => $e->getMessage(), 'shop_id' => $shop->id]);
             $this->dispatch('toast', message: 'Could not start checkout. Please try again.', variant: 'error');
@@ -124,7 +152,7 @@ class BillingSettings extends Component
         $shop = Auth::user()->shop;
 
         try {
-            return $shop->redirectToBillingPortal(route('billing'));
+            return $this->redirect($this->billing->billingPortalUrl($shop, route('billing')));
         } catch (\Exception $e) {
             Log::error('Billing portal redirect failed', ['error' => $e->getMessage(), 'shop_id' => $shop->id]);
             $this->dispatch('toast', message: 'Could not open billing portal. Please try again.', variant: 'error');
@@ -147,7 +175,7 @@ class BillingSettings extends Component
         // Renewal / end date
         $renewalDate = null;
         if ($subscription) {
-            if ($subscription->cancelled() && $subscription->onGracePeriod()) {
+            if ($subscription->canceled() && $subscription->onGracePeriod()) {
                 $renewalDate = $subscription->ends_at;
             } elseif ($subscription->onTrial()) {
                 $renewalDate = $subscription->trial_ends_at;

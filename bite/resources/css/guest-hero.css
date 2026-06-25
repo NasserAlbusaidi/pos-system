@@ -94,6 +94,10 @@
     color: rgb(var(--paper));
 }
 
+.guest-hero__pill--closed {
+    background: rgb(var(--ink) / 0.72);
+}
+
 .guest-hero__dot {
     width: 6px;
     height: 6px;

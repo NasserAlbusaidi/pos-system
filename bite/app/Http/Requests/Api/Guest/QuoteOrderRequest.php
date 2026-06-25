@@ -28,7 +28,6 @@ class QuoteOrderRequest extends FormRequest
             'cart.*.quantity' => ['required', 'integer', 'min:1'],
             'cart.*.name' => ['nullable', 'string', 'max:255'],
             'cart.*.selectedModifiers' => ['nullable', 'array'],
-            'cart.*.selectedModifiers.*' => ['integer'],
             'cart.*.note' => ['nullable', 'string', 'max:255'],
         ];
     }

@@ -15,7 +15,7 @@ class InvoiceController extends Controller
             ->where('id', $order->id)
             ->firstOrFail();
 
-        $order->load('items.modifiers', 'shop');
+        $order->load('items.modifiers', 'payments', 'shop');
 
         return view('invoices.order', [
             'order' => $order,

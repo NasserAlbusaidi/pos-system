@@ -42,6 +42,50 @@ class PricingRule extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function auditSnapshot(): array
+    {
+        $this->loadMissing(['category', 'product']);
+
+        return [
+            'rule_name' => $this->name,
+            'discount_type' => $this->discount_type,
+            'discount_value' => (float) $this->discount_value,
+            'start_time' => $this->normalizeAuditTime($this->start_time),
+            'end_time' => $this->normalizeAuditTime($this->end_time),
+            'days_of_week' => $this->days_of_week === null
+                ? null
+                : array_values(array_map('intval', $this->days_of_week)),
+            'is_active' => (bool) $this->is_active,
+            'target_type' => $this->auditTargetType(),
+            'category_id' => $this->category_id === null ? null : (int) $this->category_id,
+            'category_name' => $this->category?->name_en,
+            'product_id' => $this->product_id === null ? null : (int) $this->product_id,
+            'product_name' => $this->product?->name_en,
+        ];
+    }
+
+    private function auditTargetType(): string
+    {
+        if ($this->product_id !== null) {
+            return 'product';
+        }
+
+        if ($this->category_id !== null) {
+            return 'category';
+        }
+
+        return 'shop';
+    }
+
+    private function normalizeAuditTime(?string $time): ?string
+    {
+        if ($time === null) {
+            return null;
+        }
+
+        return strlen($time) === 5 ? $time.':00' : $time;
+    }
+
     /**
      * Scope to rules that are active right now:
      * - is_active = true

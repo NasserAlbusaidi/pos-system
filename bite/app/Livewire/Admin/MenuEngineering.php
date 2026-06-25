@@ -3,9 +3,11 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Support\ShopClock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -18,6 +20,11 @@ class MenuEngineering extends Component
     protected function allowedRoles(): array
     {
         return ['manager', 'admin'];
+    }
+
+    protected function requiredPlanFeature(): ?string
+    {
+        return 'menu_engineering';
     }
 
     public Shop $shop;
@@ -49,16 +56,14 @@ class MenuEngineering extends Component
 
     private function loadAnalysis(): array
     {
-        $shopId = Auth::user()->shop_id;
-        $from = now()->subDays($this->rangeDays - 1)->startOfDay();
-        $to = now()->endOfDay();
-        $validStatuses = ['completed', 'ready', 'preparing', 'paid'];
-
+        $shop = $this->shop ?? Auth::user()->shop;
+        $shopId = $shop->id;
+        [$from, $to] = ShopClock::recentLocalDaysUtcRange($shop, $this->rangeDays);
         // Aggregate sales data per product using DB-level grouping
         $salesData = OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->where('orders.shop_id', $shopId)
-            ->whereIn('orders.status', $validStatuses)
+            ->whereIn('orders.status', Order::REVENUE_STATUSES)
             ->whereBetween('orders.paid_at', [$from, $to])
             ->select(
                 'order_items.product_id',

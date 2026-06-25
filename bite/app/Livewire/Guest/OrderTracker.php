@@ -4,6 +4,7 @@ namespace App\Livewire\Guest;
 
 use App\Models\Order;
 use App\Models\Shop;
+use App\Services\BillingService;
 use App\Support\BrandingUrl;
 use Livewire\Component;
 
@@ -45,6 +46,11 @@ class OrderTracker extends Component
     {
         $this->order = Order::where('tracking_token', $trackingToken)->firstOrFail();
         $this->shop = $this->order->shop;
+
+        abort_if($this->shop->status === 'suspended' || ! app(BillingService::class)->isSubscribed($this->shop), 404);
+
+        $this->order->cancelIfExpiredUnpaid();
+        $this->order->refresh();
         $this->feedbackSubmitted = ! empty($this->order->customer_rating);
     }
 
@@ -55,6 +61,10 @@ class OrderTracker extends Component
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'feedbackComment' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $this->order->refresh();
+
+        abort_unless(in_array($this->order->status, ['ready', 'completed'], true), 403);
 
         // Re-resolve by token so the write is always scoped to this one order
         // (the public route is keyed by the UUID token only) and idempotent.
@@ -119,6 +129,8 @@ class OrderTracker extends Component
 
     public function render()
     {
+        $this->order->refresh();
+        $this->order->cancelIfExpiredUnpaid();
         $this->order->refresh();
 
         return view('livewire.guest.order-tracker', [

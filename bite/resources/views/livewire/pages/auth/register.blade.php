@@ -4,7 +4,7 @@ use App\Mail\WelcomeTo;
 use App\Models\User;
 use App\Services\ShopProvisioningService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules;
@@ -35,7 +35,7 @@ new #[Layout('layouts.guest')] class extends Component
             'name' => ['required', 'string', 'max:255'],
             'restaurant_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'string', 'confirmed', 'regex:/^\S+$/', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'confirmed', 'regex:/^\S+$/', 'min:12', 'not_in:password', Rules\Password::defaults()],
         ], [
             'password.regex' => 'The password must not contain spaces.',
         ]);
@@ -49,12 +49,19 @@ new #[Layout('layouts.guest')] class extends Component
         $user = app(ShopProvisioningService::class)->provisionOwner(
             name: $validated['name'],
             email: $validated['email'],
-            password: Hash::make($validated['password']),
+            password: $validated['password'],
             shopName: $shopName,
         );
 
-        // Send welcome email (queued)
-        Mail::to($user)->queue(new WelcomeTo($user));
+        try {
+            Mail::to($user)->queue(new WelcomeTo($user));
+        } catch (Throwable $exception) {
+            Log::warning('Welcome email queue failed during registration.', [
+                'user_id' => $user->id,
+                'shop_id' => $user->shop_id,
+                'exception' => $exception::class,
+            ]);
+        }
 
         Auth::login($user);
 

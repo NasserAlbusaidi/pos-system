@@ -1,11 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Illuminate\Foundation\Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+Schedule::call(fn () => \App\Models\Order::cancelExpired())
+    ->name('orders.cancel-expired')
+    ->everyMinute();
 
-Schedule::call(fn () => \App\Models\Order::cancelExpired())->everyMinute();
-Schedule::call(fn () => \App\Models\GroupCart::cleanExpired())->hourly();
+Schedule::call(fn () => \App\Models\GroupCart::cleanExpired())
+    ->name('group-carts.clean-expired')
+    ->hourly();
+
+Schedule::command('webhook-events:prune --days=30')
+    ->name('webhook-events.prune-processed')
+    ->dailyAt('03:20');

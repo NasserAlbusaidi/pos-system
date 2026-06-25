@@ -9,7 +9,7 @@
         $peakHour = collect($ordersByHour)->sortByDesc('count')->first();
         $peakHourKey = ($peakHour && $peakHour['count'] > 0) ? $peakHour['hour'] : null;
         $tpMaxQty = max(1, (int) collect($topProducts)->max('qty'));
-        $payTotal = max(0.001, (float) collect($paymentSummary)->sum('total'));
+        $payTotal = max(0.001, (float) collect($paymentSummary)->sum(fn ($row) => abs((float) $row->total)));
         $payColors = ['card' => 'var(--bite-lime)', 'cash' => 'var(--bite-green)'];
         $payFallback = ['var(--bite-olive)', 'var(--bite-pine)', 'var(--bite-lime-300)', 'var(--bite-lime-200)'];
         $swatches = [
@@ -30,7 +30,7 @@
             </div>
             <div class="flex items-center gap-2.5">
                 <span class="tag">{{ __('admin.reports_last_days', ['days' => $rangeDays]) }}</span>
-                <a href="{{ route('admin.reports.export') }}" class="btn-secondary !px-4 !py-2">{{ __('admin.export_csv', ['days' => $rangeDays]) }}</a>
+                <a href="{{ route('admin.reports.export', $exportQuery) }}" class="btn-secondary !px-4 !py-2">{{ __('admin.export_csv', ['days' => $rangeDays]) }}</a>
             </div>
         </div>
         <div class="grid grid-cols-1 gap-3.5 p-[22px] sm:grid-cols-3">
@@ -125,9 +125,12 @@
                 @if($paymentSummary->isNotEmpty())
                     <div class="flex h-3.5 overflow-hidden rounded-full bg-mist">
                         @foreach($paymentSummary as $row)
-                            @php $fill = $payColors[strtolower($row->payment_method)] ?? $payFallback[$loop->index % count($payFallback)]; @endphp
-                            @if($row->total > 0)
-                                <div style="width: {{ round(($row->total / $payTotal) * 100, 1) }}%; background: {{ $fill }};" title="{{ strtoupper($row->payment_method) }}"></div>
+                            @php
+                                $fill = $payColors[strtolower($row->payment_method)] ?? $payFallback[$loop->index % count($payFallback)];
+                                $rowTotalAbs = abs((float) $row->total);
+                            @endphp
+                            @if($rowTotalAbs > 0)
+                                <div style="width: {{ round(($rowTotalAbs / $payTotal) * 100, 1) }}%; background: {{ $fill }};" title="{{ strtoupper($row->payment_method) }}"></div>
                             @endif
                         @endforeach
                     </div>
@@ -139,7 +142,7 @@
                                     <span class="h-2.5 w-2.5 rounded-[3px]" style="background: {{ $fill }};"></span>
                                     <div>
                                         <div class="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft">{{ strtoupper($row->payment_method) }}</div>
-                                        <div class="mt-1 text-[13px] font-medium text-ink">{{ __('admin.order_count', ['count' => $row->orders]) }}</div>
+                                        <div class="mt-1 text-[13px] font-medium text-ink">{{ __('admin.payment_orders_count', ['count' => $row->orders]) }}</div>
                                     </div>
                                 </div>
                                 <div class="font-display text-lg font-bold text-forest"><x-price :amount="$row->total" :shop="$shop" /></div>

@@ -65,7 +65,13 @@ class OnboardingWizardTest extends DuskTestCase
                 ->waitForText("You're All Set")
                 ->assertSee('Onboard Cafe')
 
+                // Load a menu before completing so the QR menu is sellable.
+                ->scrollIntoView('button[wire\\:click="loadDemoMenu"]')
+                ->click('button[wire\\:click="loadDemoMenu"]')
+                ->waitForText('DEMO MENU LOADED')
+
                 // Complete onboarding — click "Go to Dashboard"
+                ->scrollIntoView('button[wire\\:click="completeOnboarding"]')
                 ->click('button[wire\\:click="completeOnboarding"]')
                 ->waitForLocation('/dashboard')
                 ->assertPathIs('/dashboard');

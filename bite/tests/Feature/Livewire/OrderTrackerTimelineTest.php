@@ -85,6 +85,18 @@ class OrderTrackerTimelineTest extends TestCase
             ->assertDontSee('Unpaid');
     }
 
+    public function test_tracker_uses_the_guest_shell_frame(): void
+    {
+        $shop = $this->makeShop();
+        $order = $this->makeOrder($shop, 'preparing');
+
+        $this->get(route('guest.track', $order->tracking_token))
+            ->assertOk()
+            ->assertSeeHtml('guest-menu-bg guest-shell guest-track')
+            ->assertSeeHtml('guest-track__mast')
+            ->assertSee(__('guest.tracking_order', ['id' => 'SO-'.str_pad((string) $order->id, 3, '0', STR_PAD_LEFT)]));
+    }
+
     public function test_cancelled_status_shows_a_distinct_cancelled_state(): void
     {
         $shop = $this->makeShop();
@@ -96,6 +108,20 @@ class OrderTrackerTimelineTest extends TestCase
             ->assertSee(__('guest.status_cancelled'))
             // Cancelled short-circuits the step timeline.
             ->assertDontSee(__('guest.track_step_preparing'));
+    }
+
+    public function test_expired_unpaid_order_shows_cancelled_state(): void
+    {
+        $shop = $this->makeShop();
+        $order = $this->makeOrder($shop, 'unpaid', ['expires_at' => now()->subMinute()]);
+
+        $this->get(route('guest.track', $order->tracking_token))
+            ->assertOk()
+            ->assertSee(__('guest.track_cancelled_title'))
+            ->assertSee(__('guest.status_cancelled'))
+            ->assertDontSee(__('guest.track_step_preparing'));
+
+        $this->assertSame('cancelled', $order->fresh()->status);
     }
 
     public function test_completed_status_shows_all_steps_done(): void

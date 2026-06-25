@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire;
 
 use App\Livewire\OnboardingWizard;
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -141,6 +142,23 @@ class OnboardingSnapMenuTest extends TestCase
             ->assertSet('extractionError', 'api_error');
     }
 
+    public function test_extract_menu_rejects_unsupported_uploads_before_calling_gemini(): void
+    {
+        Storage::fake('local');
+        Http::fake();
+
+        $upload = UploadedFile::fake()->create('menu.txt', 12, 'text/plain');
+
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 3)
+            ->set('menuPhotos', [$upload])
+            ->call('extractMenu')
+            ->assertHasErrors(['menuPhotos.0']);
+
+        Http::assertNothingSent();
+    }
+
     public function test_save_extracted_menu_creates_categories_and_products(): void
     {
         Livewire::actingAs($this->admin)
@@ -266,6 +284,56 @@ class OnboardingSnapMenuTest extends TestCase
             ->assertCount('extractedItems', 2);
     }
 
+    public function test_cannot_add_extracted_items_past_import_limit(): void
+    {
+        $items = collect(range(1, 100))
+            ->map(fn (int $index) => [
+                'category_en' => 'Menu',
+                'category_ar' => 'القائمة',
+                'name_en' => "Item {$index}",
+                'name_ar' => '',
+                'description_en' => '',
+                'description_ar' => '',
+                'price' => 1.000,
+            ])
+            ->all();
+
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 3)
+            ->set('menuMode', 'review')
+            ->set('extractedItems', $items)
+            ->call('addExtractedItem')
+            ->assertCount('extractedItems', 100);
+    }
+
+    public function test_save_extracted_menu_rejects_items_past_import_limit(): void
+    {
+        $this->shop->forceFill(['trial_ends_at' => now()->addDays(14)])->save();
+
+        $items = collect(range(1, 101))
+            ->map(fn (int $index) => [
+                'category_en' => 'Menu',
+                'category_ar' => 'القائمة',
+                'name_en' => "Item {$index}",
+                'name_ar' => '',
+                'description_en' => '',
+                'description_ar' => '',
+                'price' => 1.000,
+            ])
+            ->all();
+
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 3)
+            ->set('menuMode', 'review')
+            ->set('extractedItems', $items)
+            ->call('saveExtractedMenu')
+            ->assertHasErrors(['extractedItems']);
+
+        $this->assertSame(0, \App\Models\Product::where('shop_id', $this->shop->id)->count());
+    }
+
     public function test_manual_mode_still_works(): void
     {
         Livewire::actingAs($this->admin)
@@ -283,5 +351,46 @@ class OnboardingSnapMenuTest extends TestCase
             'shop_id' => $this->shop->id,
             'name_en' => 'Americano',
         ]);
+    }
+
+    public function test_demo_menu_loader_creates_shop_scoped_products(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 5)
+            ->call('loadDemoMenu')
+            ->assertHasNoErrors();
+
+        $products = Product::where('shop_id', $this->shop->id)->get();
+
+        $this->assertCount(18, $products);
+        $this->assertSame(18, $products->where('is_visible', true)->where('is_available', true)->count());
+    }
+
+    public function test_open_pos_from_final_step_completes_onboarding(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 3)
+            ->set('menuItems', [
+                ['name' => 'Americano', 'price' => '0.900'],
+            ])
+            ->call('saveMenuItems')
+            ->set('step', 5)
+            ->call('completeOnboardingAndOpenPos')
+            ->assertRedirect(route('pos.dashboard'));
+
+        $this->assertTrue((bool) ($this->shop->fresh()->branding['onboarding_completed'] ?? false));
+    }
+
+    public function test_final_step_requires_a_menu_item_before_completion(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OnboardingWizard::class)
+            ->set('step', 5)
+            ->call('completeOnboarding')
+            ->assertHasErrors(['menu']);
+
+        $this->assertFalse((bool) ($this->shop->fresh()->branding['onboarding_completed'] ?? false));
     }
 }

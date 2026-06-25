@@ -83,6 +83,7 @@
                                 'deleted' => 'background: rgb(var(--alert) / 0.12); color: rgb(var(--alert));',
                                 default => 'background: var(--bite-mist); color: var(--bite-ash);',
                             };
+                            $displayMeta = $log->displayMeta();
                         @endphp
                         <tr class="border-b border-line transition-colors hover:bg-cream">
                             {{-- Time --}}
@@ -117,8 +118,8 @@
 
                             {{-- Meta --}}
                             <td class="px-[22px] py-3.5 font-mono text-[10px] text-ink-soft">
-                                @if(! empty($log->meta))
-                                    <span class="block max-w-[260px] truncate break-all">{{ json_encode($log->meta) }}</span>
+                                @if(! empty($displayMeta))
+                                    <span class="block max-w-[260px] truncate break-all">{{ json_encode($displayMeta) }}</span>
                                 @else
                                     —
                                 @endif

@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\PricingRule;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -17,6 +19,11 @@ class PricingRules extends Component
     protected function allowedRoles(): array
     {
         return ['manager', 'admin'];
+    }
+
+    protected function requiredPlanFeature(): ?string
+    {
+        return 'pricing_rules';
     }
 
     public $name = '';
@@ -39,16 +46,30 @@ class PricingRules extends Component
 
     protected function rules(): array
     {
+        $shopId = Auth::user()->shop_id;
+        $discountValueRules = ['required', 'numeric', 'min:0.001'];
+        if ($this->discount_type === 'percentage') {
+            $discountValueRules[] = 'max:100';
+        }
+
         return [
             'name' => 'required|string|min:2|max:120',
             'discount_type' => 'required|in:percentage,fixed',
-            'discount_value' => 'required|numeric|min:0.001',
+            'discount_value' => $discountValueRules,
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'days_of_week' => 'nullable|array',
             'days_of_week.*' => 'integer|between:0,6',
-            'category_id' => 'nullable|integer|exists:categories,id',
-            'product_id' => 'nullable|integer|exists:products,id',
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where('shop_id', $shopId),
+            ],
+            'product_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('products', 'id')->where('shop_id', $shopId),
+            ],
         ];
     }
 
@@ -80,15 +101,27 @@ class PricingRules extends Component
             'product_id' => $this->product_id ?: null,
         ];
 
-        if ($this->editingId) {
+        $wasEditing = (bool) $this->editingId;
+
+        if ($wasEditing) {
             $rule = PricingRule::where('shop_id', $shopId)->findOrFail($this->editingId);
+            $previousSnapshot = $rule->auditSnapshot();
             $rule->update($attributes);
+            $rule->refresh()->load(['category', 'product']);
+
+            AuditLog::record('pricing_rule.updated', $rule, array_merge(
+                $rule->auditSnapshot(),
+                ['previous' => $previousSnapshot],
+            ));
         } else {
-            PricingRule::create($attributes);
+            $rule = PricingRule::create($attributes);
+            $rule->load(['category', 'product']);
+
+            AuditLog::record('pricing_rule.created', $rule, $rule->auditSnapshot());
         }
 
         $this->resetForm();
-        session()->flash('message', $this->editingId ? 'Pricing rule updated.' : 'Pricing rule created.');
+        session()->flash('message', $wasEditing ? 'Pricing rule updated.' : 'Pricing rule created.');
     }
 
     public function edit(int $id): void
@@ -108,7 +141,11 @@ class PricingRules extends Component
 
     public function delete(int $id): void
     {
-        PricingRule::where('shop_id', Auth::user()->shop_id)->findOrFail($id)->delete();
+        $rule = PricingRule::where('shop_id', Auth::user()->shop_id)->findOrFail($id);
+        $snapshot = $rule->auditSnapshot();
+        $rule->delete();
+
+        AuditLog::record('pricing_rule.deleted', $rule, $snapshot);
         session()->flash('message', 'Pricing rule deleted.');
     }
 
@@ -116,6 +153,13 @@ class PricingRules extends Component
     {
         $rule = PricingRule::where('shop_id', Auth::user()->shop_id)->findOrFail($id);
         $rule->update(['is_active' => ! $rule->is_active]);
+        $rule->refresh()->load(['category', 'product']);
+
+        AuditLog::record(
+            $rule->is_active ? 'pricing_rule.activated' : 'pricing_rule.deactivated',
+            $rule,
+            $rule->auditSnapshot()
+        );
     }
 
     public function cancelEdit(): void

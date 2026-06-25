@@ -47,7 +47,7 @@ class PrintNodeService
         $lines[] = 'BITE POS';
         $lines[] = strtoupper($type).' TICKET';
         $lines[] = 'Order #'.$order->id;
-        $lines[] = 'Order Type: Guest Pickup';
+        $lines[] = 'Order Type: '.$order->sourceLabel();
         $lines[] = '-------------------------';
 
         $order->loadMissing('items.modifiers', 'shop');

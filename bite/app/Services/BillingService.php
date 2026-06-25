@@ -28,13 +28,79 @@ class BillingService
     }
 
     /**
+     * Start a Stripe Checkout subscription flow for the shop.
+     */
+    public function startSubscriptionCheckout(
+        Shop $shop,
+        string $plan,
+        string $successUrl,
+        string $cancelUrl,
+    ): string {
+        $planConfig = $this->getPlanConfig($plan);
+
+        if (! $planConfig || ! $planConfig['stripe_price_id']) {
+            throw new \InvalidArgumentException("Invalid plan: {$plan}");
+        }
+
+        $builder = $shop->newSubscription('default', $planConfig['stripe_price_id']);
+        $trialDays = $this->trialDaysForNewSubscriptionCheckout($shop);
+
+        if ($trialDays !== null) {
+            $builder->trialDays($trialDays);
+        }
+
+        return (string) $builder
+            ->checkout([
+                'success_url' => $successUrl,
+                'cancel_url' => $cancelUrl,
+            ])
+            ->url;
+    }
+
+    /**
+     * Create a Stripe Billing Portal session URL for the shop.
+     */
+    public function billingPortalUrl(Shop $shop, string $returnUrl): string
+    {
+        return $shop->billingPortalUrl($returnUrl);
+    }
+
+    /**
+     * Determine how many trial days Stripe Checkout should attach to a new subscription.
+     */
+    public function trialDaysForNewSubscriptionCheckout(Shop $shop): ?int
+    {
+        $configuredTrialDays = (int) config('billing.trial_days', 14);
+
+        if ($configuredTrialDays <= 0) {
+            return null;
+        }
+
+        if ($shop->onGenericTrial()) {
+            $secondsRemaining = now()->diffInSeconds($shop->trial_ends_at, false);
+
+            if ($secondsRemaining <= 0) {
+                return null;
+            }
+
+            return min($configuredTrialDays, max(1, (int) ceil($secondsRemaining / 86400)));
+        }
+
+        if ($this->hasConsumedGenericTrial($shop)) {
+            return null;
+        }
+
+        return $configuredTrialDays;
+    }
+
+    /**
      * Cancel the shop's subscription at the end of the billing period.
      */
     public function cancelSubscription(Shop $shop): bool
     {
         $subscription = $shop->subscription('default');
 
-        if (! $subscription || $subscription->cancelled()) {
+        if (! $subscription || $subscription->canceled()) {
             return false;
         }
 
@@ -150,6 +216,10 @@ class BillingService
      */
     public function canAccess(Shop $shop, string $feature): bool
     {
+        if ($this->hasLapsedSubscription($shop)) {
+            return false;
+        }
+
         $plan = $this->getCurrentPlan($shop);
         $planConfig = $this->getPlanConfig($plan);
 
@@ -195,6 +265,15 @@ class BillingService
      */
     public function getPlanLimits(Shop $shop): array
     {
+        if ($this->hasLapsedSubscription($shop)) {
+            $planConfig = $this->getPlanConfig('free');
+
+            return [
+                'staff_limit' => $planConfig['staff_limit'] ?? 1,
+                'product_limit' => $planConfig['product_limit'] ?? 20,
+            ];
+        }
+
         $plan = $this->getCurrentPlan($shop);
         $planConfig = $this->getPlanConfig($plan);
 
@@ -241,11 +320,11 @@ class BillingService
             return 'trialing';
         }
 
-        if ($subscription->cancelled() && $subscription->onGracePeriod()) {
+        if ($subscription->canceled() && $subscription->onGracePeriod()) {
             return 'cancelled';
         }
 
-        if ($subscription->cancelled()) {
+        if ($subscription->canceled()) {
             return 'expired';
         }
 
@@ -267,5 +346,23 @@ class BillingService
     protected function getPlanConfig(string $plan): ?array
     {
         return config("billing.plans.{$plan}");
+    }
+
+    private function hasConsumedGenericTrial(Shop $shop): bool
+    {
+        $branding = is_array($shop->branding) ? $shop->branding : [];
+
+        return $shop->trial_ends_at !== null
+            || isset($branding['trial_started_at'])
+            || isset($branding['trial_ends_at']);
+    }
+
+    private function hasLapsedSubscription(Shop $shop): bool
+    {
+        $subscription = $shop->subscription('default');
+
+        return $subscription !== null
+            && ! $subscription->valid()
+            && ! $shop->onGenericTrial();
     }
 }

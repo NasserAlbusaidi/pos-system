@@ -365,7 +365,7 @@
                                     {{ __('guest.phone_label') }}
                                     <span class="guest-field__label-hint">· {{ __('guest.phone_hint') }}</span>
                                 </label>
-                                <input id="guest-phone" type="tel" wire:model="loyaltyPhone" wire:change.debounce.500ms="recognizeCustomer" class="guest-field__input" placeholder="{{ __('guest.loyalty_placeholder') }}" autocomplete="tel" inputmode="tel">
+                                <input id="guest-phone" type="tel" wire:model.blur="loyaltyPhone" class="guest-field__input" placeholder="{{ __('guest.loyalty_placeholder') }}" autocomplete="tel" inputmode="tel">
                                 @if($loyaltyError)
                                     <div class="guest-cart__error">{{ $loyaltyError }}</div>
                                 @endif
@@ -421,8 +421,12 @@
                     @else
                         <button wire:click="toggleReview" type="button" class="guest-addbtn guest-addbtn--ghost">{{ __('guest.cancel') }}</button>
                         <button x-on:click="$dispatch('confirm-action', {
-                                    title: '{{ __('guest.place_order') }}',
-                                    message: '{{ $this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen') }}',
+                                    surface: 'guest',
+                                    eyebrow: {{ Js::from(__('guest.pay_at_counter')) }},
+                                    title: {{ Js::from(__('guest.place_order')) }},
+                                    message: {{ Js::from($this->isGroupMode ? __('guest.send_group_to_kitchen') : __('guest.send_to_kitchen')) }},
+                                    cancelLabel: {{ Js::from(__('guest.cancel')) }},
+                                    confirmLabel: {{ Js::from(__('guest.place_order')) }},
                                     action: 'submitOrder',
                                     componentId: $wire.id,
                                     destructive: false,
@@ -440,41 +444,39 @@
 
     {{-- Group Share Modal --}}
     @if($showGroupShareModal && $this->isGroupMode)
-        <div class="fixed inset-0 z-[100] flex items-end justify-center bg-ink/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-            <div class="surface-card flex w-full max-w-md flex-col overflow-hidden border-t sm:border sm:rounded-xl">
-                <div class="flex items-center justify-between border-b border-line bg-muted/35 px-6 py-5 sm:px-8">
+        <div class="guest-sheet-backdrop">
+            <section class="guest-sheet guest-share" role="dialog" aria-modal="true" aria-labelledby="guest-share-title">
+                <div class="guest-share__head">
                     <div>
-                        <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('guest.share_group_order') }}</h3>
-                        <p class="mt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('guest.share_group_desc') }}</p>
+                        <h3 id="guest-share-title" class="guest-share__title">{{ __('guest.share_group_order') }}</h3>
+                        <p class="guest-share__subtitle">{{ __('guest.share_group_desc') }}</p>
                     </div>
-                    <button wire:click="toggleGroupShare" class="rounded-md border border-line bg-panel p-2.5 text-ink-soft hover:border-ink hover:text-ink">
+                    <button wire:click="toggleGroupShare" class="guest-share__close" type="button" aria-label="{{ __('guest.cancel') }}">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
-                <div class="space-y-4 p-6 sm:p-8">
-                    <div class="rounded-lg border border-line bg-muted/30 px-4 py-3">
-                        <p class="break-all font-mono text-xs font-semibold text-ink">{{ $this->groupShareUrl }}</p>
+                <div class="guest-share__body">
+                    <div class="guest-share__url">
+                        <p>{{ $this->groupShareUrl }}</p>
                     </div>
 
                     <button
                         x-data
                         x-on:click="
-                            navigator.clipboard.writeText('{{ $this->groupShareUrl }}').then(() => {
-                                $el.textContent = '{{ __('guest.link_copied') }}';
-                                setTimeout(() => { $el.textContent = '{{ __('guest.copy_link') }}'; }, 2000);
+                            navigator.clipboard.writeText({{ Js::from($this->groupShareUrl) }}).then(() => {
+                                $el.querySelector('[data-copy-label]').textContent = {{ Js::from(__('guest.link_copied')) }};
+                                setTimeout(() => { $el.querySelector('[data-copy-label]').textContent = {{ Js::from(__('guest.copy_link')) }}; }, 2000);
                             });
                         "
-                        class="btn-primary w-full justify-center"
+                        class="guest-addbtn guest-share__copy"
                         type="button">
-                        {{ __('guest.copy_link') }}
+                        <span data-copy-label>{{ __('guest.copy_link') }}</span>
                     </button>
 
-                    <p class="text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
-                        {{ __('guest.group_expires_hint') }}
-                    </p>
+                    <p class="guest-share__hint">{{ __('guest.group_expires_hint') }}</p>
                 </div>
-            </div>
+            </section>
         </div>
     @endif
 
@@ -570,9 +572,7 @@
                                             aria-pressed="{{ $isChecked ? 'true' : 'false' }}"
                                         >
                                             <span class="guest-choice__name">{{ $option->translated('name') }}</span>
-                                            @if($option->price_adjustment > 0)
-                                                <span class="guest-choice__price">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
-                                            @endif
+                                            <x-price-delta :amount="$option->price_adjustment" :shop="$shop" class="guest-choice__price" />
                                         </button>
                                     @endforeach
                                 </div>

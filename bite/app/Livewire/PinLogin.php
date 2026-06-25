@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\AuditLog;
 use App\Models\Shop;
 use App\Models\User;
+use App\Services\BillingService;
+use App\Services\PinCodePolicy;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
@@ -19,6 +21,8 @@ class PinLogin extends Component
 
     public function mount(Shop $shop)
     {
+        abort_if($shop->status === 'suspended' || ! app(BillingService::class)->isSubscribed($shop), 404);
+
         $this->shop = $shop;
     }
 
@@ -33,34 +37,52 @@ class PinLogin extends Component
         }
 
         $pin = trim($this->pin);
-        if ($pin === '' || ! preg_match('/^\d{4,6}$/', $pin)) {
+        if ($pin === '' || ! preg_match('/^\d{4}$/', $pin)) {
             RateLimiter::hit($throttleKey, 60);
             $this->error = 'Authentication failed.';
 
             return;
         }
 
-        $user = User::where('shop_id', $this->shop->id)
-            ->whereNotNull('pin_code')
-            ->get()
-            ->first(fn ($user) => Hash::check($pin, $user->pin_code));
+        $matches = app(PinCodePolicy::class)->matchingUsers($this->shop->id, $pin);
 
-        if (! $user) {
+        if ($matches->count() !== 1) {
             RateLimiter::hit($throttleKey, 60);
             $this->error = 'Authentication failed.';
 
             return;
         }
+
+        $user = $matches->first();
 
         RateLimiter::clear($throttleKey);
         Auth::login($user);
+
+        AuditLog::create([
+            'shop_id' => $this->shop->id,
+            'user_id' => $user->id,
+            'action' => 'pin.login',
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'meta' => [
+                'role' => $user->role,
+                'ip' => request()->ip(),
+            ],
+        ]);
 
         // Rotate the session on the shared terminal: Auth::login already migrates
         // the session id, but regenerate() also rotates the CSRF token (the residual
         // fixation surface). Matches the impersonation + logout flows.
         session()->regenerate();
 
-        return $this->redirect(route('pos.dashboard'), navigate: true);
+        return $this->redirect($this->postLoginRoute($user), navigate: true);
+    }
+
+    protected function postLoginRoute(User $user): string
+    {
+        return $user->role === 'kitchen'
+            ? route('kds.view')
+            : route('pos.dashboard');
     }
 
     protected function throttleKey(): string

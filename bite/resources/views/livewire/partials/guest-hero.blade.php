@@ -5,6 +5,7 @@
     $guestBranding = $shop->branding ?? [];
     $guestCoverUrl = \App\Support\BrandingUrl::safe($guestBranding['cover_url'] ?? null);
     $guestLogoUrl = \App\Support\BrandingUrl::safe($guestBranding['logo_url'] ?? null);
+    $guestIsOpen = \App\Support\ShopHours::isOpen($shop);
 @endphp
 
 <section class="guest-hero {{ $guestCoverUrl ? '' : 'guest-hero--placeholder' }}">
@@ -22,8 +23,8 @@
         </div>
         <h2 class="guest-hero__name">{{ $shop->name }}</h2>
         <div class="guest-hero__sub">
-            <span class="guest-hero__pill">
-                <span class="guest-hero__dot"></span>{{ __('guest.status_open') }}
+            <span class="guest-hero__pill {{ $guestIsOpen ? '' : 'guest-hero__pill--closed' }}">
+                <span class="guest-hero__dot"></span>{{ $guestIsOpen ? __('guest.status_open') : __('guest.status_closed') }}
             </span>
             <span class="guest-hero__chip">{{ __('guest.dine_in') }}</span>
         </div>

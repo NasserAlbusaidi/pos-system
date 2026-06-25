@@ -253,7 +253,7 @@
                     </div>
 
                     <div class="p-[22px]">
-                        @if($subscription->cancelled() && $subscription->onGracePeriod())
+                        @if($subscription->canceled() && $subscription->onGracePeriod())
                             <div class="space-y-4">
                                 <p class="text-sm text-ink-soft">
                                     {{ __('admin.billing_cancelled_grace', ['date' => $subscription->ends_at->format('M j, Y')]) }}
@@ -266,7 +266,7 @@
                                     </span>
                                 </button>
                             </div>
-                        @elseif(! $subscription->cancelled())
+                        @elseif(! $subscription->canceled())
                             <div class="space-y-4">
                                 <p class="text-sm text-ink-soft">
                                     {{ __('admin.billing_cancel_info') }}

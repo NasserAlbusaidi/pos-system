@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Admin\MenuBuilder;
 use App\Livewire\ProductManager;
 use App\Models\Category;
 use App\Models\Product;
@@ -53,6 +54,33 @@ class ProductImageUploadTest extends TestCase
         Storage::disk($disk)->assertMissing('products/coffee-thumb.webp');
         Storage::disk($disk)->assertMissing('products/coffee-card.webp');
         Storage::disk($disk)->assertMissing('products/coffee-full.webp');
+    }
+
+    public function test_deleting_product_removes_image_variants_from_default_disk(): void
+    {
+        $disk = $this->fakeDefaultDisk('gcs');
+        [$user, $category] = $this->makeCatalogUser();
+
+        Storage::disk($disk)->put('products/deleted-thumb.webp', 'fake');
+        Storage::disk($disk)->put('products/deleted-card.webp', 'fake');
+        Storage::disk($disk)->put('products/deleted-full.webp', 'fake');
+
+        $product = Product::forceCreate([
+            'shop_id' => $user->shop_id,
+            'category_id' => $category->id,
+            'name_en' => 'Deleted Latte',
+            'price' => 1.500,
+            'image_url' => 'products/deleted-full.webp',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(MenuBuilder::class)
+            ->call('deleteProduct', $product->id);
+
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        Storage::disk($disk)->assertMissing('products/deleted-thumb.webp');
+        Storage::disk($disk)->assertMissing('products/deleted-card.webp');
+        Storage::disk($disk)->assertMissing('products/deleted-full.webp');
     }
 
     public function test_url_helper_resolves_uploaded_image(): void

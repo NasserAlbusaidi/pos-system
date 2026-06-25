@@ -26,8 +26,8 @@ class AuditLogs extends Component
 
     private const FILTER_PREFIXES = [
         'orders' => ['order.', 'orders.', 'payment.'],
-        'products' => ['product.', 'category.', 'modifier.'],
-        'operations' => ['cash_reconciliation', 'loyalty.'],
+        'products' => ['product.', 'category.', 'modifier.', 'pricing_rule.'],
+        'operations' => ['cash_reconciliation', 'shift.', 'staff.', 'loyalty.'],
         'auth' => ['login.', 'pin.', 'impersonation.'],
     ];
 

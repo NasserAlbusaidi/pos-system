@@ -43,6 +43,28 @@ class RbacRouteAccessTest extends TestCase
         $this->actingAs($server)->get('/products')->assertForbidden();
     }
 
+    public function test_server_navigation_only_shows_server_accessible_modules(): void
+    {
+        $server = $this->makeUser('server');
+
+        $response = $this->actingAs($server)->get('/pos');
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Dashboard')
+            ->assertSeeText('POS Register')
+            ->assertDontSeeText('Kitchen Display')
+            ->assertDontSeeText('Reports')
+            ->assertDontSeeText('Shift Report')
+            ->assertDontSeeText('Audit Logs')
+            ->assertDontSeeText('Menu Builder')
+            ->assertDontSeeText('Product Catalog')
+            ->assertDontSeeText('Modifiers')
+            ->assertDontSeeText('Pricing Rules')
+            ->assertDontSeeText('Settings')
+            ->assertDontSeeText('Billing');
+    }
+
     public function test_kitchen_is_blocked_from_pos_and_admin_routes(): void
     {
         $kitchen = $this->makeUser('kitchen');
@@ -50,6 +72,28 @@ class RbacRouteAccessTest extends TestCase
         $this->actingAs($kitchen)->get('/kds')->assertOk();
         $this->actingAs($kitchen)->get('/pos')->assertForbidden();
         $this->actingAs($kitchen)->get('/products')->assertForbidden();
+    }
+
+    public function test_kitchen_navigation_only_shows_kitchen_accessible_modules(): void
+    {
+        $kitchen = $this->makeUser('kitchen');
+
+        $response = $this->actingAs($kitchen)->get('/kds');
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Kitchen Display')
+            ->assertDontSeeText('Dashboard')
+            ->assertDontSeeText('POS Register')
+            ->assertDontSeeText('Reports')
+            ->assertDontSeeText('Shift Report')
+            ->assertDontSeeText('Audit Logs')
+            ->assertDontSeeText('Menu Builder')
+            ->assertDontSeeText('Product Catalog')
+            ->assertDontSeeText('Modifiers')
+            ->assertDontSeeText('Pricing Rules')
+            ->assertDontSeeText('Settings')
+            ->assertDontSeeText('Billing');
     }
 
     public function test_manager_can_access_pos_kds_and_admin_modules(): void
@@ -60,6 +104,28 @@ class RbacRouteAccessTest extends TestCase
         $this->actingAs($manager)->get('/kds')->assertOk();
         $this->actingAs($manager)->get('/products')->assertOk();
         $this->actingAs($manager)->get('/menu-builder')->assertOk();
+    }
+
+    public function test_manager_navigation_shows_operational_and_admin_modules_except_billing(): void
+    {
+        $manager = $this->makeUser('manager');
+
+        $response = $this->actingAs($manager)->get('/pos');
+
+        $response
+            ->assertOk()
+            ->assertSeeText('Dashboard')
+            ->assertSeeText('POS Register')
+            ->assertSeeText('Kitchen Display')
+            ->assertSeeText('Reports')
+            ->assertSeeText('Shift Report')
+            ->assertSeeText('Audit Logs')
+            ->assertSeeText('Menu Builder')
+            ->assertSeeText('Product Catalog')
+            ->assertSeeText('Modifiers')
+            ->assertSeeText('Pricing Rules')
+            ->assertSeeText('Settings')
+            ->assertDontSeeText('Billing');
     }
 
     public function test_admin_can_access_pos_kds_and_admin_modules(): void

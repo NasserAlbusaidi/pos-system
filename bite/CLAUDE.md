@@ -45,7 +45,7 @@ Stripe processing checks the `webhook_events(provider, event_id)` unique key bef
 
 ## 5. Verify before "done"
 
-`php artisan test` green **and** `./vendor/bin/pint --test` clean before calling anything done. CI **`Tests & Lint`** (`.github/workflows/ci.yml`, repo root one level above `bite/`) gates every PR; **`Build & Deploy to Cloud Run`** runs on `main` only — so a merge to `main` auto-deploys. Don't claim a fix works off "should"; run it.
+`php artisan test` green **and** `./vendor/bin/pint --test` clean before calling anything done. CI **`Tests & Lint`** (`.github/workflows/ci.yml`, repo root one level above `bite/`) is the **only** job and gates every PR. **There is no auto-deploy** — the Cloud Run deploy job was removed 23 Jun 2026 (it had been failing its post-deploy health check since 17 Jun); Forge VPS is the planned target, not yet wired up. Don't claim a fix works off "should"; run it.
 
 ## 6. Migrations: new only
 
@@ -76,7 +76,7 @@ Lookup only. Does not override the contract.
 - **Billing:** Laravel Cashier, `Shop` is the billable model (`AppServiceProvider`). Two webhook endpoints: `/webhooks/stripe` (payments) and `/webhooks/stripe/subscription` (Cashier lifecycle). Thawani Pay planned for the Oman market, not yet integrated.
 - **Auth:** Laravel Breeze (modified) + custom Staff PIN login (`PinLogin`).
 - **Other:** Vite build; Sentry error tracking; Gemini API for Snap-to-Menu (`MenuExtractionService`).
-- **Hosting:** Google Cloud Run (single-container Nginx + PHP-FPM + supervisord), GitHub Actions + Workload Identity Federation.
+- **Hosting:** Planned **Laravel Forge VPS** (not yet set up — see `docs/DEPLOYMENT-FORGE.md`, `deploy/`). Cloud Run was retired 23 Jun 2026 (deploy job removed from CI). The `Dockerfile` + `docker/` single-container (Nginx + PHP-FPM + supervisord) remain as a dual-use runtime, not currently deployed anywhere.
 
 ## Commands
 
@@ -118,6 +118,7 @@ Customer-facing text uses `_en`/`_ar` column pairs. `HasTranslations::translated
 ## Bear Traps
 
 - **`ImageService::processUpload($storedPath, ?$disk = null)` — pass the disk explicitly.** The default falls back to `config('filesystems.default')`, which can differ from the disk the file was actually written to (a seeder/`ProductManager` writing to `public` while the read defaults elsewhere). This caused the "33 products, photo decode failed" bug — the file was on one disk, read from another. Stay disk-agnostic: `Storage::get/put` **streams** only, never `file_put_contents` (GCS has no local FS).
+- **`APP_URL` must include the dev port (`:8000`) or every product photo 404s.** Public-disk image URLs come from `Storage::disk('public')->url()`, which is built from `APP_URL` (`config/filesystems.php`). `.env.example` historically shipped a bare `http://localhost`, but local dev serves on `:8000` (`composer dev` / `artisan serve`) — so the menu HTML loads on `:8000` while every `<img>` points at port 80 (nothing listening) and 404s. Files, symlink, and DB all look fine; only the emitted URL is wrong. Same symptom as the disk-mismatch bug, different cause — check `APP_URL` first. After changing it, `php artisan config:clear`.
 - **Route RBAC guards the GET only; Livewire `update` runs on bare `web` middleware.** Only the **SuperAdmin** components self-guard (boot/mount). The admin *operational* components (`ProductManager`, `PricingRules`, `ReportsDashboard`, `CashReconciliation`, `AuditLogs`) do **not** — so role/subscription/active-shop enforcement on a sensitive Livewire **action** must live in the component, not just the route. (Audit-flagged; see the security note at session start.)
 - **Scheduler runs as supervisord `[program:scheduler]` (`schedule:work`) — one per container.** Tasks (`Order::cancelExpired()` everyMinute, `GroupCart::cleanExpired()` hourly) fire from **every** running instance. Safe at one instance; if you scale app instances >1, add a single-runner lock or keep tasks idempotent before enabling autoscaling.
 - **Production code paths use `config()`, never `env()`** — `config:cache` makes `env()` return null. The one sanctioned exception is `trustProxies` in `bootstrap/app.php` (runs before config is loaded).
@@ -125,7 +126,7 @@ Customer-facing text uses `_en`/`_ar` column pairs. `HasTranslations::translated
 
 ## CI/CD
 
-`.github/workflows/ci.yml` (repo root, one dir above `bite/`) defines the **`CI`** workflow: **Tests & Lint** gates every PR (~1m45s); **Build & Deploy to Cloud Run** runs on `main` only (skipped on PRs) — merging to `main` deploys. Deploy uses Workload Identity Federation (no long-lived SA keys) with pre-deploy revision capture for clean rollback.
+`.github/workflows/ci.yml` (repo root, one dir above `bite/`) defines the **`CI`** workflow: a single **`Tests & Lint`** job (~1m50s) that gates every PR and also runs on `main` pushes (plus a Docker-build validation step on PRs). **The job builds frontend assets (`setup-node` → `npm ci` → `npm run build`) before `php artisan test`** — `public/build` is gitignored and many feature tests render `@vite` views that throw "Vite manifest not found" without a built manifest. Don't re-commit `public/build` to "fix" a missing manifest; the build step is the source of truth (added 23 Jun 2026, commit `c63c058`). **There is no deploy job** — the **Build & Deploy to Cloud Run** job (WIF + Artifact Registry + post-deploy health check / rollback) was removed 23 Jun 2026 after Cloud Run was abandoned for a planned Forge VPS. **Merging to `main` no longer deploys.** Deploy will be wired up for Forge (`deploy/forge-deploy.sh` does `npm ci && npm run build` natively on the VPS). The GCP Actions secrets (`GCP_*`, `WIF_*`, `CLOUD_RUN_SERVICE`) are now unused but left in place.
 
 ## Don'ts
 

@@ -26,9 +26,11 @@ class SuperAdminDashboardTest extends DuskTestCase
         [$shop, $admin] = $this->createShopWithAdmin();
 
         $this->browse(function (Browser $browser) use ($admin) {
-            $browser->loginAs($admin)
+            $browser->logout()
+                ->loginAs($admin)
                 ->visit('/admin')
-                ->assertSee('403');
+                ->waitFor('h1')
+                ->assertSeeIn('h1', 'Forbidden');
         });
     }
 }

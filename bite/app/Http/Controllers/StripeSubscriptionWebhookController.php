@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 use UnexpectedValueException;
@@ -24,9 +25,9 @@ class StripeSubscriptionWebhookController extends Controller
         $secret = (string) config('billing.stripe_webhook_secret', '');
 
         if ($secret === '') {
-            Log::error('Stripe subscription webhook secret is not configured.');
+            $this->logMissingWebhookSecretOnce();
 
-            return response()->json(['error' => 'Webhook misconfigured'], 500);
+            return response()->json(['error' => 'Webhook misconfigured'], 503);
         }
 
         if (! class_exists(Webhook::class)) {
@@ -64,12 +65,32 @@ class StripeSubscriptionWebhookController extends Controller
                 'updated_at' => now(),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Duplicate event — already processed.
             if ($this->isDuplicate($e)) {
-                return response()->json(['received' => true]);
-            }
+                $existing = DB::table('webhook_events')
+                    ->where('provider', 'stripe_subscription')
+                    ->where('event_id', $eventId)
+                    ->first();
 
-            throw $e;
+                if ($existing && $existing->processed_at) {
+                    return response()->json(['received' => true]);
+                }
+
+                DB::table('webhook_events')
+                    ->where('provider', 'stripe_subscription')
+                    ->where('event_id', $eventId)
+                    ->update([
+                        'event_type' => (string) ($event->type ?? ''),
+                        'payload' => json_encode(json_decode($payload, true), JSON_UNESCAPED_SLASHES),
+                        'updated_at' => now(),
+                    ]);
+
+                Log::warning('Retrying unprocessed duplicate Stripe subscription webhook', [
+                    'event_id' => $eventId,
+                    'event_type' => (string) ($event->type ?? ''),
+                ]);
+            } else {
+                throw $e;
+            }
         }
 
         $type = $event->type ?? '';
@@ -123,6 +144,8 @@ class StripeSubscriptionWebhookController extends Controller
             return;
         }
 
+        $this->syncSubscription($shop, $subscription);
+
         Log::info('Subscription created via webhook', [
             'shop_id' => $shop->id,
             'subscription_id' => $subscription->id,
@@ -141,22 +164,7 @@ class StripeSubscriptionWebhookController extends Controller
             return;
         }
 
-        // Update the local subscription record status.
-        $localSub = DB::table('subscriptions')
-            ->where('stripe_id', $subscription->id)
-            ->first();
-
-        if ($localSub) {
-            DB::table('subscriptions')
-                ->where('stripe_id', $subscription->id)
-                ->update([
-                    'stripe_status' => $subscription->status,
-                    'ends_at' => $subscription->cancel_at
-                        ? \Carbon\Carbon::createFromTimestamp($subscription->cancel_at)
-                        : null,
-                    'updated_at' => now(),
-                ]);
-        }
+        $this->syncSubscription($shop, $subscription);
 
         Log::info('Subscription updated via webhook', [
             'shop_id' => $shop->id,
@@ -175,6 +183,8 @@ class StripeSubscriptionWebhookController extends Controller
         if (! $shop) {
             return;
         }
+
+        $this->syncSubscription($shop, $subscription);
 
         // Mark the local subscription as cancelled/ended.
         DB::table('subscriptions')
@@ -266,6 +276,131 @@ class StripeSubscriptionWebhookController extends Controller
     }
 
     /**
+     * Sync Stripe's subscription object into Cashier's local tables so local
+     * plan checks unlock paid features immediately after checkout webhooks.
+     */
+    protected function syncSubscription(Shop $shop, object $subscription): void
+    {
+        $subscriptionId = (string) data_get($subscription, 'id', '');
+        if ($subscriptionId === '') {
+            return;
+        }
+
+        $items = $this->subscriptionItems($subscription);
+        $firstItem = $items[0] ?? null;
+        $now = now();
+        $values = [
+            'shop_id' => $shop->id,
+            'type' => 'default',
+            'stripe_status' => (string) data_get($subscription, 'status', 'incomplete'),
+            'stripe_price' => $firstItem ? data_get($firstItem, 'price.id') : null,
+            'quantity' => $firstItem ? data_get($firstItem, 'quantity') : null,
+            'trial_ends_at' => $this->timestampToDate(data_get($subscription, 'trial_end')),
+            'ends_at' => $this->timestampToDate(data_get($subscription, 'cancel_at')),
+            'updated_at' => $now,
+        ];
+
+        $existing = DB::table('subscriptions')
+            ->where('stripe_id', $subscriptionId)
+            ->first();
+
+        if ($existing) {
+            DB::table('subscriptions')
+                ->where('id', $existing->id)
+                ->update($values);
+            $localSubscriptionId = $existing->id;
+        } else {
+            $localSubscriptionId = DB::table('subscriptions')->insertGetId(array_merge($values, [
+                'stripe_id' => $subscriptionId,
+                'created_at' => $now,
+            ]));
+        }
+
+        $shop->forceFill(['trial_ends_at' => null])->save();
+        $this->syncSubscriptionItems((int) $localSubscriptionId, $items);
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    protected function subscriptionItems(object $subscription): array
+    {
+        $items = data_get($subscription, 'items.data', []);
+
+        if (is_array($items)) {
+            return array_values($items);
+        }
+
+        if ($items instanceof \Traversable) {
+            return iterator_to_array($items, false);
+        }
+
+        return [];
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     */
+    protected function syncSubscriptionItems(int $subscriptionId, array $items): void
+    {
+        $seenStripeIds = [];
+
+        foreach ($items as $item) {
+            $itemId = (string) data_get($item, 'id', '');
+            $priceId = (string) data_get($item, 'price.id', '');
+            $productId = (string) data_get($item, 'price.product', '');
+
+            if ($itemId === '' || $priceId === '' || $productId === '') {
+                continue;
+            }
+
+            $seenStripeIds[] = $itemId;
+            $values = [
+                'subscription_id' => $subscriptionId,
+                'stripe_product' => $productId,
+                'stripe_price' => $priceId,
+                'quantity' => data_get($item, 'quantity'),
+                'updated_at' => now(),
+            ];
+
+            $existing = DB::table('subscription_items')
+                ->where('stripe_id', $itemId)
+                ->first();
+
+            if ($existing) {
+                DB::table('subscription_items')
+                    ->where('id', $existing->id)
+                    ->update($values);
+            } else {
+                DB::table('subscription_items')->insert(array_merge($values, [
+                    'stripe_id' => $itemId,
+                    'created_at' => now(),
+                ]));
+            }
+        }
+
+        $query = DB::table('subscription_items')
+            ->where('subscription_id', $subscriptionId);
+
+        if (empty($seenStripeIds)) {
+            $query->delete();
+
+            return;
+        }
+
+        $query->whereNotIn('stripe_id', $seenStripeIds)->delete();
+    }
+
+    protected function timestampToDate(mixed $timestamp): ?\Carbon\Carbon
+    {
+        if (! $timestamp) {
+            return null;
+        }
+
+        return \Carbon\Carbon::createFromTimestamp((int) $timestamp);
+    }
+
+    /**
      * Mark a webhook event as processed.
      */
     protected function markProcessed(string $eventId): void
@@ -289,5 +424,15 @@ class StripeSubscriptionWebhookController extends Controller
         return str_contains($message, 'webhook_events_provider_event_id_unique')
             || str_contains($message, 'duplicate entry')
             || str_contains($message, 'unique constraint failed');
+    }
+
+    private function logMissingWebhookSecretOnce(): void
+    {
+        RateLimiter::attempt(
+            'stripe-subscription-webhook-missing-secret-log',
+            1,
+            fn () => Log::error('Stripe subscription webhook secret is not configured.'),
+            3600,
+        );
     }
 }

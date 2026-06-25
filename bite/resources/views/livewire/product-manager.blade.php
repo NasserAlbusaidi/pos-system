@@ -41,7 +41,7 @@
 
                         <div class="space-y-2">
                             <label class="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.product_price') }}</label>
-                            <input type="number" step="0.01" wire:model="price" class="field" placeholder="4.50">
+                            <input type="number" step="0.001" wire:model="price" class="field" placeholder="4.500">
                         </div>
 
                         <div class="space-y-2">
