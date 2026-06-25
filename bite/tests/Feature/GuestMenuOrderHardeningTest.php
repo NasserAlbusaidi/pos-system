@@ -80,6 +80,18 @@ class GuestMenuOrderHardeningTest extends TestCase
             ->set('idempotencyKey', 'attacker-supplied');
     }
 
+    public function test_participant_id_is_locked_against_client_override(): void
+    {
+        [$shop] = $this->createMenu();
+
+        // Group cart line ownership depends on participantId, so clients must
+        // never be able to swap it to another diner's UUID.
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+
+        Livewire::test(GuestMenu::class, ['shop' => $shop])
+            ->set('participantId', (string) Str::uuid());
+    }
+
     public function test_successful_submit_regenerates_idempotency_token(): void
     {
         [$shop, $product] = $this->createMenu();

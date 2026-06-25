@@ -89,6 +89,7 @@ class GuestMenu extends Component
     // Group ordering state
     public $groupToken = null;
 
+    #[Locked]
     public $participantId = null;
 
     public $showGroupShareModal = false;
