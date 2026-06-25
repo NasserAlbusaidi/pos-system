@@ -152,6 +152,11 @@
     font-weight: 800;
 }
 
+.guest-home__chip--closed {
+    color: var(--neutral-700);
+    background: var(--neutral-100);
+}
+
 .guest-home__chip svg {
     flex: none;
 }

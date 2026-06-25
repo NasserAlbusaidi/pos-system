@@ -118,7 +118,7 @@
                                 <div class="flex items-center justify-between px-[22px] py-3 transition-colors hover:bg-cream">
                                     <span class="text-sm font-semibold uppercase tracking-tight text-ink">{{ $option->name_en }}</span>
                                     <div class="flex items-center gap-4">
-                                        <span class="font-mono text-[13px] font-semibold text-forest">+<x-price :amount="$option->price_adjustment" :shop="$shop" /></span>
+                                        <x-price-delta :amount="$option->price_adjustment" :shop="$shop" class="font-mono text-[13px] font-semibold text-forest" />
                                         <button
                                             wire:click.stop="deleteOption({{ $option->id }})"
                                             wire:confirm="{{ __('admin.modifier_delete_option_confirm') }}"

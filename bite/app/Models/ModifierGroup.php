@@ -32,4 +32,27 @@ class ModifierGroup extends Model
     {
         return $this->belongsToMany(Product::class, 'product_modifier_group');
     }
+
+    public function auditSnapshot(): array
+    {
+        $this->loadMissing(['options', 'products']);
+
+        return [
+            'group_name' => $this->name_en,
+            'group_name_ar' => $this->name_ar,
+            'min_selection' => (int) $this->min_selection,
+            'max_selection' => (int) $this->max_selection,
+            'option_count' => $this->options->count(),
+            'attached_product_count' => $this->products->count(),
+            'attached_product_ids' => $this->products
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all(),
+            'options' => $this->options
+                ->map(fn (ModifierOption $option) => $option->auditSnapshot())
+                ->values()
+                ->all(),
+        ];
+    }
 }

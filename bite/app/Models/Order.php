@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class Order extends Model
 {
     use HasFactory;
+
+    public const REVENUE_STATUSES = ['paid', 'preparing', 'ready', 'completed'];
 
     /**
      * shop_id must be set explicitly (via forceCreate) to prevent tenant isolation bypass.
@@ -19,6 +23,7 @@ class Order extends Model
         'parent_order_id',
         'split_group_id',
         'customer_name',
+        'source',
         'loyalty_phone',
         'status',
         'total_amount',
@@ -27,6 +32,7 @@ class Order extends Model
         'payment_method',
         'tracking_token',
         'idempotency_key',
+        'idempotency_fingerprint',
         'fulfilled_at',
         'paid_at',
         'expires_at',
@@ -58,11 +64,30 @@ class Order extends Model
         };
     }
 
+    public function sourceLabel(): string
+    {
+        return match ($this->source) {
+            'counter' => __('admin.source_counter'),
+            default => __('admin.source_guest'),
+        };
+    }
+
+    public function scopeRevenueRecognized(Builder $query): Builder
+    {
+        return $query
+            ->whereIn('status', self::REVENUE_STATUSES)
+            ->whereNotNull('paid_at');
+    }
+
     protected static function booted(): void
     {
         static::creating(function (self $order): void {
             if (blank($order->tracking_token)) {
                 $order->tracking_token = (string) Str::uuid();
+            }
+
+            if (blank($order->source)) {
+                $order->source = 'guest';
             }
         });
     }
@@ -98,14 +123,74 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function trustedPayments(): Collection
+    {
+        if (! $this->exists) {
+            return collect();
+        }
+
+        if ($this->relationLoaded('payments')) {
+            return $this->payments
+                ->where('shop_id', $this->shop_id)
+                ->values();
+        }
+
+        return $this->trustedPaymentsQuery()
+            ->orderBy('id')
+            ->get();
+    }
+
+    public function trustedPaymentsQuery()
+    {
+        return $this->payments()
+            ->where('shop_id', $this->shop_id);
+    }
+
     public function getPaidTotalAttribute(): float
     {
-        return (float) $this->payments()->sum('amount');
+        return round((float) $this->trustedPaymentsQuery()->sum('amount'), 3);
     }
 
     public function getBalanceDueAttribute(): float
     {
-        return max(0, (float) $this->total_amount - $this->paid_total);
+        return max(0, round((float) $this->total_amount - $this->paid_total, 3));
+    }
+
+    public function paymentSummaryMethod(): ?string
+    {
+        $methods = $this->trustedPaymentsQuery()
+            ->orderBy('id')
+            ->pluck('method')
+            ->filter(fn ($method) => is_string($method) && trim($method) !== '')
+            ->values();
+
+        if ($methods->isEmpty()) {
+            return null;
+        }
+
+        return $methods->count() > 1 ? 'split' : $methods->first();
+    }
+
+    public function canCancelWithoutPaymentReversal(): bool
+    {
+        return $this->status === 'unpaid'
+            && ! $this->trustedPaymentsQuery()->exists();
+    }
+
+    public function cancelIfExpiredUnpaid(): bool
+    {
+        if (
+            $this->status !== 'unpaid'
+            || ! $this->expires_at
+            || $this->expires_at->isFuture()
+            || $this->trustedPaymentsQuery()->exists()
+        ) {
+            return false;
+        }
+
+        $this->forceFill(['status' => 'cancelled'])->save();
+
+        return true;
     }
 
     public static function cancelExpired()

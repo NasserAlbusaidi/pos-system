@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
 use App\Services\ImageService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -90,19 +91,35 @@ class ImageServiceTest extends TestCase
 
     public function test_product_image_helper_returns_card_url(): void
     {
-        $product = new \App\Models\Product;
+        $product = new Product;
         $product->image_url = 'products/abc123-full.webp';
 
         $result = productImage($product, 'card');
 
-        // Storage::disk('public')->url() returns an absolute URL using APP_URL
-        $this->assertStringEndsWith('/storage/products/abc123-card.webp', $result);
-        $this->assertStringContainsString('products/abc123-card.webp', $result);
+        $this->assertSame('/storage/products/abc123-card.webp', $result);
+    }
+
+    public function test_product_image_helper_returns_safe_remote_url_unchanged(): void
+    {
+        $product = new Product;
+        $product->image_url = 'https://images.pexels.com/photos/12703064/pexels-photo-12703064.jpeg?auto=compress&cs=tinysrgb&w=800';
+
+        $result = productImage($product, 'card');
+
+        $this->assertSame($product->image_url, $result);
+    }
+
+    public function test_product_image_helper_rejects_unsafe_remote_scheme(): void
+    {
+        $product = new Product;
+        $product->image_url = 'javascript:alert(1)';
+
+        $this->assertNull(productImage($product, 'card'));
     }
 
     public function test_product_image_helper_returns_null_when_no_image(): void
     {
-        $product = new \App\Models\Product;
+        $product = new Product;
         $product->image_url = null;
 
         $result = productImage($product, 'card');

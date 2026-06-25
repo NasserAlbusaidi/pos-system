@@ -59,11 +59,12 @@ return [
     | Guest Order Expiry
     |--------------------------------------------------------------------------
     |
-    | Minutes before an unpaid guest order is automatically cancelled.
+    | Minutes before an unpaid pay-at-counter order is automatically cancelled.
+    | Keep this long enough for busy counters to collect payment.
     |
     */
 
-    'order_expiry_minutes' => (int) env('ORDER_EXPIRY_MINUTES', 6),
+    'order_expiry_minutes' => (int) env('ORDER_EXPIRY_MINUTES', 60),
 
     /*
     |--------------------------------------------------------------------------

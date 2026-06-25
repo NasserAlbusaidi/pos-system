@@ -7,6 +7,7 @@
     $homeCoverUrl = \App\Support\BrandingUrl::safe($shop->branding['cover_url'] ?? null);
     $homeLogoUrl = \App\Support\BrandingUrl::safe($shop->branding['logo_url'] ?? null);
     $homeNextLocale = $locale === 'ar' ? 'en' : 'ar';
+    $homeIsOpen = \App\Support\ShopHours::isOpen($shop);
 
     $homePrice = function ($product) use ($pricingRules) {
         $timePriced = $pricingRules->isNotEmpty() ? $product->getTimePriced($pricingRules) : null;
@@ -48,11 +49,11 @@
 
     <div class="guest-home__body">
         <div class="guest-home__context">
-            <div class="guest-home__chip">
+            <div class="guest-home__chip {{ $homeIsOpen ? '' : 'guest-home__chip--closed' }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
                 </svg>
-                <span>{{ __('guest.home_prep') }}</span>
+                <span>{{ $homeIsOpen ? __('guest.status_open') : __('guest.status_closed') }}</span>
             </div>
             <div class="guest-home__chip">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

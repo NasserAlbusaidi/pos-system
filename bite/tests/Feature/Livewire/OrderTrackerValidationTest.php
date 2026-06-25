@@ -20,13 +20,13 @@ class OrderTrackerValidationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function makeOrder(): Order
+    private function makeOrder(string $status = 'completed'): Order
     {
         $shop = Shop::create(['name' => 'Test Shop', 'slug' => 'test-shop']);
 
         return Order::forceCreate([
             'shop_id' => $shop->id,
-            'status' => 'completed',
+            'status' => $status,
             'total_amount' => 10.000,
         ]);
     }
@@ -85,6 +85,20 @@ class OrderTrackerValidationTest extends TestCase
 
         $this->assertSame(5, $order->fresh()->customer_rating);
         $this->assertSame('Great service!', $order->fresh()->customer_feedback);
+    }
+
+    public function test_feedback_cannot_be_submitted_before_order_is_ready(): void
+    {
+        $order = $this->makeOrder('preparing');
+
+        Livewire::test(OrderTracker::class, ['trackingToken' => $order->tracking_token])
+            ->set('rating', 5)
+            ->set('feedbackComment', 'Too early')
+            ->call('submitFeedback')
+            ->assertForbidden();
+
+        $this->assertNull($order->fresh()->customer_rating);
+        $this->assertNull($order->fresh()->customer_feedback);
     }
 
     public function test_xss_payload_in_comment_is_stripped_before_storage(): void

@@ -40,4 +40,8 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
     ],
 
+    'sourdough' => [
+        'admin_password' => env('SOURDOUGH_ADMIN_PASSWORD'),
+    ],
+
 ];

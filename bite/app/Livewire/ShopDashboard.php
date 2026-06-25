@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Shop;
+use App\Support\ShopClock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -12,6 +15,13 @@ use Livewire\Component;
 
 class ShopDashboard extends Component
 {
+    use AuthorizesRole;
+
+    protected function allowedRoles(): array
+    {
+        return ['server', 'manager', 'admin'];
+    }
+
     public Shop $shop;
 
     public $dailyRevenue = 0;
@@ -61,17 +71,23 @@ class ShopDashboard extends Component
 
     public function loadStats()
     {
-        $shopId = Auth::user()->shop_id;
+        $shop = $this->shop ?? Auth::user()->shop;
+        $shopId = $shop->id;
+        [$todayStartUtc, $todayEndUtc] = ShopClock::currentLocalDayUtcRange($shop);
+        [$yesterdayStartUtc, $yesterdayEndUtc] = ShopClock::localDayUtcRange($shop, ShopClock::localDate($shop, offsetDays: -1));
+        [$weekStartUtc, $weekEndUtc] = ShopClock::recentLocalDaysUtcRange($shop, 7);
+        [$heatmapStartUtc, $heatmapEndUtc] = ShopClock::recentLocalDaysUtcRange($shop, 28);
+        $weekDates = ShopClock::recentLocalDates($shop, 7);
 
         $this->dailyRevenue = (float) Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereDate('paid_at', today())
+            ->revenueRecognized()
+            ->whereBetween('paid_at', [$todayStartUtc, $todayEndUtc])
             ->sum('total_amount');
 
-        // Yesterday's completed revenue powers the hero "vs yesterday" delta.
+        // Yesterday's paid revenue powers the hero "vs yesterday" delta.
         $this->yesterdayRevenue = (float) Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereDate('paid_at', today()->subDay())
+            ->revenueRecognized()
+            ->whereBetween('paid_at', [$yesterdayStartUtc, $yesterdayEndUtc])
             ->sum('total_amount');
 
         // Percentage change vs yesterday — null (not 0/∞) when there is no
@@ -81,22 +97,22 @@ class ShopDashboard extends Component
             : null;
 
         $this->ordersTodayCount = Order::where('shop_id', $shopId)
-            ->whereDate('created_at', today())
+            ->whereBetween('created_at', [$todayStartUtc, $todayEndUtc])
             ->count();
 
-        $completedOrdersCount = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereDate('paid_at', today())
+        $revenueOrdersCount = Order::where('shop_id', $shopId)
+            ->revenueRecognized()
+            ->whereBetween('paid_at', [$todayStartUtc, $todayEndUtc])
             ->count();
 
-        $this->avgOrderValue = $completedOrdersCount > 0
-            ? round($this->dailyRevenue / $completedOrdersCount, 3)
+        $this->avgOrderValue = $revenueOrdersCount > 0
+            ? round($this->dailyRevenue / $revenueOrdersCount, 3)
             : 0;
 
-        $this->itemsSoldToday = (int) OrderItem::whereHas('order', function ($query) use ($shopId) {
+        $this->itemsSoldToday = (int) OrderItem::whereHas('order', function ($query) use ($shopId, $todayStartUtc, $todayEndUtc) {
             $query->where('shop_id', $shopId)
-                ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
-                ->whereDate('paid_at', today());
+                ->revenueRecognized()
+                ->whereBetween('paid_at', [$todayStartUtc, $todayEndUtc]);
         })->sum('quantity');
 
         $this->activeOrdersCount = Order::where('shop_id', $shopId)
@@ -108,12 +124,10 @@ class ShopDashboard extends Component
             })
             ->count();
 
-        $this->paymentSummary = Order::where('shop_id', $shopId)
-            ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
-            ->whereDate('paid_at', today())
-            ->whereNotNull('payment_method')
-            ->select('payment_method', DB::raw('count(*) as orders'), DB::raw('sum(total_amount) as total'))
-            ->groupBy('payment_method')
+        $this->paymentSummary = Payment::query()
+            ->reportableForPaymentSummary($shopId, $todayStartUtc, $todayEndUtc)
+            ->select('method as payment_method', DB::raw('count(*) as orders'), DB::raw('sum(amount) as total'))
+            ->groupBy('method')
             ->get()
             ->mapWithKeys(function ($row) {
                 return [$row->payment_method => [
@@ -124,16 +138,16 @@ class ShopDashboard extends Component
             ->all();
 
         $this->ordersByStatus = Order::where('shop_id', $shopId)
-            ->whereDate('created_at', today())
+            ->whereBetween('created_at', [$todayStartUtc, $todayEndUtc])
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        $this->topProducts = OrderItem::whereHas('order', function ($query) use ($shopId) {
+        $this->topProducts = OrderItem::whereHas('order', function ($query) use ($shopId, $weekStartUtc, $weekEndUtc) {
             $query->where('shop_id', $shopId)
-                ->whereIn('status', ['paid', 'preparing', 'ready', 'completed'])
-                ->whereBetween('paid_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()]);
+                ->revenueRecognized()
+                ->whereBetween('paid_at', [$weekStartUtc, $weekEndUtc]);
         })
             ->select('product_name_snapshot_en', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
             ->groupBy('product_name_snapshot_en')
@@ -142,18 +156,15 @@ class ShopDashboard extends Component
             ->get();
 
         $weeklyRaw = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereBetween('paid_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])
-            ->select(DB::raw('date(paid_at) as day'), DB::raw('sum(total_amount) as total'))
-            ->groupBy('day')
-            ->orderBy('day')
-            ->pluck('total', 'day')
-            ->toArray();
+            ->revenueRecognized()
+            ->whereBetween('paid_at', [$weekStartUtc, $weekEndUtc])
+            ->get(['paid_at', 'total_amount'])
+            ->groupBy(fn (Order $order): string => ShopClock::localDate($shop, $order->paid_at))
+            ->map(fn ($orders): float => (float) $orders->sum('total_amount'))
+            ->all();
 
-        $this->weeklyRevenue = collect(range(6, 0))
-            ->map(function ($offset) use ($weeklyRaw) {
-                $day = now()->subDays($offset)->toDateString();
-
+        $this->weeklyRevenue = collect($weekDates)
+            ->map(function (string $day) use ($weeklyRaw) {
                 return [
                     'day' => $day,
                     'total' => (float) ($weeklyRaw[$day] ?? 0),
@@ -161,27 +172,24 @@ class ShopDashboard extends Component
             })
             ->all();
 
-        // Revenue heatmap: last 4 weeks, by day-of-week and hour
-        $driver = DB::connection()->getDriverName();
-        $hourExpr = $driver === 'sqlite' ? "cast(strftime('%H', paid_at) as integer)" : 'hour(paid_at)';
-        $dowExpr = $driver === 'sqlite' ? "cast(strftime('%w', paid_at) as integer)" : 'dayofweek(paid_at) - 1';
-
+        // Revenue heatmap: last 4 local weeks, by local day-of-week and hour.
         $heatmapRaw = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereBetween('paid_at', [now()->subDays(28)->startOfDay(), now()->endOfDay()])
-            ->select(
-                DB::raw("{$dowExpr} as dow"),
-                DB::raw("{$hourExpr} as hour"),
-                DB::raw('sum(total_amount) as total')
-            )
-            ->groupBy('dow', 'hour')
-            ->get();
+            ->revenueRecognized()
+            ->whereBetween('paid_at', [$heatmapStartUtc, $heatmapEndUtc])
+            ->get(['paid_at', 'total_amount'])
+            ->groupBy(fn (Order $order): string => ShopClock::localWeekdayIndex($shop, $order->paid_at).'|'.ShopClock::localHour($shop, $order->paid_at))
+            ->map(function ($orders, string $bucket): array {
+                [$dow, $hour] = explode('|', $bucket);
 
-        $this->revenueHeatmap = $heatmapRaw->map(fn ($row) => [
-            'dow' => (int) $row->dow,
-            'hour' => (int) $row->hour,
-            'total' => (float) $row->total,
-        ])->all();
+                return [
+                    'dow' => (int) $dow,
+                    'hour' => (int) $hour,
+                    'total' => (float) $orders->sum('total_amount'),
+                ];
+            })
+            ->values();
+
+        $this->revenueHeatmap = $heatmapRaw->all();
 
         // Daily goal from branding config (owner can set it)
         $branding = $this->shop->branding ?? [];
@@ -190,6 +198,8 @@ class ShopDashboard extends Component
 
     public function setDailyGoal(float $goal): void
     {
+        abort_unless($this->canManageDashboardSettings(), 403, 'Unauthorized role.');
+
         $goal = max(0, round($goal, 3));
         $branding = $this->shop->branding ?? [];
         $this->shop->update([
@@ -231,6 +241,11 @@ class ShopDashboard extends Component
         $this->previousUnreadCount = $currentUnread;
     }
 
+    public function canManageDashboardSettings(): bool
+    {
+        return in_array(Auth::user()?->role, ['manager', 'admin'], true);
+    }
+
     #[Layout('layouts.admin')]
     public function render()
     {
@@ -256,6 +271,7 @@ class ShopDashboard extends Component
                 ->latest()
                 ->take(5)
                 ->get(),
+            'canManageDashboardSettings' => $this->canManageDashboardSettings(),
             'notifications' => $notifications,
             'unreadCount' => $unreadCount,
         ]);

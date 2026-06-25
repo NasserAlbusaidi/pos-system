@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Support\UserHomeRoute;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -22,19 +23,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         $user = auth()->user();
 
-        if ($user->is_super_admin) {
-            $this->redirectIntended(default: route('super-admin.dashboard', absolute: false), navigate: true);
-
-            return;
-        }
-
-        if ($user->shouldRedirectToOnboarding()) {
-            $this->redirect('/onboarding', navigate: true);
-
-            return;
-        }
-
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: UserHomeRoute::url($user, absolute: false), navigate: true);
     }
 }; ?>
 

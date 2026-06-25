@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuestMenuQrCodeController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InvoiceController;
@@ -30,7 +31,12 @@ use App\Livewire\SuperAdmin\Shops\Index as SuperAdminShopsIndex;
 use App\Livewire\SuperAdmin\Shops\Manage as SuperAdminShopsManage;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', HealthController::class)->name('health')->withoutMiddleware([\App\Http\Middleware\SecurityHeaders::class]);
+Route::get('/health', HealthController::class)->name('health')->withoutMiddleware([
+    \App\Http\Middleware\SecurityHeaders::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+]);
 
 Route::view('/', 'welcome');
 Route::view('/offline', 'offline');
@@ -39,6 +45,7 @@ Route::view('/terms', 'legal.terms')->name('legal.terms');
 
 // Public Guest Routes (Path-Based Tenancy)
 Route::get('/menu/{shop:slug}', GuestMenu::class)->name('guest.menu');
+Route::get('/menu/{shop:slug}/qr.svg', GuestMenuQrCodeController::class)->name('guest.menu.qr');
 Route::get('/track/{trackingToken}', OrderTracker::class)->whereUuid('trackingToken')->name('guest.track');
 Route::get('/pos/pin/{shop:slug}', PinLogin::class)->name('pos.pin');
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])
@@ -49,15 +56,15 @@ Route::post('/webhooks/stripe/subscription', [StripeSubscriptionWebhookControlle
     ->name('webhooks.stripe.subscription');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', ShopDashboard::class)->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'subscribed', 'shop.active', 'role:admin'])->group(function () {
     Route::get('onboarding', OnboardingWizard::class)->name('onboarding');
 });
 
 Route::middleware(['auth', 'subscribed', 'shop.active', 'role:server,manager,admin'])->group(function () {
+    Route::get('dashboard', ShopDashboard::class)->name('dashboard');
     Route::get('/pos', PosDashboard::class)->name('pos.dashboard');
     Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('admin.orders.invoice');
     Route::get('/receipt/{order}', [ReceiptController::class, 'show'])->name('receipt.print');

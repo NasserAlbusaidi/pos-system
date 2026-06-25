@@ -26,8 +26,7 @@ class AuditLogsTest extends DuskTestCase
             $browser->loginAs($admin)
                 ->visit('/audit-logs')
                 ->assertPathIs('/audit-logs')
-                // Table cells have CSS uppercase
-                ->assertSee('ORDER.PAID');
+                ->assertSee('order.paid');
         });
     }
 
@@ -53,13 +52,13 @@ class AuditLogsTest extends DuskTestCase
             $browser->loginAs($admin)
                 ->visit('/audit-logs')
                 // Wait for both records to load
-                ->waitForText('PRODUCT.CREATED')
-                ->assertSee('ORDER.PAID')
+                ->waitForText('product.created')
+                ->assertSee('order.paid')
                 // Type search and wait for Livewire to filter
                 ->type('[wire\\:model\\.live="search"]', 'product')
                 ->pause(1000)
-                ->assertSee('PRODUCT.CREATED')
-                ->assertDontSee('ORDER.PAID');
+                ->assertSee('product.created')
+                ->assertDontSee('order.paid');
         });
     }
 }

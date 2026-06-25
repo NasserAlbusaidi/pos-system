@@ -19,6 +19,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+docs/handoffs/**
+!docs/handoffs/
+!docs/handoffs/.gitkeep
 Homestead.json
 Homestead.yaml
 Thumbs.db

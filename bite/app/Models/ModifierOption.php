@@ -21,4 +21,17 @@ class ModifierOption extends Model
     {
         return $this->belongsTo(ModifierGroup::class, 'modifier_group_id');
     }
+
+    public function auditSnapshot(): array
+    {
+        $this->loadMissing('group');
+
+        return [
+            'modifier_group_id' => (int) $this->modifier_group_id,
+            'group_name' => $this->group?->name_en,
+            'option_name' => $this->name_en,
+            'option_name_ar' => $this->name_ar,
+            'price_adjustment' => (float) $this->price_adjustment,
+        ];
+    }
 }

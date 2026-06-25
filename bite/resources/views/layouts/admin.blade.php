@@ -38,7 +38,7 @@
         <div class="flex h-full flex-col overflow-hidden md:flex-row">
             <livewire:layout.admin-navigation />
 
-            <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
+            <div id="admin-content" class="relative flex min-h-0 min-w-0 flex-1 flex-col">
                 {{-- Pages can opt out of this default chrome with <x-slot:chromeless>
                      and render their own full-bleed header/content (e.g. the
                      operations dashboard, whose header carries Livewire controls). --}}

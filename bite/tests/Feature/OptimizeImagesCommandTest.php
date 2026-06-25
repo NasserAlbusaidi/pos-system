@@ -111,6 +111,30 @@ class OptimizeImagesCommandTest extends TestCase
         $this->assertSame($originalUrl, $product->image_url, 'Already-processed image_url should not change');
     }
 
+    public function test_command_skips_remote_image_urls(): void
+    {
+        Storage::fake('public');
+
+        $shop = Shop::factory()->create();
+        $category = Category::factory()->create(['shop_id' => $shop->id]);
+
+        $product = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Latte',
+            'name_ar' => 'لاتيه',
+            'price' => 1.500,
+            'image_url' => 'https://images.pexels.com/photos/12703064/pexels-photo-12703064.jpeg?auto=compress&cs=tinysrgb&w=800',
+        ]);
+
+        $this->artisan('images:optimize')
+            ->expectsOutputToContain('remote image URL')
+            ->assertExitCode(0);
+
+        $product->refresh();
+        $this->assertSame('https://images.pexels.com/photos/12703064/pexels-photo-12703064.jpeg?auto=compress&cs=tinysrgb&w=800', $product->image_url);
+    }
+
     /**
      * Test 4: Command reports count of processed, skipped, and failed products.
      */

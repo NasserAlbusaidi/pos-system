@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Services\BillingService;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -27,10 +28,37 @@ trait AuthorizesRole
 
     public function bootAuthorizesRole(): void
     {
+        $user = Auth::user();
+
         abort_unless(
-            in_array(Auth::user()?->role, $this->allowedRoles(), true),
+            in_array($user?->role, $this->allowedRoles(), true),
             403,
             'Unauthorized role.'
         );
+
+        if (! $user || $user->is_super_admin || ! $this->requiresActiveSubscribedShop()) {
+            return;
+        }
+
+        abort_unless($user->shop, 403, 'Shop is required.');
+        abort_if($user->shop->status === 'suspended', 403, 'Shop is suspended.');
+
+        $billing = app(BillingService::class);
+        abort_unless($billing->isSubscribed($user->shop), 403, 'Subscription is not active.');
+
+        $feature = $this->requiredPlanFeature();
+        if ($feature !== null) {
+            abort_unless($billing->canAccess($user->shop, $feature), 403, 'Feature requires Pro plan.');
+        }
+    }
+
+    protected function requiresActiveSubscribedShop(): bool
+    {
+        return true;
+    }
+
+    protected function requiredPlanFeature(): ?string
+    {
+        return null;
     }
 }

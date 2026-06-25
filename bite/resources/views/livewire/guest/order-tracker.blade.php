@@ -25,10 +25,21 @@
     $codePrefix = strtoupper(substr($shop->slug, 0, 2));
     $shortCode = $codePrefix . '-' . str_pad((string) $order->id, 3, '0', STR_PAD_LEFT);
     $showReview = in_array($order->status, ['ready', 'completed'], true);
+    $shopInitial = mb_strtoupper(mb_substr($shop->name, 0, 1));
 @endphp
 
-<div class="guest-track" wire:poll.5s>
+<div class="guest-menu-bg guest-shell guest-track" wire:poll.5s>
     <div class="guest-track__inner fade-rise">
+        <header class="guest-track__mast">
+            <div class="guest-track__brand">
+                <span class="guest-track__mark" aria-hidden="true">{{ $shopInitial }}</span>
+                <span class="guest-track__brand-copy">
+                    <small>{{ __('guest.tracking_order', ['id' => $shortCode]) }}</small>
+                    <strong>{{ $shop->name }}</strong>
+                </span>
+            </div>
+            <span class="guest-track__pill">{{ __('guest.guest_pickup') }}</span>
+        </header>
 
         {{-- Counter code card — what the guest shows at the counter --}}
         <section class="guest-codecard">

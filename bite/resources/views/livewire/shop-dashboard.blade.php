@@ -130,22 +130,26 @@
                                     <span class="mx-1">{{ __('admin.daily_goal_of') }}</span>
                                     <x-price :amount="$dailyGoal" :shop="$shop" />
                                 </p>
-                                <template x-if="!editing">
-                                    <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-1 !text-[10px]">{{ __('admin.daily_goal_set') }}</button>
-                                </template>
+                                @if($canManageDashboardSettings)
+                                    <template x-if="!editing">
+                                        <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-1 !text-[10px]">{{ __('admin.daily_goal_set') }}</button>
+                                    </template>
+                                @endif
                             </div>
                         </div>
                         <div class="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-mist">
                             <div class="h-full rounded-full transition-all duration-700 ease-out" style="width: {{ min($goalPercent, 100) }}%; background: {{ $goalBarColor }};"></div>
                         </div>
                         <p class="mt-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal_progress', ['percent' => $goalPercent]) }}</p>
-                        <template x-if="editing">
-                            <div class="mt-3 flex items-center gap-2">
-                                <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0" class="field h-9 w-36 font-mono text-sm" />
-                                <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
-                                <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
-                            </div>
-                        </template>
+                        @if($canManageDashboardSettings)
+                            <template x-if="editing">
+                                <div class="mt-3 flex items-center gap-2">
+                                    <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0" class="field h-9 w-36 font-mono text-sm" />
+                                    <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
+                                    <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
+                                </div>
+                            </template>
+                        @endif
                     @else
                         <template x-if="!editing">
                             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -153,17 +157,21 @@
                                     <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
                                     <p class="mt-1 text-sm text-ink-soft">{{ __('admin.daily_goal_set_prompt') }}</p>
                                 </div>
-                                <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-2">{{ __('admin.daily_goal_set') }}</button>
+                                @if($canManageDashboardSettings)
+                                    <button x-on:click="editing = true; $nextTick(() => $refs.goalField.focus())" class="btn-secondary !px-3 !py-2">{{ __('admin.daily_goal_set') }}</button>
+                                @endif
                             </div>
                         </template>
-                        <template x-if="editing">
-                            <div class="flex items-center gap-3">
-                                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
-                                <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0.001" class="field h-9 w-36 font-mono text-sm" placeholder="100.000" />
-                                <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
-                                <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
-                            </div>
-                        </template>
+                        @if($canManageDashboardSettings)
+                            <template x-if="editing">
+                                <div class="flex items-center gap-3">
+                                    <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.daily_goal') }}</p>
+                                    <input x-ref="goalField" x-model.number="goalInput" type="number" step="0.001" min="0.001" class="field h-9 w-36 font-mono text-sm" placeholder="100.000" />
+                                    <button x-on:click="$wire.setDailyGoal(goalInput); editing = false" class="btn-primary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_update') }}</button>
+                                    <button x-on:click="editing = false" class="btn-secondary !px-3 !py-1.5 !text-[10px]">{{ __('admin.daily_goal_cancel') }}</button>
+                                </div>
+                            </template>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -284,7 +292,7 @@
 
             {{-- Revenue heatmap --}}
             <section class="surface-card transition-opacity duration-300" wire:loading.class="opacity-60"
-                x-data="revenueHeatmap({{ Js::from($revenueHeatmap) }}, '{{ $shop->currency_symbol ?? 'OMR' }}')"
+                x-data="revenueHeatmap({{ Js::from($revenueHeatmap) }}, {{ Js::from($shop->currency_symbol ?? 'OMR') }})"
             >
                 <div class="flex items-center justify-between border-b border-line px-[22px] py-4">
                     <div class="flex items-center gap-2.5">
@@ -404,7 +412,7 @@
 
             {{-- Payments today --}}
             @php
-                $payTotal = collect($paymentSummary)->sum('total');
+                $payTotal = max(0.001, collect($paymentSummary)->sum(fn ($summary) => abs((float) $summary['total'])));
                 $payColors = ['card' => 'var(--bite-green)', 'cash' => 'var(--bite-lime-300)'];
                 $payFallback = ['var(--bite-olive)', 'var(--bite-pine)', 'var(--bite-lime)', 'var(--bite-lime-200)'];
             @endphp
@@ -419,9 +427,12 @@
                     @if(!empty($paymentSummary))
                         <div class="flex h-3 overflow-hidden rounded-full bg-mist">
                             @foreach($paymentSummary as $method => $summary)
-                                @php $fill = $payColors[strtolower($method)] ?? $payFallback[$loop->index % count($payFallback)]; @endphp
-                                @if($summary['total'] > 0)
-                                    <div style="width: {{ round(($summary['total'] / max(0.001, $payTotal)) * 100, 1) }}%; background: {{ $fill }};" title="{{ strtoupper($method) }}"></div>
+                                @php
+                                    $fill = $payColors[strtolower($method)] ?? $payFallback[$loop->index % count($payFallback)];
+                                    $summaryTotalAbs = abs((float) $summary['total']);
+                                @endphp
+                                @if($summaryTotalAbs > 0)
+                                    <div style="width: {{ round(($summaryTotalAbs / $payTotal) * 100, 1) }}%; background: {{ $fill }};" title="{{ strtoupper($method) }}"></div>
                                 @endif
                             @endforeach
                         </div>
@@ -457,7 +468,7 @@
                 <div class="flex items-center gap-[18px] p-5">
                     <div class="shrink-0 rounded-2xl border border-line bg-white p-2.5">
                         <img
-                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&color=004225&data={{ urlencode(url('/menu/' . $shop->slug)) }}"
+                            src="{{ route('guest.menu.qr', $shop) }}"
                             alt="QR code for guest menu"
                             width="120"
                             height="120"
@@ -468,7 +479,7 @@
                     <div class="min-w-0 flex-1">
                         <p class="break-all font-mono text-[10px] font-semibold uppercase leading-relaxed tracking-[0.1em] text-ink-soft">{{ url('/menu/' . $shop->slug) }}</p>
                         <button type="button" class="btn-secondary mt-3 w-full !py-2.5"
-                            x-on:click="navigator.clipboard.writeText('{{ url('/menu/' . $shop->slug) }}'); copied = true; setTimeout(() => copied = false, 2000);">
+                            x-on:click="navigator.clipboard.writeText({{ Js::from(url('/menu/' . $shop->slug)) }}); copied = true; setTimeout(() => copied = false, 2000);">
                             <span x-show="!copied">{{ __('admin.copy_link') }}</span>
                             <span x-show="copied" x-cloak>{{ __('admin.copied') }}</span>
                         </button>
@@ -512,7 +523,12 @@
                     @endphp
                     <tr class="border-b border-line transition-colors hover:bg-cream">
                         <td class="px-[22px] py-3.5 font-mono text-xs font-bold uppercase tracking-[0.06em] text-ink-soft">#{{ $order->id }}</td>
-                        <td class="px-[22px] py-3.5 text-sm text-ink">{{ $order->customer_name ?: __('admin.source_counter') }}</td>
+                        <td class="px-[22px] py-3.5 text-sm text-ink">
+                            {{ $order->sourceLabel() }}
+                            @if(filled($order->customer_name))
+                                <span class="text-ink-soft">· {{ $order->customer_name }}</span>
+                            @endif
+                        </td>
                         <td class="px-[22px] py-3.5 text-end font-display text-sm font-bold text-forest"><x-price :amount="$order->total_amount" :shop="$shop" /></td>
                         <td class="px-[22px] py-3.5">
                             <span class="inline-flex rounded-full px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.1em]" style="{{ $badge }}">{{ __('admin.status_' . $order->status) }}</span>

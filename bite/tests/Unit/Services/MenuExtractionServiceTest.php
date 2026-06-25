@@ -292,6 +292,42 @@ class MenuExtractionServiceTest extends TestCase
         $this->assertSame('فلافل', $result[1]['name_ar']);
     }
 
+    public function test_extract_caps_normalized_items_to_import_limit(): void
+    {
+        $items = collect(range(1, 101))
+            ->map(fn (int $index) => [
+                'category_en' => 'Menu',
+                'category_ar' => 'القائمة',
+                'name_en' => "Item {$index}",
+                'name_ar' => '',
+                'description_en' => '',
+                'description_ar' => '',
+                'price' => 1.000,
+            ])
+            ->all();
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                ['text' => json_encode($items)],
+                            ],
+                        ],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $result = $this->service->extract([
+            ['mime_type' => 'image/jpeg', 'data' => base64_encode('fake-image-data')],
+        ]);
+
+        $this->assertCount(100, $result);
+        $this->assertSame('Item 100', $result[99]['name_en']);
+    }
+
     public function test_extract_sends_multiple_images(): void
     {
         Http::fake([

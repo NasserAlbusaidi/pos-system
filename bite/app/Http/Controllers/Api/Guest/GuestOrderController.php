@@ -8,6 +8,7 @@ use App\Http\Requests\Api\Guest\StoreOrderRequest;
 use App\Http\Resources\Guest\OrderStatusResource;
 use App\Models\Order;
 use App\Models\Shop;
+use App\Services\BillingService;
 use App\Services\GuestOrderService;
 use Illuminate\Http\JsonResponse;
 
@@ -20,7 +21,10 @@ use Illuminate\Http\JsonResponse;
  */
 class GuestOrderController extends Controller
 {
-    public function __construct(private readonly GuestOrderService $service) {}
+    public function __construct(
+        private readonly GuestOrderService $service,
+        private readonly BillingService $billing,
+    ) {}
 
     /**
      * Re-price an untrusted cart server-side without persisting anything.
@@ -69,12 +73,24 @@ class GuestOrderController extends Controller
      */
     public function show(Order $order): OrderStatusResource
     {
+        $this->assertShopPubliclyAvailable($order->shop);
+        $order->cancelIfExpiredUnpaid();
+
         return $this->orderResource($order);
     }
 
     private function resolveShop(string $slug): Shop
     {
-        return Shop::where('slug', $slug)->firstOrFail();
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $this->assertShopPubliclyAvailable($shop);
+
+        return $shop;
+    }
+
+    private function assertShopPubliclyAvailable(Shop $shop): void
+    {
+        abort_if($shop->status === 'suspended' || ! $this->billing->isSubscribed($shop), 404);
     }
 
     private function orderResource(Order $order): OrderStatusResource

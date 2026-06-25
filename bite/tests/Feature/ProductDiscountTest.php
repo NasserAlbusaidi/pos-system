@@ -56,4 +56,22 @@ class ProductDiscountTest extends TestCase
 
         $this->assertEquals(5.00, $productInactive->final_price);
     }
+
+    public function test_fixed_discount_cannot_make_final_price_negative(): void
+    {
+        $shop = Shop::create(['name' => 'Bite', 'slug' => 'bite']);
+        $category = Category::create(['shop_id' => $shop->id, 'name_en' => 'Coffee']);
+
+        $product = Product::forceCreate([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Espresso',
+            'price' => 1.000,
+            'discount_value' => 2.000,
+            'discount_type' => 'fixed',
+            'is_on_sale' => true,
+        ]);
+
+        $this->assertSame(0.0, $product->final_price);
+    }
 }

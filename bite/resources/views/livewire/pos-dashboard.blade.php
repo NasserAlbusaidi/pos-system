@@ -1,4 +1,4 @@
-<div class="h-full space-y-6 fade-rise" wire:poll.5s
+<div class="h-full space-y-6 fade-rise" @unless($this->hasOpenModal) wire:poll.5s @endunless
      x-data="{
          audioCtx: null,
          playChime() {
@@ -74,6 +74,12 @@
                 </div>
             </div>
 
+            @if($paymentError && $paymentOrderId === null)
+                <div class="rounded-xl border border-alert/35 bg-alert/10 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-alert shadow-sm" dusk="pos-payment-error">
+                    {{ $paymentError }}
+                </div>
+            @endif
+
             <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3 transition-opacity duration-300" wire:loading.class="opacity-60">
                 @forelse($orders as $order)
                     @php
@@ -96,7 +102,7 @@
                             default               => 'text-ink-soft',
                         };
                     @endphp
-                    <article class="surface-card flex flex-col hover-lift transition-all duration-300 {{ $cardBorderClass }}">
+                    <article wire:key="pos-order-{{ $order->id }}" class="surface-card flex flex-col hover-lift transition-all duration-300 {{ $cardBorderClass }}">
                         <span class="sr-only">ID_{{ $order->id }}</span>
                         <header class="flex items-start justify-between border-b border-line bg-mist/10 px-5 py-4">
                             <div>
@@ -124,7 +130,12 @@
                         <div class="flex-1 space-y-4.5 p-5">
                             <div>
                                 <p class="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-ink-soft">{{ __('admin.channel') }}</p>
-                                <p class="mt-0.5 text-xs font-semibold text-ink">{{ __('admin.guest_counter_order') }}</p>
+                                <p class="mt-0.5 text-xs font-semibold text-ink">
+                                    {{ $order->sourceLabel() }}
+                                    @if(filled($order->customer_name))
+                                        <span class="text-ink-soft">· {{ $order->customer_name }}</span>
+                                    @endif
+                                </p>
                             </div>
 
                             @if($order->items->isNotEmpty())
@@ -184,7 +195,7 @@
                                 @endif
                             @endif
 
-                            @if($order->payments->isNotEmpty())
+                            @if($order->trustedPayments()->isNotEmpty())
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="rounded-xl border border-line bg-panel px-3.5 py-2.5 shadow-sm">
                                         <p class="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-ink-soft">{{ __('admin.paid') }}</p>
@@ -234,14 +245,17 @@
                                     </button>
                                 @endif
 
+                                @php
+                                    $hasPayment = $order->trustedPayments()->isNotEmpty();
+                                @endphp
                                 <button
                                     wire:click="cancelOrder({{ $order->id }})"
-                                    wire:confirm="{{ __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
+                                    wire:confirm="{{ $hasPayment ? __('admin.refund_void_order_confirm', ['id' => $order->id]) : __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
                                     wire:loading.attr="disabled"
                                     wire:target="cancelOrder({{ $order->id }})"
                                     class="w-full text-center font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-alert hover:text-alert/80 transition-colors mt-2"
                                 >
-                                    <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ __('admin.cancel_order') }}</span>
+                                    <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ $hasPayment ? __('admin.refund_void_order') : __('admin.cancel_order') }}</span>
                                     <span wire:loading wire:target="cancelOrder({{ $order->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
                                 </button>
                             </div>
@@ -520,9 +534,16 @@
     @endif
 
     {{-- New Order / Cart Modal --}}
-    @if($showNewOrder)
-        <div class="fixed inset-0 z-[125] flex items-end justify-center bg-ink/65 backdrop-blur-md p-0 sm:items-center sm:p-6 transition-all duration-300">
-            <div class="surface-card flex h-[92vh] w-full max-w-5xl flex-col overflow-hidden sm:rounded-2xl border border-line bg-panel shadow-2xl">
+    {{-- Teleported into #admin-content (the layout's content column, position:relative) and pinned
+         with absolute inset-0, so the overlay covers the page area only and leaves the side nav
+         visible — at every breakpoint, with no hard-coded sidebar width. Rendering it in place
+         instead would let the component root's (.fade-rise) containing block trap it and the queue
+         would bleed around the card. Visibility uses $wire.entangle (not Livewire @if) so the
+         teleport node is never removed (no orphaned backdrop) and stays reactive across re-renders. --}}
+    <template x-teleport="#admin-content">
+        <div x-data="{ open: $wire.entangle('showNewOrder') }" x-show="open" x-cloak
+             class="absolute inset-0 z-[125] flex items-end justify-center bg-ink/65 backdrop-blur-md p-0 sm:items-center sm:p-6 transition-all duration-300">
+            <div class="surface-card relative flex h-[92vh] w-full max-w-5xl flex-col overflow-hidden sm:rounded-2xl border border-line bg-panel shadow-2xl">
                 <div class="flex items-center justify-between border-b border-line bg-mist/10 px-6 py-4.5">
                     <div>
                         <h3 class="font-display text-2xl font-extrabold leading-none text-ink">{{ __('admin.new_sale') }}</h3>
@@ -544,12 +565,13 @@
                                         <p class="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft/90 border-b border-line/30 pb-1.5">{{ $category->name_en }}</p>
                                         <div class="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
                                             @foreach($category->products as $product)
+                                                @php $productDisplayPrice = $product->getTimePriced($activePricingRules); @endphp
                                                 <button
                                                     wire:click="addToCart({{ $product->id }})"
                                                     @disabled(! $product->is_available)
                                                     class="flex flex-col items-start gap-1 rounded-xl border border-line bg-panel p-3 text-start transition-all hover:border-forest/40 hover:bg-mist/10 hover:shadow-sm disabled:cursor-not-allowed disabled:bg-alert/5 disabled:border-alert/20 disabled:opacity-40 active:scale-95 duration-200">
                                                     <span class="text-xs font-bold text-ink leading-tight">{{ $product->name_en }}</span>
-                                                    <span class="font-mono text-[11px] text-pine font-semibold"><x-price :amount="$product->final_price" :shop="$shop" /></span>
+                                                    <span class="font-mono text-[11px] text-pine font-semibold"><x-price :amount="$productDisplayPrice" :shop="$shop" /></span>
                                                     @unless($product->is_available)
                                                         <span class="mt-1 inline-flex items-center rounded-full border border-alert/50 bg-alert/10 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-alert">86'D</span>
                                                     @endunless
@@ -575,14 +597,17 @@
                                 <div class="flex items-center gap-3 rounded-xl border border-line bg-panel p-3.5 shadow-sm hover:border-line/60 transition-colors">
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-xs font-bold text-ink">{{ $row['name'] }}</p>
+                                        @if(! empty($row['modifierNames']))
+                                            <p class="mt-0.5 truncate font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-ink-soft">{{ implode(' · ', $row['modifierNames']) }}</p>
+                                        @endif
                                         <p class="font-mono text-[10px] text-pine font-semibold mt-0.5"><x-price :amount="$row['price']" :shop="$shop" /></p>
                                     </div>
                                     <div class="flex items-center gap-1.5 bg-mist/20 p-1 rounded-xl border border-line/40">
-                                        <button wire:click="decrementCartItem({{ $row['id'] }})" class="h-7 w-7 rounded-lg border border-line/50 bg-panel font-mono text-sm font-bold text-ink hover:border-ink hover:bg-mist/10 shadow-sm active:scale-95 transition-all">&minus;</button>
+                                        <button wire:click="decrementCartItem(@js($row['key'] ?? (string) $row['id']))" class="h-7 w-7 rounded-lg border border-line/50 bg-panel font-mono text-sm font-bold text-ink hover:border-ink hover:bg-mist/10 shadow-sm active:scale-95 transition-all">&minus;</button>
                                         <span class="w-6 text-center font-mono text-xs font-bold text-ink">{{ $row['quantity'] }}</span>
-                                        <button wire:click="addToCart({{ $row['id'] }})" class="h-7 w-7 rounded-lg border border-line/50 bg-panel font-mono text-sm font-bold text-ink hover:border-ink hover:bg-mist/10 shadow-sm active:scale-95 transition-all">+</button>
+                                        <button wire:click="incrementCartItem(@js($row['key'] ?? (string) $row['id']))" class="h-7 w-7 rounded-lg border border-line/50 bg-panel font-mono text-sm font-bold text-ink hover:border-ink hover:bg-mist/10 shadow-sm active:scale-95 transition-all">+</button>
                                     </div>
-                                    <button wire:click="removeCartItem({{ $row['id'] }})" class="p-1 rounded-lg hover:bg-alert/10 text-ink-soft/50 hover:text-alert transition-all flex items-center justify-center" title="{{ __('admin.remove') }}">
+                                    <button wire:click="removeCartItem(@js($row['key'] ?? (string) $row['id']))" class="p-1 rounded-lg hover:bg-alert/10 text-ink-soft/50 hover:text-alert transition-all flex items-center justify-center" title="{{ __('admin.remove') }}">
                                         <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </div>
@@ -618,7 +643,65 @@
                         </div>
                     </div>
                 </div>
+
+                @if($posCustomizingProduct)
+                    <div class="absolute inset-0 z-10 flex items-end justify-center bg-ink/55 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+                        <div class="flex max-h-[82vh] w-full max-w-lg flex-col overflow-hidden border border-line bg-panel shadow-2xl sm:rounded-2xl">
+                            <div class="flex items-start justify-between gap-4 border-b border-line bg-mist/10 px-5 py-4">
+                                <div class="min-w-0">
+                                    <p class="section-headline mb-1 tracking-[0.18em]">{{ __('guest.add_ons') }}</p>
+                                    <h4 class="truncate font-display text-2xl font-extrabold leading-none text-ink">{{ $posCustomizingProduct->name_en }}</h4>
+                                </div>
+                                <strong class="shrink-0 font-display text-xl font-extrabold text-forest"><x-price :amount="$posCustomizingProductPrice" :shop="$shop" /></strong>
+                            </div>
+
+                            <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+                                @if($posModifierError)
+                                    <div class="rounded-xl border border-alert/35 bg-alert/10 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-alert">{{ $posModifierError }}</div>
+                                @endif
+
+                                @foreach($posCustomizingProduct->modifierGroups as $group)
+                                    <section class="space-y-2.5">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h5 class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-ink">{{ $group->name_en }}</h5>
+                                            <span class="rounded-full border border-line bg-mist/20 px-2 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-ink-soft">
+                                                {{ $group->min_selection > 0 ? __('guest.required') : __('guest.optional') }}
+                                            </span>
+                                            @if($group->max_selection > 1)
+                                                <span class="font-mono text-[9px] font-semibold text-ink-soft">{{ __('guest.up_to', ['count' => $group->max_selection]) }}</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="grid gap-2">
+                                            @foreach($group->options as $option)
+                                                @php
+                                                    $isChecked = $group->max_selection == 1
+                                                        ? (($posSelectedModifiers[$group->id] ?? null) == $option->id)
+                                                        : in_array((string) $option->id, (array) ($posSelectedModifiers[$group->id] ?? []), true);
+                                                @endphp
+                                                <button
+                                                    type="button"
+                                                    wire:click="selectPosModifier({{ $group->id }}, {{ $option->id }}, {{ $group->max_selection > 1 ? 'true' : 'false' }})"
+                                                    class="flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-start transition-all active:scale-[0.99] {{ $isChecked ? 'border-forest bg-forest/10 text-forest shadow-sm' : 'border-line bg-panel text-ink hover:border-forest/40 hover:bg-mist/10' }}"
+                                                    aria-pressed="{{ $isChecked ? 'true' : 'false' }}"
+                                                >
+                                                    <span class="text-xs font-bold">{{ $option->name_en }}</span>
+                                                    <x-price-delta :amount="$option->price_adjustment" :shop="$shop" class="font-mono text-[10px] font-bold" />
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </section>
+                                @endforeach
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 border-t border-line bg-mist/10 p-5">
+                                <button type="button" wire:click="closePosModifierPicker" class="btn-secondary justify-center !py-2.5">{{ __('admin.cancel') }}</button>
+                                <button type="button" wire:click="confirmPosModifierSelection" class="btn-primary justify-center bg-gradient-to-r from-forest to-pine text-panel !py-2.5 shadow-md shadow-forest/10 hover:scale-[1.01] active:scale-[0.99] transition-all">{{ __('guest.add_to_order') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
-    @endif
+    </template>
 </div>

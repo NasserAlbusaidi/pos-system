@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Services\ImageService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -41,11 +42,16 @@ class MenuBuilder extends Component
             'newCategoryNameAr' => 'nullable|string|min:2',
         ]);
 
-        Category::create([
+        $category = Category::create([
             'shop_id' => Auth::user()->shop_id,
             'name_en' => $this->newCategoryNameEn,
             'name_ar' => $this->newCategoryNameAr ?: null,
             'sort_order' => Category::where('shop_id', Auth::user()->shop_id)->count() + 1,
+        ]);
+
+        AuditLog::record('category.created', $category, [
+            'name_en' => $category->name_en,
+            'name_ar' => $category->name_ar,
         ]);
 
         $this->newCategoryNameEn = '';
@@ -61,13 +67,21 @@ class MenuBuilder extends Component
         }
 
         $category = Category::where('shop_id', $shopId)->findOrFail($categoryId);
+        $previousSnapshot = [
+            'name_en' => $category->name_en,
+            'name_ar' => $category->name_ar,
+        ];
         $data = ['name_en' => Str::limit($nameEn, 60, '')];
         if ($nameAr !== null) {
             $data['name_ar'] = Str::limit(trim((string) $nameAr), 60, '') ?: null;
         }
         $category->update($data);
 
-        AuditLog::record('category.renamed', $category, ['name_en' => $nameEn]);
+        AuditLog::record('category.renamed', $category, [
+            'name_en' => $category->name_en,
+            'name_ar' => $category->name_ar,
+            'previous' => $previousSnapshot,
+        ]);
     }
 
     public function deleteCategory($categoryId)
@@ -82,8 +96,14 @@ class MenuBuilder extends Component
             return;
         }
 
+        $snapshot = [
+            'name_en' => $category->name_en,
+            'name_ar' => $category->name_ar,
+            'products_count' => $category->products_count,
+        ];
+
         $category->delete();
-        AuditLog::record('category.deleted', $category);
+        AuditLog::record('category.deleted', $category, $snapshot);
     }
 
     public function reorderProduct($productId, $newCategoryId, $items)
@@ -92,12 +112,21 @@ class MenuBuilder extends Component
 
         $product = Product::where('shop_id', $shopId)->findOrFail((int) $productId);
         $targetCategory = Category::where('shop_id', $shopId)->findOrFail((int) $newCategoryId);
+        $previousCategoryId = (int) $product->category_id;
         $product->update(['category_id' => $targetCategory->id]);
 
         foreach ($this->validatedSortPayload((array) $items, $shopId) as $itemId => $sortOrder) {
             Product::where('shop_id', $shopId)
                 ->where('id', $itemId)
                 ->update(['sort_order' => $sortOrder]);
+        }
+
+        if ($previousCategoryId !== (int) $targetCategory->id) {
+            $product->refresh()->load('modifierGroups');
+            AuditLog::record('product.moved', $product, array_merge(
+                $product->auditSnapshot(),
+                ['previous' => ['category_id' => $previousCategoryId]],
+            ));
         }
     }
 
@@ -106,10 +135,19 @@ class MenuBuilder extends Component
         $shopId = Auth::user()->shop_id;
         $product = Product::where('shop_id', $shopId)->findOrFail((int) $productId);
         $targetCategory = Category::where('shop_id', $shopId)->findOrFail((int) $newCategoryId);
+        $previousCategoryId = (int) $product->category_id;
 
         $product->update([
             'category_id' => $targetCategory->id,
         ]);
+
+        if ($previousCategoryId !== (int) $targetCategory->id) {
+            $product->refresh()->load('modifierGroups');
+            AuditLog::record('product.moved', $product, array_merge(
+                $product->auditSnapshot(),
+                ['previous' => ['category_id' => $previousCategoryId]],
+            ));
+        }
     }
 
     public function updateOrder($items)
@@ -160,15 +198,28 @@ class MenuBuilder extends Component
         $product->update([
             'is_visible' => ! $product->is_visible,
         ]);
+
+        $product->refresh()->load('modifierGroups');
+        AuditLog::record(
+            $product->is_visible ? 'product.visible' : 'product.hidden',
+            $product,
+            $product->auditSnapshot()
+        );
     }
 
     public function deleteProduct($productId)
     {
         $product = Product::where('shop_id', Auth::user()->shop_id)->findOrFail($productId);
+        $imageUrl = $product->image_url;
+        $snapshot = $product->auditSnapshot();
         $product->modifierGroups()->detach();
         $product->delete();
 
-        AuditLog::record('product.deleted', $product);
+        AuditLog::record('product.deleted', $product, $snapshot);
+
+        if ($imageUrl) {
+            app(ImageService::class)->deleteVariants($imageUrl);
+        }
     }
 
     #[Layout('layouts.admin')]

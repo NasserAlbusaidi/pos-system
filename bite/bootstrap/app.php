@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\UserHomeRoute;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -65,13 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectTo(
             guests: '/login',
-            users: function ($request) {
-                if ($request->user()?->is_super_admin) {
-                    return route('super-admin.dashboard');
-                }
-
-                return route('dashboard');
-            }
+            users: fn (Request $request) => UserHomeRoute::url($request->user())
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

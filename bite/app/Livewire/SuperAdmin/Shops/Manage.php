@@ -3,7 +3,7 @@
 namespace App\Livewire\SuperAdmin\Shops;
 
 use App\Models\Shop;
-use App\Models\User;
+use App\Services\ShopProvisioningService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -24,7 +24,7 @@ class Manage extends Component
 
     public $slug = '';
 
-    public $status = 'active';
+    public $status = 'trial';
 
     // For creating new owner user
     public $ownerName = '';
@@ -59,7 +59,7 @@ class Manage extends Component
             'status' => 'required|in:active,suspended,trial',
             'ownerName' => $this->shop ? 'nullable' : 'required',
             'ownerEmail' => $this->shop ? 'nullable' : 'required|email|unique:users,email',
-            'ownerPassword' => $this->shop ? 'nullable' : 'required|min:8',
+            'ownerPassword' => $this->shop ? 'nullable' : 'required|string|min:12|not_in:password',
         ]);
 
         if ($this->shop) {
@@ -67,28 +67,46 @@ class Manage extends Component
                 'name' => $this->name,
                 'slug' => $this->slug,
             ]);
-            $this->shop->status = $this->status;
+            $this->applyLifecycleStatus($this->shop, $this->status);
             $this->shop->save();
         } else {
-            $shop = Shop::create([
-                'name' => $this->name,
-                'slug' => $this->slug,
-                'branding' => null,
-            ]);
-            $shop->status = $this->status;
-            $shop->save();
-
-            // Create Owner
-            User::forceCreate([
-                'shop_id' => $shop->id,
-                'name' => $this->ownerName,
-                'email' => $this->ownerEmail,
-                'password' => \Illuminate\Support\Facades\Hash::make($this->ownerPassword),
-                'role' => 'admin',
-            ]);
+            app(ShopProvisioningService::class)->provisionOwner(
+                name: $this->ownerName,
+                email: $this->ownerEmail,
+                password: $this->ownerPassword,
+                shopName: $this->name,
+                slug: $this->slug,
+                status: $this->status,
+            );
         }
 
         return redirect()->route('super-admin.shops.index');
+    }
+
+    protected function applyLifecycleStatus(Shop $shop, string $status): void
+    {
+        $branding = is_array($shop->branding) ? $shop->branding : [];
+
+        if ($status === 'trial') {
+            $trialEndsAt = $shop->trial_ends_at?->isFuture()
+                ? $shop->trial_ends_at
+                : now()->addDays(config('billing.trial_days', 14));
+
+            $branding['trial_started_at'] ??= now()->toIso8601String();
+            $branding['trial_ends_at'] = $trialEndsAt->toIso8601String();
+
+            $shop->status = 'trial';
+            $shop->trial_ends_at = $trialEndsAt;
+            $shop->branding = $branding;
+
+            return;
+        }
+
+        unset($branding['trial_started_at'], $branding['trial_ends_at']);
+
+        $shop->status = $status;
+        $shop->trial_ends_at = null;
+        $shop->branding = $branding;
     }
 
     #[Layout('layouts.super-admin')]

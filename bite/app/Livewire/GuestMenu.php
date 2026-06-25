@@ -7,16 +7,19 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Notifications\NewOrderNotification;
+use App\Services\BillingService;
 use App\Services\GuestOrderService;
 use App\Services\LoyaltyService;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Throwable;
 
 class GuestMenu extends Component
 {
@@ -92,6 +95,8 @@ class GuestMenu extends Component
 
     public function mount(Shop $shop)
     {
+        abort_if($shop->status === 'suspended' || ! app(BillingService::class)->isSubscribed($shop), 404);
+
         $this->shop = $shop;
 
         // Determine locale: session override > shop default > 'en'
@@ -138,6 +143,11 @@ class GuestMenu extends Component
     {
         $this->switchLanguage($lang);
         $this->showLanguageGate = false;
+    }
+
+    public function updatedLoyaltyPhone(): void
+    {
+        $this->recognizeCustomer();
     }
 
     /**
@@ -649,6 +659,7 @@ class GuestMenu extends Component
             $modifierNames = $validOptions->map(fn ($o) => $o->translated('name'))->all();
             $modifierIds = $validOptions->pluck('id')->all();
         }
+        $displayPrice = max(0.0, round((float) $displayPrice, 3));
 
         if ($this->isGroupMode) {
             // Group mode: write to GroupCart model
@@ -870,18 +881,15 @@ class GuestMenu extends Component
     {
         // Save current cart as customer's favorites for "Order your usual"
         if ($loyaltyPhone) {
-            $loyaltyService = app(LoyaltyService::class);
-            $customer = $loyaltyService->recognize($loyaltyPhone, $this->shop->id);
-            if ($customer) {
-                $customer->saveFavorites(array_values($this->isGroupMode ? $cartItems : $this->cart));
-            }
+            app(LoyaltyService::class)->rememberFavorites(
+                $loyaltyPhone,
+                $this->shop->id,
+                $order->customer_name,
+                array_values($this->isGroupMode ? $cartItems : $this->cart)
+            );
         }
 
-        // Send WhatsApp notification to shop if enabled
-        $whatsapp = app(WhatsAppService::class);
-        if ($whatsapp->isEnabled($this->shop)) {
-            $this->shop->notify(new NewOrderNotification($order));
-        }
+        $this->notifyShopOfNewOrderSafely($order);
 
         // Clean up group cart if in group mode
         if ($this->isGroupMode) {
@@ -903,6 +911,24 @@ class GuestMenu extends Component
         // Regenerate the idempotency token so a fresh checkout creates a new,
         // distinct order rather than colliding with the one just placed.
         $this->idempotencyKey = (string) Str::uuid();
+    }
+
+    protected function notifyShopOfNewOrderSafely(Order $order): void
+    {
+        try {
+            $whatsapp = app(WhatsAppService::class);
+            if (! $whatsapp->isEnabled($this->shop)) {
+                return;
+            }
+
+            $this->shop->notify(new NewOrderNotification($order));
+        } catch (Throwable $e) {
+            Log::warning('WhatsApp order notification failed after guest checkout.', [
+                'order_id' => $order->id,
+                'shop_id' => $order->shop_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -947,6 +973,7 @@ class GuestMenu extends Component
 
         $newCart = [];
         $removedCount = 0;
+        $maxQuantity = max(1, (int) config('ordering.max_quantity_per_line', 99));
         foreach ($items as $item) {
             $product = $products->get($item['id']);
             if (! $product) {
@@ -955,7 +982,7 @@ class GuestMenu extends Component
                 continue;
             }
 
-            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+            $quantity = min($maxQuantity, max(1, (int) ($item['quantity'] ?? 1)));
             $modifierIds = $this->normalizeModifierIds($item['selectedModifiers'] ?? []);
             $validOptions = $this->getValidModifierOptions($product, $modifierIds);
             $validModifierIds = $validOptions->pluck('id')->all();
@@ -968,6 +995,7 @@ class GuestMenu extends Component
                 $displayPrice += $validOptions->sum('price_adjustment');
                 $modifierNames = $validOptions->map(fn ($o) => $o->translated('name'))->all();
             }
+            $displayPrice = max(0.0, round((float) $displayPrice, 3));
 
             $modifierKey = ! empty($validModifierIds)
                 ? implode('-', collect($validModifierIds)->sort()->toArray())
@@ -975,7 +1003,7 @@ class GuestMenu extends Component
             $itemKey = $product->id.'-'.$modifierKey;
 
             if (isset($newCart[$itemKey])) {
-                $newCart[$itemKey]['quantity'] += $quantity;
+                $newCart[$itemKey]['quantity'] = min($maxQuantity, $newCart[$itemKey]['quantity'] + $quantity);
 
                 continue;
             }

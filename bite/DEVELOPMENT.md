@@ -8,7 +8,9 @@ This guide is the technical source of truth for local development and implementa
 - Blade + vanilla CSS with design tokens (no Tailwind — Tailwind deps in `package.json` are leftover from Breeze scaffolding)
 - Vite
 - MySQL 8.0 in production, SQLite in-memory in tests
-- Hosted on Google Cloud Run; Cloud SQL for MySQL; Google Cloud Storage for images/uploads
+- Pilot production runs on Laravel Forge with MySQL 8 and local public-disk images.
+  The older Cloud Run / Cloud SQL / GCS path is paused and kept only in
+  `docs/DEPLOYMENT.md` as future scale-out reference material.
 
 ## Local Workflow
 1. Install dependencies: `composer install && npm install`

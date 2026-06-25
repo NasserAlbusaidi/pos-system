@@ -22,6 +22,16 @@ class SuspendedShopTest extends TestCase
             ->assertSee('Contact support.');
     }
 
+    public function test_suspended_shop_user_blocked_from_dashboard(): void
+    {
+        $user = $this->makeUser('admin', 'suspended');
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertForbidden()
+            ->assertSee('This account has been suspended.');
+    }
+
     public function test_suspended_shop_user_blocked_from_kds(): void
     {
         $user = $this->makeUser('admin', 'suspended');
@@ -72,6 +82,32 @@ class SuspendedShopTest extends TestCase
             ->get('/pos')
             ->assertOk()
             ->assertDontSee('This account has been suspended.');
+    }
+
+    public function test_suspended_shop_guest_menu_is_not_publicly_available(): void
+    {
+        $shop = Shop::factory()->create(['status' => 'suspended']);
+
+        $this->get(route('guest.menu', $shop))
+            ->assertNotFound();
+    }
+
+    public function test_suspended_shop_guest_api_rejects_new_order_quotes(): void
+    {
+        $shop = Shop::factory()->create(['status' => 'suspended']);
+
+        $this->postJson(route('api.guest.orders.quote'), [
+            'shop' => $shop->slug,
+            'cart' => [],
+        ])->assertNotFound();
+    }
+
+    public function test_suspended_shop_pin_terminal_is_not_publicly_available(): void
+    {
+        $shop = Shop::factory()->create(['status' => 'suspended']);
+
+        $this->get(route('pos.pin', $shop))
+            ->assertNotFound();
     }
 
     private function makeUser(string $role, string $shopStatus, bool $isSuperAdmin = false): User

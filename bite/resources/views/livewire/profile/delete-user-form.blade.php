@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
@@ -17,9 +18,29 @@ new class extends Component
             'password' => ['required', 'string', 'current_password'],
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        $user = Auth::user();
+
+        if ($user && $this->wouldLeaveShopWithoutAdmin($user)) {
+            $this->addError('password', __('Add another admin before deleting this account.'));
+
+            return;
+        }
+
+        tap($user, $logout(...))->delete();
 
         $this->redirect('/', navigate: true);
+    }
+
+    protected function wouldLeaveShopWithoutAdmin(User $user): bool
+    {
+        if ($user->role !== 'admin' || $user->shop_id === null) {
+            return false;
+        }
+
+        return ! User::where('shop_id', $user->shop_id)
+            ->where('role', 'admin')
+            ->where('id', '!=', $user->id)
+            ->exists();
     }
 }; ?>
 

@@ -38,7 +38,7 @@ class ShopDashboardTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(ShopDashboard::class)
-            ->assertSee('100.00') // Daily Revenue (only completed)
+            ->assertSee('150.00') // Daily revenue includes paid in-progress orders.
             ->assertSee('2') // Orders Count (all today)
             ->assertSee('Active Orders')
             ->assertSee('1'); // Active orders (non-completed/cancelled)

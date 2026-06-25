@@ -1,9 +1,9 @@
 const CACHE_PREFIX = 'bite-static-';
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const LEGACY_CACHES = ['bite-pos-cache-v1'];
 const OFFLINE_URL = '/offline';
-const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/dashboard'];
+const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json'];
 
 const STATIC_DESTINATIONS = new Set([
   'style',

@@ -18,26 +18,27 @@ class GuestOrderFlowTest extends DuskTestCase
             'name_en' => 'Iced Latte',
             'price' => 3.000,
         ]);
+        $this->createAdditionalProduct($shop, $category);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
             $browser->visit('/menu/'.$shop->slug)
-                // Product names have CSS uppercase
-                ->waitForText('ICED LATTE')
-                ->assertSee('OMR 3.000')
-                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
-                // "Review Order" button appears in the fixed bottom bar
-                ->waitForText('Review Order')
-                ->click('button[wire\\:click="toggleReview"]')
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
+                ->waitForText('Iced Latte')
+                ->assertSee('3.000')
+                ->click($this->quickAddSelector($product->id))
+                ->waitForText('View cart')
+                ->click('.guest-cta')
                 ->waitForText('Your Order')
-                ->assertSee('OMR 3.000')
-                // Click "Place Order" which opens the Alpine confirm modal
-                ->click('.btn-primary[x-on\\:click*="confirm-action"]')
+                ->assertSee('3.000')
+                ->type('#guest-name', 'Maha')
+                ->type('#guest-phone', '5551234567')
+                ->click('button[x-on\\:click*="confirm-action"]')
                 ->waitForText('Send order to kitchen?')
-                // Click "Confirm" in the confirm modal
                 ->click('[x-on\\:click="confirm()"]')
-                // Wait for tracking page to load (Livewire navigate: true)
-                ->waitForText('GUEST PICKUP', 10)
+                ->waitForText('Order received', 10)
                 ->assertPathBeginsWith('/track/');
+
+            $this->assertSame([], $this->severeConsoleMessages($browser));
         });
 
         $order = Order::where('shop_id', $shop->id)->first();
@@ -50,14 +51,17 @@ class GuestOrderFlowTest extends DuskTestCase
     {
         [$shop, $admin] = $this->createShopWithAdmin();
         [$category, $product] = $this->createProductWithCategory($shop);
+        $this->createAdditionalProduct($shop, $category);
 
         $this->browse(function (Browser $browser) use ($shop) {
             $browser->visit('/menu/'.$shop->slug)
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
                 ->waitForText('Test Category')
                 ->assertSee('Test Category')
-                // Product names have CSS uppercase
-                ->assertSee('TEST COFFEE')
-                ->assertSee('OMR 2.500');
+                ->assertSee('Test Coffee')
+                ->assertSee('2.500');
+
+            $this->assertSame([], $this->severeConsoleMessages($browser));
         });
     }
 
@@ -65,17 +69,19 @@ class GuestOrderFlowTest extends DuskTestCase
     {
         [$shop, $admin] = $this->createShopWithAdmin();
         [$category, $product] = $this->createProductWithCategory($shop, ['price' => 2.000]);
+        $this->createAdditionalProduct($shop, $category);
         [$group, $option] = $this->createModifierGroup($shop, $product, required: false);
 
         $this->browse(function (Browser $browser) use ($shop, $product) {
             $browser->visit('/menu/'.$shop->slug)
-                // Product names have CSS uppercase
-                ->waitForText('TEST COFFEE')
-                ->click('button[wire\\:click="addToCart('.$product->id.')"]')
-                // Modifier group/option names also have CSS uppercase
-                ->waitForText('SIZE')
-                ->assertSee('LARGE')
-                ->assertSee('OMR 1.000');
+                ->tap(fn (Browser $browser) => $this->enterGuestMenu($browser))
+                ->waitForText('Test Coffee')
+                ->click($this->quickAddSelector($product->id))
+                ->waitForText('Size')
+                ->assertSee('Large')
+                ->assertSee('1.000');
+
+            $this->assertSame([], $this->severeConsoleMessages($browser));
         });
     }
 }

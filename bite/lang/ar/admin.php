@@ -192,6 +192,7 @@ return [
     'total_revenue' => 'إجمالي الإيرادات',
     'cash_payments' => 'المدفوعات النقدية',
     'card_payments' => 'مدفوعات البطاقة',
+    'voucher_payments' => 'مدفوعات القسائم',
     'cash_count' => 'عدّ النقد',
     'end_of_shift' => 'نهاية الوردية',
     'expected_cash_in_drawer' => 'النقد المتوقع في الدرج',
@@ -489,7 +490,7 @@ return [
     'last_7_days' => 'آخر 7 أيام',
     'no_sales_yet_short' => 'لا توجد مبيعات بعد.',
     'no_payments_yet_short' => 'لا توجد مدفوعات بعد',
-    'payment_orders_count' => ':count طلبات',
+    'payment_orders_count' => ':count مدفوعات',
     'weekly_revenue' => 'إيرادات الأسبوع',
     'guest_menu_qr' => 'رمز QR لقائمة الضيوف',
     'copy_link' => 'نسخ الرابط',
@@ -606,6 +607,17 @@ return [
     'items_86d' => 'أصناف نفدت',
     'restore_item' => 'إعادة للقائمة',
     'mark_86' => 'تحديد كنفد (86)',
+
+    // Order Cancellation
+    'cancel_order' => 'إلغاء الطلب',
+    'cancel_order_confirm' => 'إلغاء الطلب #:id؟ لا يمكن التراجع عن هذا الإجراء.',
+    'refund_void_order' => 'رد / إبطال',
+    'refund_void_order_confirm' => 'رد وإبطال الطلب #:id؟ سيتم تسجيل دفعات عكسية وإلغاء الطلب.',
+    'order_cancelled_message' => 'تم إلغاء الطلب #:id.',
+    'order_refund_voided_message' => 'تم رد وإبطال الطلب #:id.',
+    'order_cancel_requires_reversal' => 'تم تسجيل دفعة للطلب #:id. يرجى رد أو إبطال الدفعة قبل الإلغاء.',
+    'order_cancel_external_refund_required' => 'يتضمن الطلب #:id دفعة Stripe إلكترونية. قم بردها في Stripe قبل الإلغاء هنا.',
+    'order_cancel_stripe_refund_failed' => 'تعذر على Stripe رد الطلب #:id. تحقق من Stripe ثم حاول مرة أخرى قبل الإلغاء.',
 
     // Smart Upsell
     'customers_also_order' => 'الزبائن يطلبون أيضاً',

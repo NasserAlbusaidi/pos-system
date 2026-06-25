@@ -30,6 +30,7 @@ class FreePlanAccessTest extends TestCase
             'name' => 'Free Shop',
             'slug' => 'free-shop',
             'trial_ends_at' => null,
+            'branding' => ['onboarding_completed' => true],
         ]);
     }
 
@@ -66,6 +67,13 @@ class FreePlanAccessTest extends TestCase
         $admin = $this->makeUser('admin');
 
         $this->actingAs($admin)->get('/pos')->assertOk();
+    }
+
+    public function test_free_plan_admin_can_access_dashboard(): void
+    {
+        $admin = $this->makeUser('admin');
+
+        $this->actingAs($admin)->get('/dashboard')->assertOk();
     }
 
     public function test_free_plan_manager_can_access_kds_and_catalog(): void
@@ -109,6 +117,24 @@ class FreePlanAccessTest extends TestCase
 
         $this->actingAs($admin)
             ->get('/kds')
+            ->assertRedirect(route('billing'));
+    }
+
+    public function test_expired_subscription_shop_is_redirected_to_billing_from_dashboard(): void
+    {
+        $admin = $this->makeUser('admin');
+
+        $this->shop->subscriptions()->create([
+            'type' => 'default',
+            'stripe_id' => 'sub_test_dashboard_expired',
+            'stripe_status' => 'canceled',
+            'stripe_price' => 'price_test',
+            'quantity' => 1,
+            'ends_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/dashboard')
             ->assertRedirect(route('billing'));
     }
 

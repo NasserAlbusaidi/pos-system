@@ -8,15 +8,26 @@ use App\Models\ModifierOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ShiftClosure;
 use App\Models\Shop;
 use App\Services\GuestOrderService;
+use App\Support\ShopClock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class GuestOrderServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     private function service(): GuestOrderService
     {
@@ -95,6 +106,21 @@ class GuestOrderServiceTest extends TestCase
         $this->assertCount(1, $quote['items'][0]['modifiers']);
     }
 
+    public function test_quote_never_prices_a_line_below_zero_after_modifier_discounts(): void
+    {
+        [$shop, $product] = $this->makeMenu(1.000);
+        $group = ModifierGroup::create(['shop_id' => $shop->id, 'name_en' => 'Discounts', 'min_selection' => 0, 'max_selection' => 1]);
+        $comped = ModifierOption::create(['modifier_group_id' => $group->id, 'name_en' => 'Comped', 'price_adjustment' => -2.000]);
+        $product->modifierGroups()->attach($group->id);
+
+        $quote = $this->service()->quote($shop, [$this->line($product, 1, [$group->id => [$comped->id]])]);
+
+        $this->assertSame('ok', $quote['outcome']);
+        $this->assertEqualsWithDelta(0.0, $quote['subtotal'], 0.0001);
+        $this->assertEqualsWithDelta(0.0, $quote['total'], 0.0001);
+        $this->assertEqualsWithDelta(0.0, $quote['items'][0]['price_snapshot'], 0.0001);
+    }
+
     public function test_quote_rejects_cart_over_quantity_cap(): void
     {
         [$shop, $product] = $this->makeMenu();
@@ -103,6 +129,50 @@ class GuestOrderServiceTest extends TestCase
 
         $this->assertSame('invalid', $quote['outcome']);
         $this->assertSame('order', $quote['error_field']);
+    }
+
+    #[DataProvider('invalidQuantityCarts')]
+    public function test_quote_rejects_non_positive_or_missing_quantities(callable $cartMutator): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $line = $this->line($product, 1);
+        $cart = [$cartMutator($line)];
+
+        $quote = $this->service()->quote($shop, $cart);
+
+        $this->assertSame('invalid', $quote['outcome']);
+        $this->assertSame('order', $quote['error_field']);
+    }
+
+    #[DataProvider('invalidQuantityCarts')]
+    public function test_create_rejects_non_positive_or_missing_quantities_without_persisting(callable $cartMutator): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $line = $this->line($product, 1);
+        $cart = [$cartMutator($line)];
+
+        $result = $this->service()->create($shop, $cart, [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+        ]);
+
+        $this->assertSame('invalid', $result['outcome']);
+        $this->assertSame('order', $result['error_field']);
+        $this->assertSame(0, Order::count());
+    }
+
+    public static function invalidQuantityCarts(): array
+    {
+        return [
+            'zero quantity' => [fn (array $line): array => array_merge($line, ['quantity' => 0])],
+            'negative quantity' => [fn (array $line): array => array_merge($line, ['quantity' => -2])],
+            'missing quantity' => [function (array $line): array {
+                unset($line['quantity']);
+
+                return $line;
+            }],
+        ];
     }
 
     public function test_quote_rejects_total_over_cap(): void
@@ -147,6 +217,7 @@ class GuestOrderServiceTest extends TestCase
         $this->assertSame('created', $result['outcome']);
         $order = $result['order'];
         $this->assertSame('unpaid', $order->status);
+        $this->assertSame('guest', $order->source);
         $this->assertSame('Layla', $order->customer_name);
         $this->assertSame('Leave at door', $order->order_note);
         $this->assertEqualsWithDelta(2.400, $order->total_amount, 0.0001);
@@ -170,6 +241,38 @@ class GuestOrderServiceTest extends TestCase
         $this->assertSame('created', $first['outcome']);
         $this->assertSame('duplicate', $second['outcome']);
         $this->assertSame($first['order']->id, $second['order']->id);
+        $this->assertSame(1, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_create_rejects_reused_idempotency_key_with_different_cart(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $key = (string) Str::uuid();
+        $context = ['idempotency_key' => $key, 'customer_name' => 'Layla', 'loyalty_phone' => '95123456'];
+
+        $first = $this->service()->create($shop, [$this->line($product, 1)], $context);
+        $second = $this->service()->create($shop, [$this->line($product, 2)], $context);
+
+        $this->assertSame('created', $first['outcome']);
+        $this->assertSame('invalid', $second['outcome']);
+        $this->assertSame('order', $second['error_field']);
+        $this->assertSame(__('guest.idempotency_conflict'), $second['error']);
+        $this->assertSame(1, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_create_for_counter_rejects_reused_idempotency_key_with_different_cart(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $key = (string) Str::uuid();
+        $context = ['idempotency_key' => $key];
+
+        $first = $this->service()->createForCounter($shop, [$this->line($product, 1)], $context);
+        $second = $this->service()->createForCounter($shop, [$this->line($product, 2)], $context);
+
+        $this->assertSame('created', $first['outcome']);
+        $this->assertSame('invalid', $second['outcome']);
+        $this->assertSame('order', $second['error_field']);
+        $this->assertSame(__('guest.idempotency_conflict'), $second['error']);
         $this->assertSame(1, Order::where('shop_id', $shop->id)->count());
     }
 
@@ -204,6 +307,166 @@ class GuestOrderServiceTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
+    public function test_create_rejects_guest_order_when_shop_is_closed(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => true],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->create($shop, [$this->line($product, 1)], [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+        ]);
+
+        $this->assertSame('invalid', $result['outcome']);
+        $this->assertSame('order', $result['error_field']);
+        $this->assertSame(__('guest.shop_closed'), $result['error']);
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_quote_rejects_guest_cart_when_shop_is_closed(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => true],
+                ],
+            ],
+        ]);
+
+        $quote = $this->service()->quote($shop, [$this->line($product, 1)]);
+
+        $this->assertSame('invalid', $quote['outcome']);
+        $this->assertSame('order', $quote['error_field']);
+        $this->assertSame(__('guest.shop_closed'), $quote['error']);
+    }
+
+    public function test_quote_rejects_guest_cart_after_shift_is_closed_for_the_business_day(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $this->closeShiftFor($shop);
+
+        $quote = $this->service()->quote($shop, [$this->line($product, 1)]);
+
+        $this->assertSame('invalid', $quote['outcome']);
+        $this->assertSame('order', $quote['error_field']);
+        $this->assertSame(__('guest.shift_closed'), $quote['error']);
+    }
+
+    public function test_create_rejects_guest_order_after_shift_is_closed_for_the_business_day(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $this->closeShiftFor($shop);
+
+        $result = $this->service()->create($shop, [$this->line($product, 1)], [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+        ]);
+
+        $this->assertSame('invalid', $result['outcome']);
+        $this->assertSame('order', $result['error_field']);
+        $this->assertSame(__('guest.shift_closed'), $result['error']);
+        $this->assertSame(0, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_counter_order_service_rejects_new_order_after_shift_close_defensively(): void
+    {
+        [$shop, $product] = $this->makeMenu();
+        $this->closeShiftFor($shop);
+
+        $result = $this->service()->createForCounter($shop, [$this->line($product, 1)], [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Counter walk-in',
+        ]);
+
+        $this->assertSame('invalid', $result['outcome']);
+        $this->assertSame('order', $result['error_field']);
+        $this->assertSame(__('guest.shift_closed'), $result['error']);
+        $this->assertSame(0, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_create_accepts_guest_order_during_business_hours(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => false],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->create($shop, [$this->line($product, 1)], [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+        ]);
+
+        $this->assertSame('created', $result['outcome']);
+        $this->assertSame(1, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_create_accepts_guest_order_during_overnight_business_hours(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-25 01:00:00', 'Asia/Muscat'));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Asia/Muscat',
+                'business_hours' => [
+                    'wednesday' => ['open' => '18:00', 'close' => '02:00', 'closed' => false],
+                    'thursday' => ['open' => '09:00', 'close' => '22:00', 'closed' => false],
+                ],
+            ],
+        ]);
+
+        $result = $this->service()->create($shop, [$this->line($product, 1)], [
+            'idempotency_key' => (string) Str::uuid(),
+            'customer_name' => 'Layla',
+            'loyalty_phone' => '95123456',
+        ]);
+
+        $this->assertSame('created', $result['outcome']);
+        $this->assertSame(1, Order::where('shop_id', $shop->id)->count());
+    }
+
+    public function test_quote_uses_safe_timezone_fallback_for_stale_branding_data(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-24 12:00:00', config('app.timezone')));
+
+        [$shop, $product] = $this->makeMenu();
+        $shop->update([
+            'branding' => [
+                'timezone' => 'Mars/Olympus',
+                'business_hours' => [
+                    'wednesday' => ['open' => '09:00', 'close' => '22:00', 'closed' => false],
+                ],
+            ],
+        ]);
+
+        $quote = $this->service()->quote($shop, [$this->line($product, 1)]);
+
+        $this->assertSame('ok', $quote['outcome']);
+    }
+
     public function test_create_does_not_persist_unavailable_cart(): void
     {
         [$shop, $product] = $this->makeMenu();
@@ -218,5 +481,25 @@ class GuestOrderServiceTest extends TestCase
 
         $this->assertSame('unavailable', $result['outcome']);
         $this->assertSame(0, Order::count());
+    }
+
+    private function closeShiftFor(Shop $shop): void
+    {
+        ShiftClosure::forceCreate([
+            'shop_id' => $shop->id,
+            'business_date' => ShopClock::localDate($shop),
+            'closed_by' => null,
+            'expected_cash' => 0.000,
+            'actual_cash' => 0.000,
+            'difference' => 0.000,
+            'shift_summary' => [
+                'total_orders' => 0,
+                'total_revenue' => 0.000,
+                'cash_total' => 0.000,
+                'card_total' => 0.000,
+                'voucher_total' => 0.000,
+            ],
+            'closed_at' => now(),
+        ]);
     }
 }

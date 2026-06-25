@@ -72,6 +72,12 @@
                         <span class="font-mono text-[9px] font-bold uppercase tracking-[0.14em]" style="color: color-mix(in srgb, var(--bite-forest) 72%, transparent);">
                             {{ $order->status === 'paid' ? __('admin.new') : __('admin.status_preparing') }}
                         </span>
+                        @if(filled($order->customer_name))
+                            <span class="truncate text-xs font-semibold text-forest">{{ $order->customer_name }}</span>
+                        @endif
+                        <span class="font-mono text-[9px] font-bold uppercase tracking-[0.14em]" style="color: color-mix(in srgb, var(--bite-forest) 62%, transparent);">
+                            {{ $order->sourceLabel() }}
+                        </span>
                     </div>
                     <div class="flex items-center gap-2">
                         @if($isLate)
@@ -136,14 +142,17 @@
                     @endif
 
                     @if(in_array(Auth::user()->role, ['admin', 'manager'], true))
+                        @php
+                            $hasPayment = $order->trustedPayments()->isNotEmpty();
+                        @endphp
                         <button
                             wire:click="cancelOrder({{ $order->id }})"
-                            wire:confirm="{{ __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
+                            wire:confirm="{{ $hasPayment ? __('admin.refund_void_order_confirm', ['id' => $order->id]) : __('admin.cancel_order_confirm', ['id' => $order->id]) }}"
                             wire:loading.attr="disabled"
                             wire:target="cancelOrder({{ $order->id }})"
                             class="w-full text-center font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft transition-colors hover:text-alert"
                         >
-                            <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ __('admin.cancel_order') }}</span>
+                            <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">{{ $hasPayment ? __('admin.refund_void_order') : __('admin.cancel_order') }}</span>
                             <span wire:loading wire:target="cancelOrder({{ $order->id }})" class="loading-spinner" style="width: 10px; height: 10px; border-width: 1px;"></span>
                         </button>
                     @endif

@@ -23,7 +23,7 @@ class RbacAccessTest extends DuskTestCase
                 ->assertDontSee('403')
                 // Server is not manager|admin, so /settings should 403
                 ->visit('/settings')
-                ->assertSee('403');
+                ->waitForText('Forbidden');
         });
     }
 
@@ -40,13 +40,15 @@ class RbacAccessTest extends DuskTestCase
                 ->assertDontSee('403')
                 // Kitchen is not server|manager|admin, so /pos should 403
                 ->visit('/pos')
-                ->assertSee('403');
+                ->waitForText('Forbidden');
         });
     }
 
     public function test_manager_can_access_pos_kds_reports_settings(): void
     {
-        [$shop, $admin] = $this->createShopWithAdmin();
+        [$shop, $admin] = $this->createShopWithAdmin([
+            'trial_ends_at' => now()->addDays(14),
+        ]);
         $manager = $this->createStaffUser($shop, 'manager');
 
         $this->browse(function (Browser $browser) use ($manager) {

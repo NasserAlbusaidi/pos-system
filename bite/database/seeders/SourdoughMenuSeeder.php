@@ -8,9 +8,11 @@ use App\Models\Shop;
 use App\Models\User;
 use App\Services\ImageService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class SourdoughMenuSeeder extends Seeder
 {
@@ -80,6 +82,8 @@ class SourdoughMenuSeeder extends Seeder
             return;
         }
 
+        $adminPassword = $this->adminPassword();
+
         $shop = Shop::create([
             'name' => 'Sourdough Oman',
             'slug' => 'sourdough',
@@ -104,11 +108,28 @@ class SourdoughMenuSeeder extends Seeder
             'shop_id' => $shop->id,
             'name' => 'Sourdough Admin',
             'email' => 'admin@sourdough.om',
-            'password' => bcrypt('password'),
+            'password' => Hash::make($adminPassword),
             'role' => 'admin',
         ]);
 
         $this->seedForShop($shop);
+    }
+
+    private function adminPassword(): string
+    {
+        $password = trim((string) config('services.sourdough.admin_password', ''));
+
+        if (app()->environment('production')) {
+            if ($password === '' || $password === 'password' || strlen($password) < 12) {
+                throw new RuntimeException(
+                    'Set SOURDOUGH_ADMIN_PASSWORD to a strong handoff password before seeding Sourdough in production.'
+                );
+            }
+
+            return $password;
+        }
+
+        return $password !== '' ? $password : 'password';
     }
 
     public function seedForShop(Shop $shop): void

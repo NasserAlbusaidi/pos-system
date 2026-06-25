@@ -10,18 +10,24 @@ use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ShiftClosure;
 use App\Models\Shop;
 use App\Models\User;
 use App\Services\GuestOrderService;
 use App\Services\LoyaltyService;
+use App\Services\OrderPaymentReversalService;
 use App\Services\PrintNodeService;
+use App\Support\ShopClock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Throwable;
 
 class PosDashboard extends Component
 {
@@ -31,6 +37,12 @@ class PosDashboard extends Component
     {
         return ['server', 'manager', 'admin'];
     }
+
+    private const MANAGER_OVERRIDE_ACTIONS = [
+        'clearOldOrders',
+        'systemReset',
+        'cancelOrder',
+    ];
 
     public Shop $shop;
 
@@ -74,6 +86,8 @@ class PosDashboard extends Component
     // Protected: prevents client from setting this to true via Livewire wire protocol.
     protected $managerOverrideApproved = false;
 
+    protected ?array $managerOverrideApprover = null;
+
     public array $upsellSuggestions = [];
 
     // Walk-in / counter order entry (#56).
@@ -84,6 +98,12 @@ class PosDashboard extends Component
     public string $newOrderName = '';
 
     public ?string $newOrderError = null;
+
+    public ?int $customizingPosProductId = null;
+
+    public array $posSelectedModifiers = [];
+
+    public ?string $posModifierError = null;
 
     // Set when the builder opens; makes a double-clicked charge idempotent.
     public string $newOrderKey = '';
@@ -136,72 +156,239 @@ class PosDashboard extends Component
         $this->upsellSuggestions = $suggestions;
     }
 
+    /**
+     * True while any modal is open. The view gates wire:poll on this so a
+     * background poll can't race a user action and morph an open modal away
+     * (the "New Sale popup is consumed, must refresh" bug). Polling resumes
+     * the moment the modal closes.
+     */
+    #[Computed]
+    public function hasOpenModal(): bool
+    {
+        return $this->showNewOrder
+            || $this->splitOrderId !== null
+            || $this->paymentOrderId !== null
+            || $this->showManagerModal;
+    }
+
     public function openNewOrder(): void
     {
-        $this->reset(['posCart', 'newOrderName', 'newOrderError']);
+        $this->reset([
+            'posCart',
+            'newOrderName',
+            'newOrderError',
+            'customizingPosProductId',
+            'posSelectedModifiers',
+            'posModifierError',
+        ]);
         $this->newOrderKey = (string) Str::uuid();
         $this->showNewOrder = true;
     }
 
     public function closeNewOrder(): void
     {
-        $this->reset(['showNewOrder', 'posCart', 'newOrderName', 'newOrderError', 'newOrderKey']);
+        $this->reset([
+            'showNewOrder',
+            'posCart',
+            'newOrderName',
+            'newOrderError',
+            'customizingPosProductId',
+            'posSelectedModifiers',
+            'posModifierError',
+            'newOrderKey',
+        ]);
     }
 
     public function addToCart(int $productId): void
     {
         // Shop-scoped, orderable lookup — never trust the client for price or
         // for whether the product belongs to this tenant.
-        $product = $this->shop->products()->orderable()->find($productId);
+        $product = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->orderable()
+            ->find($productId);
         if (! $product) {
             return;
         }
 
+        if ($product->modifierGroups->isNotEmpty()) {
+            $this->customizingPosProductId = $product->id;
+            $this->posSelectedModifiers = [];
+            $this->posModifierError = null;
+
+            return;
+        }
+
+        $this->addProductToPosCart($product);
+    }
+
+    public function selectPosModifier(int $groupId, int $optionId, bool $isMultiple = false): void
+    {
+        $optionIdStr = (string) $optionId;
+
+        if ($isMultiple) {
+            $current = $this->posSelectedModifiers[$groupId] ?? [];
+            if (! is_array($current)) {
+                $current = [$current];
+            }
+
+            if (in_array($optionIdStr, $current, true)) {
+                $current = array_values(array_filter($current, fn ($id) => $id !== $optionIdStr));
+            } else {
+                $current[] = $optionIdStr;
+            }
+
+            $this->posSelectedModifiers[$groupId] = $current;
+        } else {
+            $this->posSelectedModifiers[$groupId] = $optionIdStr;
+        }
+
+        $this->posModifierError = null;
+    }
+
+    public function confirmPosModifierSelection(): void
+    {
+        if (! $this->customizingPosProductId) {
+            return;
+        }
+
+        $product = $this->shop->products()
+            ->with('modifierGroups.options')
+            ->orderable()
+            ->find($this->customizingPosProductId);
+
+        if (! $product) {
+            $this->closePosModifierPicker();
+
+            return;
+        }
+
+        $orderService = app(GuestOrderService::class);
+        $selectedByGroup = $orderService->normalizeModifierGroups($this->posSelectedModifiers);
+        $modifierError = $orderService->validateSelectedModifierGroups($product, $selectedByGroup);
+
+        if ($modifierError) {
+            $this->posModifierError = $modifierError;
+
+            return;
+        }
+
+        $this->addProductToPosCart(
+            $product,
+            $orderService->normalizeModifierIds($this->posSelectedModifiers)
+        );
+        $this->closePosModifierPicker();
+    }
+
+    public function closePosModifierPicker(): void
+    {
+        $this->customizingPosProductId = null;
+        $this->posSelectedModifiers = [];
+        $this->posModifierError = null;
+    }
+
+    protected function addProductToPosCart(Product $product, array $modifierIds = []): void
+    {
+        $orderService = app(GuestOrderService::class);
+        $modifierIds = $orderService->normalizeModifierIds($modifierIds);
+        $validOptions = $orderService->getValidModifierOptions($product, $modifierIds);
+        $pricingRules = $orderService->loadActivePricingRules($this->shop);
+        $basePrice = $product->getTimePriced($pricingRules);
+        $modifierIds = $validOptions
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        $cartKey = $this->posCartKey($product->id, $modifierIds);
         $maxQty = (int) config('ordering.max_quantity_per_line', 99);
-        $current = (int) ($this->posCart[$productId]['quantity'] ?? 0);
+        $current = (int) ($this->posCart[$cartKey]['quantity'] ?? 0);
         if ($current >= $maxQty) {
             return;
         }
 
-        $this->posCart[$productId] = [
+        $this->posCart[$cartKey] = [
+            'key' => $cartKey,
             'id' => $product->id,
             'name' => $product->name_en,
-            'price' => (float) $product->final_price,
+            'price' => max(0.0, round((float) $basePrice + (float) $validOptions->sum('price_adjustment'), 3)),
             'quantity' => $current + 1,
+            'selectedModifiers' => $modifierIds,
+            'modifierNames' => $validOptions
+                ->map(fn ($option) => $option->name_en)
+                ->values()
+                ->all(),
         ];
         $this->newOrderError = null;
     }
 
-    public function decrementCartItem(int $productId): void
+    protected function posCartKey(int $productId, array $modifierIds = []): string
     {
-        if (! isset($this->posCart[$productId])) {
-            return;
-        }
+        $modifierKey = collect($modifierIds)
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->implode('-');
 
-        $next = (int) $this->posCart[$productId]['quantity'] - 1;
-        if ($next < 1) {
-            unset($this->posCart[$productId]);
-
-            return;
-        }
-
-        $this->posCart[$productId]['quantity'] = $next;
+        return $modifierKey === '' ? (string) $productId : $productId.':'.$modifierKey;
     }
 
-    public function removeCartItem(int $productId): void
+    public function incrementCartItem(string $cartKey): void
     {
-        unset($this->posCart[$productId]);
+        if (! isset($this->posCart[$cartKey])) {
+            return;
+        }
+
+        $maxQty = (int) config('ordering.max_quantity_per_line', 99);
+        if ((int) $this->posCart[$cartKey]['quantity'] >= $maxQty) {
+            return;
+        }
+
+        $this->posCart[$cartKey]['quantity']++;
+        $this->newOrderError = null;
+    }
+
+    public function decrementCartItem(string $cartKey): void
+    {
+        if (! isset($this->posCart[$cartKey])) {
+            return;
+        }
+
+        $next = (int) $this->posCart[$cartKey]['quantity'] - 1;
+        if ($next < 1) {
+            unset($this->posCart[$cartKey]);
+
+            return;
+        }
+
+        $this->posCart[$cartKey]['quantity'] = $next;
+    }
+
+    public function removeCartItem(string $cartKey): void
+    {
+        unset($this->posCart[$cartKey]);
     }
 
     public function chargeNewOrder(string $method = 'cash')
     {
-        $method = in_array($method, ['cash', 'card'], true) ? $method : 'cash';
+        $method = trim($method);
+        if (! in_array($method, ['cash', 'card'], true)) {
+            $this->newOrderError = 'Choose a valid payment method.';
+
+            return;
+        }
+
+        if ($message = $this->shiftClosedPaymentMessage()) {
+            $this->newOrderError = $message;
+
+            return;
+        }
 
         $cart = collect($this->posCart)
             ->map(fn ($row) => [
                 'id' => (int) $row['id'],
                 'name' => $row['name'],
                 'quantity' => (int) $row['quantity'],
+                'selectedModifiers' => $row['selectedModifiers'] ?? [],
             ])
             ->values()
             ->all();
@@ -225,7 +412,11 @@ class PosDashboard extends Component
 
             case 'unavailable':
                 foreach ($result['unavailable_ids'] as $id) {
-                    unset($this->posCart[$id]);
+                    foreach ($this->posCart as $key => $row) {
+                        if ((int) ($row['id'] ?? 0) === (int) $id) {
+                            unset($this->posCart[$key]);
+                        }
+                    }
                 }
                 $this->newOrderError = 'No longer available: '.implode(', ', $result['unavailable']);
 
@@ -271,18 +462,19 @@ class PosDashboard extends Component
 
     protected function loadStats(): void
     {
-        $shopId = Auth::user()->shop_id;
-        $today = today()->toDateString();
+        $shop = $this->shop ?? Auth::user()->shop;
+        $shopId = $shop->id;
+        [$todayStartUtc, $todayEndUtc] = ShopClock::currentLocalDayUtcRange($shop);
 
         $stats = DB::query()
             ->from('orders')
             ->where('shop_id', $shopId)
             ->selectRaw(implode(', ', [
-                'COALESCE(SUM(CASE WHEN status IN (?, ?, ?, ?) AND DATE(paid_at) = ? THEN total_amount ELSE 0 END), 0) AS sales_today',
-                'COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) AS orders_today',
+                'COALESCE(SUM(CASE WHEN status IN (?, ?, ?, ?) AND paid_at BETWEEN ? AND ? THEN total_amount ELSE 0 END), 0) AS sales_today',
+                'COUNT(CASE WHEN created_at BETWEEN ? AND ? THEN 1 END) AS orders_today',
                 'COUNT(CASE WHEN status = ? THEN 1 END) AS unpaid_count',
                 'COUNT(CASE WHEN status = ? THEN 1 END) AS ready_count',
-            ]), ['paid', 'preparing', 'ready', 'completed', $today, $today, 'unpaid', 'ready'])
+            ]), ['paid', 'preparing', 'ready', 'completed', $todayStartUtc, $todayEndUtc, $todayStartUtc, $todayEndUtc, 'unpaid', 'ready'])
             ->first();
 
         $this->salesToday = (float) $stats->sales_today;
@@ -301,19 +493,21 @@ class PosDashboard extends Component
 
         $shopId = Auth::user()->shop_id;
 
-        Order::where('shop_id', $shopId)
-            ->where('status', 'unpaid')
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '<', now())
-            ->whereDoesntHave('payments')
-            ->update(['status' => 'cancelled']);
+        $cancelled = $this->cancelUnpaidOrdersForCleanup(
+            $shopId,
+            fn ($query) => $query
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<', now())
+        );
 
-        $this->completeReadyOrdersForCleanup(
+        $completed = $this->completeReadyOrdersForCleanup(
             $shopId,
             fn ($query) => $query->where('updated_at', '<', now()->subMinutes(30))
         );
 
-        AuditLog::record('orders.cleared', null, ['shop_id' => $shopId]);
+        AuditLog::record('orders.cleared', null, array_merge([
+            'shop_id' => $shopId,
+        ], $cancelled, $completed, $this->managerOverrideAuditMeta()));
         session()->flash('message', 'Old orders cleared.');
     }
 
@@ -327,14 +521,13 @@ class PosDashboard extends Component
 
         $shopId = Auth::user()->shop_id;
 
-        Order::where('shop_id', $shopId)
-            ->where('status', 'unpaid')
-            ->whereDoesntHave('payments')
-            ->update(['status' => 'cancelled']);
+        $cancelled = $this->cancelUnpaidOrdersForCleanup($shopId);
 
-        $this->completeReadyOrdersForCleanup($shopId);
+        $completed = $this->completeReadyOrdersForCleanup($shopId);
 
-        AuditLog::record('orders.system_reset', null, ['shop_id' => $shopId]);
+        AuditLog::record('orders.system_reset', null, array_merge([
+            'shop_id' => $shopId,
+        ], $cancelled, $completed, $this->managerOverrideAuditMeta()));
         session()->flash('message', 'System reset complete.');
     }
 
@@ -346,46 +539,167 @@ class PosDashboard extends Component
             return;
         }
 
-        $order = Order::where('shop_id', Auth::user()->shop_id)
-            ->whereIn('status', ['unpaid', 'paid', 'preparing', 'ready'])
-            ->findOrFail($orderId);
+        $result = DB::transaction(function () use ($orderId) {
+            $order = Order::where('shop_id', Auth::user()->shop_id)
+                ->whereIn('status', ['unpaid', 'paid', 'preparing', 'ready'])
+                ->lockForUpdate()
+                ->findOrFail($orderId);
 
-        $previousStatus = $order->status;
+            $previousStatus = $order->status;
+            $shop = isset($this->shop) && $this->shop->id === $order->shop_id
+                ? $this->shop
+                : $order->shop()->first();
 
-        DB::transaction(function () use ($order) {
+            if (! $order->canCancelWithoutPaymentReversal() && $shop && ShiftClosure::isClosedFor($shop)) {
+                return [
+                    'cancelled' => false,
+                    'order' => $order,
+                    'previous_status' => $previousStatus,
+                    'reason' => 'shift_closed',
+                ];
+            }
+
+            if ($order->trustedPaymentsQuery()->exists()) {
+                return app(OrderPaymentReversalService::class)
+                    ->reverseLocalPaymentsAndCancel($order, Auth::user());
+            }
+
+            if (! $order->canCancelWithoutPaymentReversal()) {
+                return [
+                    'cancelled' => false,
+                    'order' => $order,
+                    'previous_status' => $previousStatus,
+                ];
+            }
+
             $order->update(['status' => 'cancelled']);
+
+            return [
+                'cancelled' => true,
+                'refunded' => false,
+                'order' => $order->fresh(),
+                'previous_status' => $previousStatus,
+            ];
         });
 
-        AuditLog::record('order.cancelled', $order, [
+        /** @var \App\Models\Order $order */
+        $order = $result['order'];
+        $previousStatus = $result['previous_status'];
+
+        if (! $result['cancelled']) {
+            AuditLog::record('order.cancel_rejected', $order, [
+                'cancelled_by' => Auth::user()->name,
+                'previous_status' => $previousStatus,
+                'reason' => $result['reason'] ?? 'payment_reversal_required',
+                'paid_total' => $order->paid_total,
+                'unsupported_methods' => $result['unsupported_methods'] ?? [],
+                'error' => $result['error'] ?? null,
+            ] + $this->managerOverrideAuditMeta());
+
+            $this->dispatch('toast',
+                message: $this->cancelRejectedMessage((string) ($result['reason'] ?? 'payment_reversal_required'), $order),
+                variant: 'error'
+            );
+
+            return;
+        }
+
+        $action = ($result['refunded'] ?? false) ? 'order.refund_voided' : 'order.cancelled';
+        $meta = [
             'cancelled_by' => Auth::user()->name,
             'previous_status' => $previousStatus,
-        ]);
+        ] + $this->managerOverrideAuditMeta();
+
+        if ($result['refunded'] ?? false) {
+            $meta['refund_total'] = $result['refund_total'] ?? 0;
+            $meta['refund_rows'] = $result['refund_rows'] ?? [];
+        }
+
+        AuditLog::record($action, $order, $meta);
 
         $this->dispatch('toast',
-            message: __('admin.order_cancelled_message', ['id' => $order->id]),
+            message: ($result['refunded'] ?? false)
+                ? __('admin.order_refund_voided_message', ['id' => $order->id])
+                : __('admin.order_cancelled_message', ['id' => $order->id]),
             variant: 'success'
         );
     }
 
-    protected function completeReadyOrdersForCleanup(int $shopId, ?callable $scope = null): void
+    protected function cancelRejectedMessage(string $reason, Order $order): string
     {
-        DB::transaction(function () use ($shopId, $scope): void {
+        if ($reason === 'external_refund_required') {
+            return __('admin.order_cancel_external_refund_required', ['id' => $order->id]);
+        }
+
+        if ($reason === 'stripe_refund_failed') {
+            return __('admin.order_cancel_stripe_refund_failed', ['id' => $order->id]);
+        }
+
+        if ($reason === 'shift_closed') {
+            return ShiftClosure::PAYMENT_LOCK_MESSAGE;
+        }
+
+        return __('admin.order_cancel_requires_reversal', ['id' => $order->id]);
+    }
+
+    protected function cancelUnpaidOrdersForCleanup(int $shopId, ?callable $scope = null): array
+    {
+        return DB::transaction(function () use ($shopId, $scope): array {
             $query = Order::where('shop_id', $shopId)
-                ->where('status', 'ready')
+                ->where('status', 'unpaid')
+                ->whereDoesntHave('payments')
+                ->orderBy('id')
                 ->lockForUpdate();
 
             if ($scope) {
                 $scope($query);
             }
 
-            $orders = $query->with('items.product')->get();
+            $orderIds = $query->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all();
+
+            if ($orderIds !== []) {
+                Order::where('shop_id', $shopId)
+                    ->whereIn('id', $orderIds)
+                    ->update(['status' => 'cancelled']);
+            }
+
+            return [
+                'cancelled_unpaid_count' => count($orderIds),
+                'cancelled_unpaid_order_ids' => $orderIds,
+            ];
+        });
+    }
+
+    protected function completeReadyOrdersForCleanup(int $shopId, ?callable $scope = null): array
+    {
+        return DB::transaction(function () use ($shopId, $scope): array {
+            $query = Order::where('shop_id', $shopId)
+                ->where('status', 'ready')
+                ->orderBy('id')
+                ->lockForUpdate();
+
+            if ($scope) {
+                $scope($query);
+            }
+
+            $orders = $query->get();
+            $orderIds = [];
 
             foreach ($orders as $order) {
                 $order->update([
                     'status' => 'completed',
                     'fulfilled_at' => $order->fulfilled_at ?: now(),
                 ]);
+                $orderIds[] = (int) $order->id;
             }
+
+            return [
+                'completed_ready_count' => count($orderIds),
+                'completed_ready_order_ids' => $orderIds,
+            ];
         });
     }
 
@@ -404,8 +718,14 @@ class PosDashboard extends Component
 
     public function requestManagerOverride(string $action, array $payload = [])
     {
+        abort_unless(in_array($action, self::MANAGER_OVERRIDE_ACTIONS, true), 404);
+
         $this->pendingAction = $action;
         $this->pendingPayload = $payload;
+        session()->put($this->managerOverrideSessionKey(), [
+            'action' => $action,
+            'payload' => $payload,
+        ]);
         $this->managerPin = '';
         $this->managerError = null;
         $this->showManagerModal = true;
@@ -447,28 +767,38 @@ class PosDashboard extends Component
         $this->showManagerModal = false;
         $this->managerPin = '';
         $this->managerOverrideApproved = true;
+        $this->managerOverrideApprover = [
+            'manager_approved_by_id' => $manager->id,
+            'manager_approved_by_name' => $manager->name,
+            'manager_approved_by_role' => $manager->role,
+        ];
 
-        $action = $this->pendingAction;
-        $payload = $this->pendingPayload;
+        ['action' => $action, 'payload' => $payload] = $this->pendingManagerOverride();
         $this->pendingAction = null;
         $this->pendingPayload = [];
+        $this->forgetPendingManagerOverride();
 
-        if ($action === 'clearOldOrders') {
-            $this->clearOldOrders();
+        try {
+            if ($action === 'clearOldOrders') {
+                $this->clearOldOrders();
 
-            return;
-        }
+                return;
+            }
 
-        if ($action === 'systemReset') {
-            $this->systemReset();
+            if ($action === 'systemReset') {
+                $this->systemReset();
 
-            return;
-        }
+                return;
+            }
 
-        if ($action === 'cancelOrder') {
-            $this->cancelOrder($payload['orderId']);
+            if ($action === 'cancelOrder') {
+                $this->cancelOrder((int) ($payload['orderId'] ?? 0));
 
-            return;
+                return;
+            }
+        } finally {
+            $this->managerOverrideApproved = false;
+            $this->managerOverrideApprover = null;
         }
     }
 
@@ -478,6 +808,8 @@ class PosDashboard extends Component
         $this->pendingAction = null;
         $this->pendingPayload = [];
         $this->managerOverrideApproved = false;
+        $this->managerOverrideApprover = null;
+        $this->forgetPendingManagerOverride();
     }
 
     protected function managerOverrideThrottleKey(): string
@@ -485,11 +817,45 @@ class PosDashboard extends Component
         return 'manager-override:'.Auth::user()->shop_id.'|'.request()->ip();
     }
 
+    protected function managerOverrideSessionKey(): string
+    {
+        return 'pos-manager-override:'.Auth::id().':'.Auth::user()->shop_id;
+    }
+
+    protected function pendingManagerOverride(): array
+    {
+        $pending = session()->get($this->managerOverrideSessionKey(), [
+            'action' => $this->pendingAction,
+            'payload' => $this->pendingPayload,
+        ]);
+
+        $action = is_string($pending['action'] ?? null) ? $pending['action'] : null;
+        $payload = is_array($pending['payload'] ?? null) ? $pending['payload'] : [];
+
+        return compact('action', 'payload');
+    }
+
+    protected function forgetPendingManagerOverride(): void
+    {
+        session()->forget($this->managerOverrideSessionKey());
+    }
+
+    protected function managerOverrideAuditMeta(): array
+    {
+        return $this->managerOverrideApprover ?? [];
+    }
+
     public function markAsPaid(int $orderId, string $method = 'cash')
     {
+        $this->paymentError = null;
+
         $allowedMethods = ['cash', 'card', 'voucher'];
+        $method = trim($method);
         if (! in_array($method, $allowedMethods, true)) {
-            $method = 'cash';
+            $this->paymentError = 'Choose a valid payment method.';
+            $this->dispatch('toast', message: $this->paymentError, variant: 'error');
+
+            return;
         }
 
         DB::transaction(function () use ($orderId, $method) {
@@ -497,6 +863,12 @@ class PosDashboard extends Component
                 ->where('id', $orderId)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            if ($message = $this->paymentRejectionMessage($order)) {
+                $this->paymentError = $message;
+
+                return;
+            }
 
             if ($order->balance_due <= 0) {
                 return;
@@ -506,22 +878,57 @@ class PosDashboard extends Component
                 ['amount' => $order->balance_due, 'method' => $method],
             ]);
         });
+
+        if ($this->paymentError) {
+            $this->dispatch('toast', message: $this->paymentError, variant: 'error');
+        }
     }
 
     protected function recordPaymentsForOrder(Order $order, array $rows): void
     {
         $allowedMethods = ['cash', 'card', 'voucher'];
 
+        if ($message = $this->paymentRejectionMessage($order)) {
+            $this->paymentError = $message;
+
+            return;
+        }
+
+        $hasInvalidAmount = false;
+        $hasInvalidMethod = false;
         $rows = collect($rows)
-            ->map(fn ($row) => [
-                'amount' => round((float) ($row['amount'] ?? 0), 3),
-                'method' => in_array(trim((string) ($row['method'] ?? '')), $allowedMethods, true)
-                    ? trim((string) $row['method'])
-                    : 'cash',
-            ])
+            ->map(function ($row) use ($allowedMethods, &$hasInvalidAmount, &$hasInvalidMethod) {
+                $amount = $this->normalizePaymentAmount($row['amount'] ?? null);
+                if ($amount === null) {
+                    $hasInvalidAmount = true;
+                    $amount = 0;
+                }
+
+                $method = trim((string) ($row['method'] ?? ''));
+                if (! in_array($method, $allowedMethods, true)) {
+                    $hasInvalidMethod = true;
+                }
+
+                return [
+                    'amount' => $amount,
+                    'method' => $method,
+                ];
+            })
             ->filter(fn ($row) => $row['amount'] > 0)
             ->values()
             ->all();
+
+        if ($hasInvalidAmount) {
+            $this->paymentError = 'Enter valid payment amounts.';
+
+            return;
+        }
+
+        if ($hasInvalidMethod) {
+            $this->paymentError = 'Choose a valid payment method.';
+
+            return;
+        }
 
         if (empty($rows)) {
             return;
@@ -548,7 +955,7 @@ class PosDashboard extends Component
         if ($order->balance_due <= 0 && $order->status !== 'paid') {
             $order->update([
                 'status' => 'paid',
-                'payment_method' => count($rows) > 1 ? 'split' : ($rows[0]['method'] ?? 'cash'),
+                'payment_method' => $order->paymentSummaryMethod() ?? $rows[0]['method'],
                 'paid_at' => now(),
             ]);
 
@@ -557,7 +964,7 @@ class PosDashboard extends Component
                 'total' => $order->total_amount,
             ]);
             app(LoyaltyService::class)->award($order);
-            app(PrintNodeService::class)->printOrder($order, 'kitchen');
+            $this->printOrderSafely($order, 'kitchen');
         }
     }
 
@@ -604,7 +1011,21 @@ class PosDashboard extends Component
         $order = $result['order'];
 
         AuditLog::record('order.completed', $order);
-        app(PrintNodeService::class)->printOrder($order, 'receipt');
+        $this->printOrderSafely($order, 'receipt');
+    }
+
+    protected function printOrderSafely(Order $order, string $type): void
+    {
+        try {
+            app(PrintNodeService::class)->printOrder($order, $type);
+        } catch (Throwable $e) {
+            Log::warning('Order print failed after POS state change.', [
+                'order_id' => $order->id,
+                'shop_id' => $order->shop_id,
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function openSplit(int $orderId)
@@ -672,6 +1093,7 @@ class PosDashboard extends Component
                 'parent_order_id' => $order->id,
                 'split_group_id' => $splitGroupId,
                 'customer_name' => $order->customer_name,
+                'source' => $order->source ?? 'guest',
                 'status' => 'unpaid',
                 'subtotal_amount' => 0,
                 'tax_amount' => 0,
@@ -699,6 +1121,7 @@ class PosDashboard extends Component
                     'product_name_snapshot_ar' => $item->product_name_snapshot_ar,
                     'price_snapshot' => $item->price_snapshot,
                     'quantity' => $qty,
+                    'note' => $item->note,
                 ]);
 
                 foreach ($item->modifiers as $modifier) {
@@ -827,16 +1250,23 @@ class PosDashboard extends Component
         }
 
         $order = Order::where('shop_id', Auth::user()->shop_id)->findOrFail($this->paymentOrderId);
-        $amount = round((float) $this->splitAmount, 3);
-        if ($amount <= 0 || $amount > $order->balance_due) {
+        $amount = $this->normalizePaymentAmount($this->splitAmount);
+        if ($amount === null || $amount <= 0 || $amount > $order->balance_due) {
             $this->paymentError = 'Enter a valid amount up to the remaining balance.';
 
             return;
         }
 
+        $decimals = (int) ($this->shop->currency_decimals ?? 3);
+        $remainder = round($order->balance_due - $amount, $decimals);
+
         $this->paymentRows = [
             ['amount' => $amount, 'method' => 'card'],
         ];
+
+        if ($remainder > 0) {
+            $this->paymentRows[] = ['amount' => $remainder, 'method' => 'cash'];
+        }
     }
 
     public function applyPayments()
@@ -845,12 +1275,38 @@ class PosDashboard extends Component
             return;
         }
 
-        $rows = collect($this->paymentRows)->map(function ($row) {
+        $allowedMethods = ['cash', 'card', 'voucher'];
+        $hasInvalidAmount = false;
+        $hasInvalidMethod = false;
+        $rows = collect($this->paymentRows)->map(function ($row) use ($allowedMethods, &$hasInvalidAmount, &$hasInvalidMethod) {
+            $amount = $this->normalizePaymentAmount($row['amount'] ?? null);
+            if ($amount === null) {
+                $hasInvalidAmount = true;
+                $amount = 0;
+            }
+
+            $method = trim((string) ($row['method'] ?? ''));
+            if (! in_array($method, $allowedMethods, true)) {
+                $hasInvalidMethod = true;
+            }
+
             return [
-                'amount' => round((float) ($row['amount'] ?? 0), 3),
-                'method' => trim((string) ($row['method'] ?? 'cash')),
+                'amount' => $amount,
+                'method' => $method,
             ];
         })->filter(fn ($row) => $row['amount'] > 0)->values()->all();
+
+        if ($hasInvalidAmount) {
+            $this->paymentError = 'Enter valid payment amounts.';
+
+            return;
+        }
+
+        if ($hasInvalidMethod) {
+            $this->paymentError = 'Choose a valid payment method.';
+
+            return;
+        }
 
         if (empty($rows)) {
             $this->paymentError = 'Add at least one payment.';
@@ -864,17 +1320,22 @@ class PosDashboard extends Component
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if ($message = $this->paymentRejectionMessage($order)) {
+                return ['error' => $message];
+            }
+
             $sum = round(collect($rows)->sum('amount'), 3);
             $balance = round($order->balance_due, 3);
+            $tolerance = 0.0005;
 
             // Pilot policy (#57): a settlement must cover the full balance, so no
             // order is ever left part-paid and 'unpaid' forever. Split tenders are
             // fine as long as they sum to the balance.
-            if ($sum + 0.0005 < $balance) {
+            if ($sum + $tolerance < $balance) {
                 return ['error' => 'Payment must cover the full balance ('.formatPrice($balance, $this->shop).' due).'];
             }
 
-            if ($sum > $balance + 0.01) {
+            if ($sum > $balance + $tolerance) {
                 return ['error' => 'Payments cannot exceed the remaining balance.'];
             }
 
@@ -893,6 +1354,62 @@ class PosDashboard extends Component
         $this->closePayment();
     }
 
+    protected function paymentRejectionMessage(Order $order): ?string
+    {
+        if ($order->status !== 'unpaid') {
+            return 'Only unpaid orders can accept payments.';
+        }
+
+        if ($order->expires_at && $order->expires_at->isPast()) {
+            $order->update(['status' => 'cancelled']);
+
+            return 'This order has expired and cannot be paid.';
+        }
+
+        $shop = isset($this->shop) && $this->shop->id === $order->shop_id
+            ? $this->shop
+            : $order->shop()->first();
+
+        if ($shop && $message = $this->shiftClosedPaymentMessage($shop)) {
+            return $message;
+        }
+
+        return null;
+    }
+
+    protected function shiftClosedPaymentMessage(?Shop $shop = null): ?string
+    {
+        $shop ??= isset($this->shop) ? $this->shop : Auth::user()?->shop;
+
+        if (! $shop) {
+            return null;
+        }
+
+        return ShiftClosure::isClosedFor($shop)
+            ? ShiftClosure::PAYMENT_LOCK_MESSAGE
+            : null;
+    }
+
+    protected function normalizePaymentAmount(mixed $value): ?float
+    {
+        if (is_int($value) || is_float($value)) {
+            $amount = (float) $value;
+
+            return is_finite($amount) ? round($amount, 3) : null;
+        }
+
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+        if (! preg_match('/^\d+(?:\.\d{1,3})?$/', $value)) {
+            return null;
+        }
+
+        return round((float) $value, 3);
+    }
+
     #[Layout('layouts.admin')]
     public function render()
     {
@@ -901,7 +1418,7 @@ class PosDashboard extends Component
         $shopId = Auth::user()->shop_id;
 
         $orders = Order::where('shop_id', $shopId)
-            ->whereIn('status', ['unpaid', 'ready'])
+            ->whereIn('status', ['unpaid', 'paid', 'preparing', 'ready'])
             ->with(['items.modifiers', 'payments'])
             ->latest()
             ->get();
@@ -918,9 +1435,29 @@ class PosDashboard extends Component
             ->orderBy('sort_order')
             ->get();
 
+        $orderService = app(GuestOrderService::class);
+        $activePricingRules = $orderService->loadActivePricingRules($this->shop);
+        $posCustomizingProduct = $this->customizingPosProductId
+            ? $this->shop->products()
+                ->with('modifierGroups.options')
+                ->orderable()
+                ->find($this->customizingPosProductId)
+            : null;
+        $posCustomizingProductPrice = 0.0;
+        if ($posCustomizingProduct) {
+            $modifierIds = $orderService->normalizeModifierIds($this->posSelectedModifiers);
+            $posCustomizingProductPrice = max(
+                0.0,
+                round((float) $posCustomizingProduct->getTimePriced($activePricingRules) + $orderService->sumModifierPrices($posCustomizingProduct, $modifierIds), 3)
+            );
+        }
+
         return view('livewire.pos-dashboard', [
             'orders' => $orders,
             'menuCategories' => $menuCategories,
+            'activePricingRules' => $activePricingRules,
+            'posCustomizingProduct' => $posCustomizingProduct,
+            'posCustomizingProductPrice' => $posCustomizingProductPrice,
             'splitOrder' => $this->splitOrderId
                 ? Order::where('shop_id', $shopId)->with('items.modifiers')->find($this->splitOrderId)
                 : null,

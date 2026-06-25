@@ -28,8 +28,10 @@ class BillingSettingsTest extends DuskTestCase
             $browser->loginAs($admin)
                 ->visit('/billing')
                 ->assertPathIs('/billing')
-                ->assertSee('trial')
-                ->assertSee('days remaining');
+                ->waitForText('free trial')
+                ->assertSee('Trialing')
+                ->assertSee('days remaining')
+                ->assertSee('Trial ends');
         });
     }
 

@@ -24,7 +24,7 @@ class PosSplitOrderTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($admin, $order, $item) {
             $browser->loginAs($admin)
                 ->visit('/pos')
-                ->waitForText('OMR 20.000')
+                ->waitForText('20.000')
                 ->click('button[wire\\:click="openSplit('.$order->id.')"]')
                 ->waitForText('Split Order')
                 ->waitFor('input[wire\\:model\\.live="splitQuantities.'.$item->id.'"]')

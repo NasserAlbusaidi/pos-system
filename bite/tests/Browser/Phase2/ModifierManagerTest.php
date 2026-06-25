@@ -31,13 +31,12 @@ class ModifierManagerTest extends DuskTestCase
                 // btn-primary has CSS text-transform:uppercase, so press() must use the uppercase text
                 ->press('SAVE GROUP');
 
-            // Group names are uppercased via CSS text-transform in the list
-            $browser->waitForText('MILK CHOICE')
-                ->assertSee('MILK CHOICE')
-                ->assertSee('Rule: Select 0-3');
+            $browser->waitForText('Milk Choice')
+                ->assertSee('Milk Choice')
+                ->assertSee('RULE: SELECT 0-3');
 
             // Click the group row to select it — this reveals the "Add Option" form
-            $browser->click('div[wire\\:click*="selectedGroupId"]')
+            $browser->click('section[wire\\:click*="selectedGroupId"]')
                 // The h2 "Add Option" has no uppercase CSS class
                 ->waitForText('Add Option');
 
@@ -49,10 +48,9 @@ class ModifierManagerTest extends DuskTestCase
                 // btn-primary has CSS text-transform:uppercase, so press() must use the uppercase text
                 ->press('ADD OPTION');
 
-            // Option names are uppercased via CSS text-transform in the option list
             $browser->waitForText('OAT MILK')
                 ->assertSee('OAT MILK')
-                ->assertSee('+OMR 0.500');
+                ->assertSee('0.500');
         });
     }
 }

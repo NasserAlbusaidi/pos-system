@@ -44,10 +44,10 @@ class Product extends Model
         }
 
         if ($this->discount_type === 'percentage') {
-            return round((float) ($this->price - ($this->price * ($this->discount_value / 100))), 3);
+            return max(0.0, round((float) ($this->price - ($this->price * ($this->discount_value / 100))), 3));
         }
 
-        return round((float) ($this->price - $this->discount_value), 3);
+        return max(0.0, round((float) ($this->price - $this->discount_value), 3));
     }
 
     public function scopeVisible(Builder $query): Builder
@@ -79,6 +79,25 @@ class Product extends Model
     public function modifierGroups()
     {
         return $this->belongsToMany(ModifierGroup::class, 'product_modifier_group');
+    }
+
+    public function auditSnapshot(): array
+    {
+        $this->loadMissing('modifierGroups');
+
+        return [
+            'product_name' => $this->name_en,
+            'price' => (float) $this->price,
+            'category_id' => (int) $this->category_id,
+            'tax_rate' => $this->tax_rate === null ? null : (float) $this->tax_rate,
+            'is_available' => (bool) $this->is_available,
+            'is_visible' => (bool) $this->is_visible,
+            'modifier_group_ids' => $this->modifierGroups
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all(),
+        ];
     }
 
     /**

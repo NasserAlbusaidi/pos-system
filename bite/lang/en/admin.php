@@ -192,6 +192,7 @@ return [
     'total_revenue' => 'Total Revenue',
     'cash_payments' => 'Cash Payments',
     'card_payments' => 'Card Payments',
+    'voucher_payments' => 'Voucher Payments',
     'cash_count' => 'Cash Count',
     'end_of_shift' => 'End of Shift',
     'expected_cash_in_drawer' => 'Expected Cash in Drawer',
@@ -492,7 +493,7 @@ return [
     'last_7_days' => 'Last 7 Days',
     'no_sales_yet_short' => 'No sales yet.',
     'no_payments_yet_short' => 'No payments yet',
-    'payment_orders_count' => ':count orders',
+    'payment_orders_count' => ':count payments',
     'weekly_revenue' => 'Weekly Revenue',
     'guest_menu_qr' => 'Guest Menu QR',
     'copy_link' => 'Copy Link',
@@ -613,7 +614,13 @@ return [
     // Order Cancellation
     'cancel_order' => 'Cancel Order',
     'cancel_order_confirm' => 'Cancel order #:id? This cannot be undone.',
+    'refund_void_order' => 'Refund / Void',
+    'refund_void_order_confirm' => 'Refund and void order #:id? This records reversal payments and cancels the order.',
     'order_cancelled_message' => 'Order #:id cancelled.',
+    'order_refund_voided_message' => 'Order #:id refunded and voided.',
+    'order_cancel_requires_reversal' => 'Order #:id has payment recorded. Refund or void the payment before cancelling.',
+    'order_cancel_external_refund_required' => 'Order #:id includes an online Stripe payment. Refund it in Stripe before cancelling here.',
+    'order_cancel_stripe_refund_failed' => 'Stripe could not refund order #:id. Check Stripe and try again before cancelling.',
 
     // Smart Upsell
     'customers_also_order' => 'Customers also order',

@@ -59,6 +59,38 @@ class AuditLogsTest extends TestCase
             ->assertDontSee('order.voided');
     }
 
+    public function test_operations_filter_includes_shift_close_events(): void
+    {
+        $shop = Shop::factory()->create();
+        $actor = $this->adminFor($shop);
+
+        AuditLog::create(['shop_id' => $shop->id, 'user_id' => $actor->id, 'action' => 'shift.closed', 'meta' => []]);
+        AuditLog::create(['shop_id' => $shop->id, 'user_id' => $actor->id, 'action' => 'product.created', 'meta' => []]);
+
+        $this->actingAs($actor);
+
+        Livewire::test(AuditLogs::class)
+            ->set('logFilter', 'operations')
+            ->assertSee('shift.closed')
+            ->assertDontSee('product.created');
+    }
+
+    public function test_operations_filter_includes_staff_access_events(): void
+    {
+        $shop = Shop::factory()->create();
+        $actor = $this->adminFor($shop);
+
+        AuditLog::create(['shop_id' => $shop->id, 'user_id' => $actor->id, 'action' => 'staff.updated', 'meta' => []]);
+        AuditLog::create(['shop_id' => $shop->id, 'user_id' => $actor->id, 'action' => 'product.created', 'meta' => []]);
+
+        $this->actingAs($actor);
+
+        Livewire::test(AuditLogs::class)
+            ->set('logFilter', 'operations')
+            ->assertSee('staff.updated')
+            ->assertDontSee('product.created');
+    }
+
     public function test_search_filters_by_action(): void
     {
         $shop = Shop::factory()->create();
@@ -92,6 +124,38 @@ class AuditLogsTest extends TestCase
         $this->actingAs($actor);
 
         Livewire::test(AuditLogs::class)->assertDontSee('#99');
+    }
+
+    public function test_sensitive_audit_meta_is_masked_for_display(): void
+    {
+        $shop = Shop::factory()->create();
+        $actor = $this->adminFor($shop);
+
+        $log = AuditLog::create([
+            'shop_id' => $shop->id,
+            'user_id' => $actor->id,
+            'action' => 'loyalty.awarded',
+            'meta' => [
+                'phone' => '+96891234567',
+                'target_email' => 'owner@example.com',
+                'ip' => '192.168.1.100',
+                'points' => 12,
+            ],
+        ]);
+
+        $this->actingAs($actor);
+
+        Livewire::test(AuditLogs::class)
+            ->assertOk()
+            ->assertSee('+968****4567')
+            ->assertSee('o***@example.com')
+            ->assertSee('192.168.***')
+            ->assertSee('points')
+            ->assertDontSee('+96891234567')
+            ->assertDontSee('owner@example.com')
+            ->assertDontSee('192.168.1.100');
+
+        $this->assertSame('+96891234567', $log->fresh()->meta['phone']);
     }
 
     public function test_low_trust_role_is_blocked(): void

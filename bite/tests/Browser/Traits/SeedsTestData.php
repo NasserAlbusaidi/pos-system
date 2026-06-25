@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Dusk\Browser;
 
 trait SeedsTestData
 {
@@ -49,6 +50,41 @@ trait SeedsTestData
         ]);
     }
 
+    protected function enterGuestMenu(Browser $browser): Browser
+    {
+        if ($browser->element('.guest-gate')) {
+            $browser
+                ->waitForText('Choose your language')
+                ->click('button[wire\\:click="chooseLanguage(\'en\')"]')
+                ->waitUntilMissing('.guest-gate');
+        }
+
+        if ($browser->element('button[wire\\:click="showMenu"]')) {
+            $browser
+                ->waitFor('button[wire\\:click="showMenu"]')
+                ->scrollIntoView('button[wire\\:click="showMenu"]')
+                ->click('button[wire\\:click="showMenu"]')
+                ->waitForText('Full menu');
+
+            return $browser;
+        }
+
+        return $browser->waitForText('Order from the menu');
+    }
+
+    protected function quickAddSelector(int $productId): string
+    {
+        return 'button[wire\\:click\\.stop="addToCart('.$productId.')"]';
+    }
+
+    protected function severeConsoleMessages(Browser $browser): array
+    {
+        return collect($browser->driver->manage()->getLog('browser'))
+            ->filter(fn (array $entry): bool => ($entry['level'] ?? null) === 'SEVERE')
+            ->pluck('message')
+            ->all();
+    }
+
     protected function createSuperAdmin(): User
     {
         $shop = Shop::factory()->create(['slug' => 'super-shop-'.uniqid()]);
@@ -81,6 +117,19 @@ trait SeedsTestData
         ], $productOverrides));
 
         return [$category, $product];
+    }
+
+    protected function createAdditionalProduct(Shop $shop, Category $category, array $productOverrides = []): Product
+    {
+        return Product::factory()->create(array_merge([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'name_en' => 'Sparkling Water',
+            'name_ar' => 'مياه فوارة',
+            'price' => 1.000,
+            'is_available' => true,
+            'is_visible' => true,
+        ], $productOverrides));
     }
 
     protected function createModifierGroup(Shop $shop, Product $product, bool $required = false): array

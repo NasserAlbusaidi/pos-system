@@ -35,7 +35,7 @@ class SuperAdminShopManagementTest extends DuskTestCase
                 ->waitFor('[wire\\:model="slug"]')
                 ->type('[wire\\:model="ownerName"]', 'Owner Name')
                 ->type('[wire\\:model="ownerEmail"]', 'owner-'.$uid.'@test.com')
-                ->type('[wire\\:model="ownerPassword"]', 'password123')
+                ->type('[wire\\:model="ownerPassword"]', 'launch-password')
                 // Button text has CSS uppercase
                 ->click('form[wire\\:submit="save"] button[type="submit"]')
                 ->waitForRoute('super-admin.shops.index')

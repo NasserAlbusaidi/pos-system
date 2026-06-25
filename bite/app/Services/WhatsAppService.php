@@ -15,7 +15,7 @@ class WhatsAppService
         $branding = $shop->branding ?? [];
 
         return ! empty($branding['whatsapp_notifications_enabled'])
-            && ! empty($branding['whatsapp_number']);
+            && $this->getNumber($shop) !== null;
     }
 
     /**
@@ -26,12 +26,22 @@ class WhatsAppService
         $branding = $shop->branding ?? [];
         $number = $branding['whatsapp_number'] ?? null;
 
-        if (! $number) {
+        return self::normalizeNumber($number);
+    }
+
+    public static function normalizeNumber(mixed $number): ?string
+    {
+        if ($number === null) {
             return null;
         }
 
-        // Strip everything except digits and leading +
-        return preg_replace('/[^0-9]/', '', (string) $number);
+        $digits = preg_replace('/[^0-9]/', '', (string) $number) ?? '';
+
+        if (strlen($digits) < 8 || strlen($digits) > 15) {
+            return null;
+        }
+
+        return $digits;
     }
 
     /**

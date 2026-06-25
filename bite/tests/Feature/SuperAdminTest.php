@@ -50,6 +50,26 @@ class SuperAdminTest extends TestCase
         $this->assertEquals($admin->id, session('impersonator_id'));
     }
 
+    public function test_leaving_impersonation_rotates_csrf_token()
+    {
+        $this->startSession();
+        $admin = User::factory()->superAdmin()->create();
+        $shop = Shop::factory()->create();
+        $targetUser = User::factory()->create(['shop_id' => $shop->id]);
+
+        $this->actingAs($admin)
+            ->post(route('super-admin.impersonate', $targetUser->id))
+            ->assertRedirect(route('dashboard'));
+
+        $tokenBeforeLeave = session()->token();
+
+        $this->get(route('impersonation.leave'))
+            ->assertRedirect(route('super-admin.shops.index'));
+
+        $this->assertAuthenticatedAs($admin);
+        $this->assertNotSame($tokenBeforeLeave, session()->token());
+    }
+
     public function test_cannot_impersonate_super_admin()
     {
         $admin = User::factory()->superAdmin()->create();

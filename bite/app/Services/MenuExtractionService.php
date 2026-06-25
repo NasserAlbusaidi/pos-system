@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 
 class MenuExtractionService
 {
+    public const MAX_ITEMS = 100;
+
     /**
      * Extract menu items from base64-encoded images using Gemini Flash 2.0.
      *
@@ -60,7 +62,7 @@ class MenuExtractionService
         $text = $this->extractTextFromResponse($response->json());
         $items = $this->parseJsonResponse($text);
 
-        return $this->normalizeItems($items);
+        return array_slice($this->normalizeItems($items), 0, self::MAX_ITEMS);
     }
 
     /**

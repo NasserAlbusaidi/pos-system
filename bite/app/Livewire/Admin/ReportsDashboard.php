@@ -5,7 +5,10 @@ namespace App\Livewire\Admin;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Shop;
+use App\Support\HourlyBuckets;
+use App\Support\ShopClock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -18,6 +21,11 @@ class ReportsDashboard extends Component
     protected function allowedRoles(): array
     {
         return ['manager', 'admin'];
+    }
+
+    protected function requiredPlanFeature(): ?string
+    {
+        return 'reports';
     }
 
     public Shop $shop;
@@ -37,26 +45,25 @@ class ReportsDashboard extends Component
     #[Layout('layouts.admin')]
     public function render()
     {
-        $shopId = Auth::user()->shop_id;
-        $from = now()->subDays($this->rangeDays - 1)->startOfDay();
-        $to = now()->endOfDay();
-
-        $driver = DB::getDriverName();
-        $hourExpression = $driver === 'sqlite' ? "strftime('%H', paid_at)" : 'hour(paid_at)';
+        $shop = $this->shop ?? Auth::user()->shop;
+        $shopId = $shop->id;
+        [$from, $to] = ShopClock::recentLocalDaysUtcRange($shop, (int) $this->rangeDays);
+        $localDates = ShopClock::recentLocalDates($shop, (int) $this->rangeDays);
+        $exportQuery = [
+            'from' => $localDates[0] ?? ShopClock::localDate($shop),
+            'to' => $localDates[count($localDates) - 1] ?? ShopClock::localDate($shop),
+        ];
 
         $revenueRaw = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
+            ->revenueRecognized()
             ->whereBetween('paid_at', [$from, $to])
-            ->select(DB::raw('date(paid_at) as day'), DB::raw('sum(total_amount) as total'))
-            ->groupBy('day')
-            ->orderBy('day')
-            ->pluck('total', 'day')
-            ->toArray();
+            ->get(['paid_at', 'total_amount'])
+            ->groupBy(fn (Order $order): string => ShopClock::localDate($shop, $order->paid_at))
+            ->map(fn ($orders): float => (float) $orders->sum('total_amount'))
+            ->all();
 
-        $revenueSeries = collect(range($this->rangeDays - 1, 0))
-            ->map(function ($offset) use ($revenueRaw) {
-                $day = now()->subDays($offset)->toDateString();
-
+        $revenueSeries = collect($localDates)
+            ->map(function (string $day) use ($revenueRaw) {
                 return [
                     'day' => $day,
                     'total' => (float) ($revenueRaw[$day] ?? 0),
@@ -65,28 +72,18 @@ class ReportsDashboard extends Component
             ->values();
 
         $ordersByHourRaw = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
+            ->revenueRecognized()
             ->whereBetween('paid_at', [$from, $to])
-            ->select(DB::raw("{$hourExpression} as hour"), DB::raw('count(*) as count'))
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->pluck('count', 'hour')
+            ->get(['paid_at'])
+            ->groupBy(fn (Order $order): string => ShopClock::localHour($shop, $order->paid_at))
+            ->map->count()
             ->toArray();
 
-        $ordersByHour = collect(range(0, 23))
-            ->map(function ($hour) use ($ordersByHourRaw) {
-                $key = str_pad((string) $hour, 2, '0', STR_PAD_LEFT);
-
-                return [
-                    'hour' => $key,
-                    'count' => (int) ($ordersByHourRaw[$key] ?? 0),
-                ];
-            })
-            ->values();
+        $ordersByHour = HourlyBuckets::counts($ordersByHourRaw);
 
         $topProducts = OrderItem::whereHas('order', function ($query) use ($shopId, $from, $to) {
             $query->where('shop_id', $shopId)
-                ->where('status', 'completed')
+                ->revenueRecognized()
                 ->whereBetween('paid_at', [$from, $to]);
         })
             ->select('product_name_snapshot_en', 'product_name_snapshot_ar', DB::raw('sum(quantity) as qty'), DB::raw('sum(price_snapshot * quantity) as revenue'))
@@ -95,21 +92,19 @@ class ReportsDashboard extends Component
             ->limit(10)
             ->get();
 
-        $paymentSummary = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
-            ->whereBetween('paid_at', [$from, $to])
-            ->whereNotNull('payment_method')
-            ->select('payment_method', DB::raw('count(*) as orders'), DB::raw('sum(total_amount) as total'))
-            ->groupBy('payment_method')
+        $paymentSummary = Payment::query()
+            ->reportableForPaymentSummary($shopId, $from, $to)
+            ->select('method as payment_method', DB::raw('count(distinct order_id) as orders'), DB::raw('sum(amount) as total'))
+            ->groupBy('method')
             ->get();
 
         $totalRevenue = (float) Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
+            ->revenueRecognized()
             ->whereBetween('paid_at', [$from, $to])
             ->sum('total_amount');
 
         $totalOrders = Order::where('shop_id', $shopId)
-            ->where('status', 'completed')
+            ->revenueRecognized()
             ->whereBetween('paid_at', [$from, $to])
             ->count();
 
@@ -124,6 +119,7 @@ class ReportsDashboard extends Component
             'totalRevenue' => $totalRevenue,
             'totalOrders' => $totalOrders,
             'avgOrder' => $avgOrder,
+            'exportQuery' => $exportQuery,
         ]);
     }
 }

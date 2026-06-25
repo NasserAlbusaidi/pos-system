@@ -9,8 +9,10 @@ use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\BillingService;
 use App\Services\ImageService;
 use App\Services\MenuExtractionService;
+use App\Services\PinCodePolicy;
 use Database\Seeders\DemoMenuSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +72,7 @@ class OnboardingWizard extends Component
 
     public string $staffEmail = '';
 
-    public string $staffRole = 'cashier';
+    public string $staffRole = 'server';
 
     public string $staffPin = '';
 
@@ -216,18 +218,14 @@ class OnboardingWizard extends Component
     {
         $this->onboardingUser();
 
-        $this->validate([
-            'menuPhotos' => 'required|array|min:1|max:4',
-        ]);
+        $this->validate($this->menuPhotoRules());
     }
 
     public function extractMenu(): void
     {
         $this->onboardingUser();
 
-        $this->validate([
-            'menuPhotos' => 'required|array|min:1|max:4',
-        ]);
+        $this->validate($this->menuPhotoRules());
 
         $this->menuMode = 'extracting';
         $this->extractionError = '';
@@ -285,6 +283,12 @@ class OnboardingWizard extends Component
     {
         $this->onboardingUser();
 
+        if (count($this->extractedItems) >= MenuExtractionService::MAX_ITEMS) {
+            $this->addError('extractedItems', 'Extracted menu import is limited to '.MenuExtractionService::MAX_ITEMS.' items.');
+
+            return;
+        }
+
         $this->extractedItems[] = [
             'category_en' => '',
             'category_ar' => '',
@@ -338,6 +342,7 @@ class OnboardingWizard extends Component
         }
 
         $this->validate([
+            'extractedItems' => ['array', 'max:'.MenuExtractionService::MAX_ITEMS],
             'extractedItems.*.name_en' => 'nullable|string|max:255',
             'extractedItems.*.name_ar' => 'nullable|string|max:255',
             'extractedItems.*.description_en' => 'nullable|string|max:500',
@@ -348,6 +353,9 @@ class OnboardingWizard extends Component
         ]);
 
         $shop = $user->shop;
+        if (! $this->canCreateProducts($shop, $items->count(), 'extractedItems')) {
+            return;
+        }
 
         // Group by category for organized creation
         $grouped = $items->groupBy(fn ($item) => trim($item['category_en'] ?? '') ?: 'Menu');
@@ -423,6 +431,9 @@ class OnboardingWizard extends Component
         ]);
 
         $shop = $user->shop;
+        if (! $this->canCreateProducts($shop, $items->count(), 'menuItems')) {
+            return;
+        }
 
         // Create or find the "Menu" category
         $category = Category::firstOrCreate(
@@ -476,11 +487,29 @@ class OnboardingWizard extends Component
         $this->validate([
             'staffName' => 'required|string|min:2|max:255',
             'staffEmail' => 'required|email|unique:users,email',
-            'staffRole' => 'required|in:manager,cashier,kitchen,server',
+            'staffRole' => 'required|in:manager,kitchen,server',
             'staffPin' => 'required|digits:4',
         ]);
 
         $shop = $user->shop;
+
+        if (! app(BillingService::class)->canAccess($shop, 'add_staff')) {
+            $limits = app(BillingService::class)->getPlanLimits($shop);
+            $limitLabel = $limits['staff_limit'] === 1 ? '1 staff member' : "{$limits['staff_limit']} staff members";
+            $this->addError('staffName', "Staff limit reached ({$limitLabel} on your current plan). Upgrade to Pro for unlimited staff.");
+            $this->dispatch('toast',
+                message: "Staff limit reached ({$limitLabel} on your current plan). Upgrade to Pro for unlimited staff.",
+                variant: 'error'
+            );
+
+            return;
+        }
+
+        if (! app(PinCodePolicy::class)->isUniqueForShop($shop->id, $this->staffPin)) {
+            $this->addError('staffPin', 'This PIN is already assigned to another staff member.');
+
+            return;
+        }
 
         User::forceCreate([
             'shop_id' => $shop->id,
@@ -525,16 +554,24 @@ class OnboardingWizard extends Component
 
     public function completeOnboarding()
     {
-        $shop = $this->onboardingUser()->shop;
-        $branding = $shop->branding ?? [];
+        if (! $this->ensureMenuReadyForCompletion()) {
+            return;
+        }
 
-        $shop->update([
-            'branding' => array_merge($branding, [
-                'onboarding_completed' => true,
-            ]),
-        ]);
+        $this->markOnboardingCompleted();
 
         $this->redirect(route('dashboard'), navigate: true);
+    }
+
+    public function completeOnboardingAndOpenPos(): void
+    {
+        if (! $this->ensureMenuReadyForCompletion()) {
+            return;
+        }
+
+        $this->markOnboardingCompleted();
+
+        $this->redirect(route('pos.dashboard'), navigate: true);
     }
 
     // ── Helpers ──────────────────────────────────────────────
@@ -560,9 +597,72 @@ class OnboardingWizard extends Component
     {
         $this->staffName = '';
         $this->staffEmail = '';
-        $this->staffRole = 'cashier';
+        $this->staffRole = 'server';
         $this->staffPin = '';
         $this->resetValidation();
+    }
+
+    protected function canCreateProducts($shop, int $newProductCount, string $errorKey): bool
+    {
+        if ($newProductCount <= 0) {
+            return true;
+        }
+
+        $limits = app(BillingService::class)->getPlanLimits($shop);
+        $limit = $limits['product_limit'];
+
+        if ($limit === null) {
+            return true;
+        }
+
+        $currentCount = Product::where('shop_id', $shop->id)->count();
+        if ($currentCount + $newProductCount <= $limit) {
+            return true;
+        }
+
+        $message = "Product limit reached ({$limit} products on your current plan). Upgrade to Pro for unlimited products.";
+        $this->addError($errorKey, $message);
+        $this->dispatch('toast', message: $message, variant: 'error');
+
+        return false;
+    }
+
+    protected function ensureMenuReadyForCompletion(): bool
+    {
+        $shop = $this->onboardingUser()->shop;
+
+        if (Product::where('shop_id', $shop->id)
+            ->where('is_visible', true)
+            ->where('is_available', true)
+            ->exists()) {
+            return true;
+        }
+
+        $message = 'Add at least one available menu item or load the demo menu before finishing onboarding.';
+        $this->addError('menu', $message);
+        $this->dispatch('toast', message: $message, variant: 'error');
+
+        return false;
+    }
+
+    protected function markOnboardingCompleted(): void
+    {
+        $shop = $this->onboardingUser()->shop;
+        $branding = $shop->branding ?? [];
+
+        $shop->update([
+            'branding' => array_merge($branding, [
+                'onboarding_completed' => true,
+            ]),
+        ]);
+    }
+
+    protected function menuPhotoRules(): array
+    {
+        return [
+            'menuPhotos' => ['required', 'array', 'min:1', 'max:4'],
+            'menuPhotos.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ];
     }
 
     protected function normalizeHex(string $value, string $fallback): string

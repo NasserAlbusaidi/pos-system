@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AuditLog;
 use App\Models\ModifierGroup;
 use App\Models\ModifierOption;
 use App\Models\Shop;
@@ -58,12 +59,14 @@ class ModifierManager extends Component
             ->where('id', $this->selectedGroupId)
             ->firstOrFail();
 
-        ModifierOption::create([
+        $option = ModifierOption::create([
             'modifier_group_id' => $group->id,
             'name_en' => $this->optionNameEn,
             'name_ar' => $this->optionNameAr,
             'price_adjustment' => $this->optionPrice,
         ]);
+
+        AuditLog::record('modifier.option.created', $option, $option->auditSnapshot());
 
         $this->reset(['optionNameEn', 'optionNameAr', 'optionPrice']);
     }
@@ -74,7 +77,7 @@ class ModifierManager extends Component
             'name_en' => 'required|string|min:2',
             'name_ar' => 'nullable|string|min:2',
             'min_selection' => 'required|integer|min:0',
-            'max_selection' => 'required|integer|min:1',
+            'max_selection' => 'required|integer|min:1|gte:min_selection',
         ];
     }
 
@@ -82,13 +85,15 @@ class ModifierManager extends Component
     {
         $this->validate();
 
-        ModifierGroup::create([
+        $group = ModifierGroup::create([
             'shop_id' => Auth::user()->shop_id,
             'name_en' => $this->name_en,
             'name_ar' => $this->name_ar,
             'min_selection' => $this->min_selection,
             'max_selection' => $this->max_selection,
         ]);
+
+        AuditLog::record('modifier.group.created', $group, $group->auditSnapshot());
 
         $this->reset(['name_en', 'name_ar', 'min_selection', 'max_selection']);
     }
@@ -97,6 +102,7 @@ class ModifierManager extends Component
     {
         $group = ModifierGroup::where('shop_id', Auth::user()->shop_id)
             ->findOrFail($groupId);
+        $snapshot = $group->auditSnapshot();
 
         // Detach from all products first
         $group->products()->detach();
@@ -104,6 +110,8 @@ class ModifierManager extends Component
         // Delete options then group
         $group->options()->delete();
         $group->delete();
+
+        AuditLog::record('modifier.group.deleted', $group, $snapshot);
 
         if ($this->selectedGroupId == $groupId) {
             $this->selectedGroupId = null;
@@ -115,8 +123,11 @@ class ModifierManager extends Component
         $option = ModifierOption::whereHas('group', function ($q) {
             $q->where('shop_id', Auth::user()->shop_id);
         })->findOrFail($optionId);
+        $snapshot = $option->auditSnapshot();
 
         $option->delete();
+
+        AuditLog::record('modifier.option.deleted', $option, $snapshot);
     }
 
     #[Layout('layouts.admin')]

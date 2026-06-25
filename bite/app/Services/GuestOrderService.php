@@ -7,7 +7,9 @@ use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
 use App\Models\PricingRule;
 use App\Models\Product;
+use App\Models\ShiftClosure;
 use App\Models\Shop;
+use App\Support\ShopHours;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +51,14 @@ class GuestOrderService
         // Caps: reject oversized / abusive carts before any pricing work.
         if (! $this->passesQuantityAndLineCaps($cart)) {
             return ['outcome' => 'invalid', 'error' => __('guest.cart_too_large'), 'error_field' => 'order'];
+        }
+
+        if (! ShopHours::isOpen($shop)) {
+            return ['outcome' => 'invalid', 'error' => __('guest.shop_closed'), 'error_field' => 'order'];
+        }
+
+        if (ShiftClosure::isClosedFor($shop)) {
+            return $this->orderingPausedForShiftClose();
         }
 
         $products = $this->fetchOrderableProducts($shop, $cart);
@@ -109,6 +119,7 @@ class GuestOrderService
         }
 
         $idempotencyKey = $context['idempotency_key'] ?? (string) Str::uuid();
+        $idempotencyFingerprint = $this->idempotencyFingerprint('guest', $cart, $context);
 
         // If this exact token already produced an order (double-click, network
         // retry, replayed request), short-circuit to it. Scoped to this shop.
@@ -116,7 +127,19 @@ class GuestOrderService
             ->where('idempotency_key', $idempotencyKey)
             ->first();
         if ($existing) {
+            if (! $this->idempotencyFingerprintMatches($existing, $idempotencyFingerprint)) {
+                return ['outcome' => 'invalid', 'error' => __('guest.idempotency_conflict'), 'error_field' => 'order'];
+            }
+
             return ['outcome' => 'duplicate', 'order' => $existing];
+        }
+
+        if (! ShopHours::isOpen($shop)) {
+            return ['outcome' => 'invalid', 'error' => __('guest.shop_closed'), 'error_field' => 'order'];
+        }
+
+        if (ShiftClosure::isClosedFor($shop)) {
+            return $this->orderingPausedForShiftClose();
         }
 
         // Caps before any pricing work (the group-cart JSON is untrusted).
@@ -175,9 +198,13 @@ class GuestOrderService
 
         $orderNote = $this->sanitizeOrderNote($context['order_note'] ?? null);
 
-        $persisted = $this->persistOrder($shop, $idempotencyKey, $orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+        $persisted = $this->persistOrder($shop, $idempotencyKey, $idempotencyFingerprint, 'guest', $orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
 
         if (! $persisted['created']) {
+            if ($persisted['conflict'] ?? false) {
+                return ['outcome' => 'invalid', 'error' => __('guest.idempotency_conflict'), 'error_field' => 'order'];
+            }
+
             return ['outcome' => 'raced', 'order' => $persisted['order']];
         }
 
@@ -198,16 +225,25 @@ class GuestOrderService
         }
 
         $idempotencyKey = $context['idempotency_key'] ?? (string) Str::uuid();
+        $idempotencyFingerprint = $this->idempotencyFingerprint('counter', $cart, $context);
 
         $existing = Order::where('shop_id', $shop->id)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
         if ($existing) {
+            if (! $this->idempotencyFingerprintMatches($existing, $idempotencyFingerprint)) {
+                return ['outcome' => 'invalid', 'error' => __('guest.idempotency_conflict'), 'error_field' => 'order'];
+            }
+
             return ['outcome' => 'duplicate', 'order' => $existing];
         }
 
         if (! $this->passesQuantityAndLineCaps($cart)) {
             return ['outcome' => 'invalid', 'error' => __('guest.cart_too_large'), 'error_field' => 'order'];
+        }
+
+        if (ShiftClosure::isClosedFor($shop)) {
+            return $this->orderingPausedForShiftClose();
         }
 
         $products = $this->fetchOrderableProducts($shop, $cart);
@@ -244,9 +280,13 @@ class GuestOrderService
         $loyaltyPhone = $this->normalizePhone($context['loyalty_phone'] ?? null);
         $orderNote = $this->sanitizeOrderNote($context['order_note'] ?? null);
 
-        $persisted = $this->persistOrder($shop, $idempotencyKey, $orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
+        $persisted = $this->persistOrder($shop, $idempotencyKey, $idempotencyFingerprint, 'counter', $orderItems, $subtotalAmount, $taxAmount, $totalAmount, $customerName, $loyaltyPhone, $orderNote);
 
         if (! $persisted['created']) {
+            if ($persisted['conflict'] ?? false) {
+                return ['outcome' => 'invalid', 'error' => __('guest.idempotency_conflict'), 'error_field' => 'order'];
+            }
+
             return ['outcome' => 'raced', 'order' => $persisted['order']];
         }
 
@@ -267,6 +307,14 @@ class GuestOrderService
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
+    }
+
+    /**
+     * @return array{outcome: 'invalid', error: string, error_field: 'order'}
+     */
+    private function orderingPausedForShiftClose(): array
+    {
+        return ['outcome' => 'invalid', 'error' => __('guest.shift_closed'), 'error_field' => 'order'];
     }
 
     /**
@@ -306,9 +354,9 @@ class GuestOrderService
                 continue;
             }
 
-            $quantity = (int) $item['quantity'];
+            $quantity = (int) ($item['quantity'] ?? 0);
             if ($quantity < 1) {
-                continue;
+                return ['error' => __('guest.cart_too_large'), 'items' => [], 'subtotal' => 0, 'tax' => 0];
             }
 
             $itemPrice = $pricingRules->isNotEmpty()
@@ -333,6 +381,7 @@ class GuestOrderService
                 ];
             }
 
+            $itemPrice = max(0.0, round((float) $itemPrice, 3));
             $lineTotal = $itemPrice * $quantity;
             $subtotalAmount += $lineTotal;
 
@@ -366,16 +415,17 @@ class GuestOrderService
      * existing order is returned with `created => false` so the caller redirects
      * without re-running side effects.
      *
-     * @return array{order: Order, created: bool}
+     * @return array{order: Order, created: bool, conflict?: bool}
      */
-    public function persistOrder(Shop $shop, string $idempotencyKey, array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
+    public function persistOrder(Shop $shop, string $idempotencyKey, string $idempotencyFingerprint, string $source, array $orderItems, float $subtotalAmount, float $taxAmount, float $totalAmount, string $customerName, ?string $loyaltyPhone, ?string $orderNote): array
     {
         try {
-            $order = DB::transaction(function () use ($shop, $idempotencyKey, $subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems) {
+            $order = DB::transaction(function () use ($shop, $idempotencyKey, $idempotencyFingerprint, $source, $subtotalAmount, $taxAmount, $totalAmount, $loyaltyPhone, $customerName, $orderNote, $orderItems) {
                 $order = Order::forceCreate([
                     'shop_id' => $shop->id,
                     'status' => 'unpaid',
                     'customer_name' => $customerName,
+                    'source' => in_array($source, ['guest', 'counter'], true) ? $source : 'guest',
                     'loyalty_phone' => $loyaltyPhone,
                     'order_note' => $orderNote,
                     'subtotal_amount' => $subtotalAmount,
@@ -383,7 +433,8 @@ class GuestOrderService
                     'total_amount' => $totalAmount,
                     'tracking_token' => (string) Str::uuid(),
                     'idempotency_key' => $idempotencyKey,
-                    'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 6)),
+                    'idempotency_fingerprint' => $idempotencyFingerprint,
+                    'expires_at' => now()->addMinutes(config('billing.order_expiry_minutes', 60)),
                 ]);
 
                 foreach ($orderItems as $item) {
@@ -418,6 +469,10 @@ class GuestOrderService
                 ->first();
 
             if ($existing) {
+                if (! $this->idempotencyFingerprintMatches($existing, $idempotencyFingerprint)) {
+                    return ['order' => $existing, 'created' => false, 'conflict' => true];
+                }
+
                 return ['order' => $existing, 'created' => false];
             }
 
@@ -428,9 +483,10 @@ class GuestOrderService
     }
 
     /**
-     * Enforce the per-line quantity cap and the distinct-line-count cap on an
-     * untrusted cart. The total cap is enforced separately against the re-priced
-     * total. Returns false if either cap is exceeded.
+     * Enforce positive integer quantities, the per-line quantity cap, and the
+     * distinct-line-count cap on an untrusted cart. The total cap is enforced
+     * separately against the re-priced total. Returns false if any cap is
+     * exceeded or a quantity is missing/malformed.
      */
     public function passesQuantityAndLineCaps(array $cart): bool
     {
@@ -441,7 +497,12 @@ class GuestOrderService
 
         $maxQty = (int) config('ordering.max_quantity_per_line', 99);
         foreach ($cart as $item) {
-            if ((int) ($item['quantity'] ?? 0) > $maxQty) {
+            if (! array_key_exists('quantity', $item)) {
+                return false;
+            }
+
+            $quantity = filter_var($item['quantity'], FILTER_VALIDATE_INT);
+            if ($quantity === false || $quantity < 1 || $quantity > $maxQty) {
                 return false;
             }
         }
@@ -604,6 +665,42 @@ class GuestOrderService
         }
 
         return $groups;
+    }
+
+    public function idempotencyFingerprint(string $source, array $cart, array $context = []): string
+    {
+        $customerName = trim((string) ($context['customer_name'] ?? ''));
+        $customerName = $customerName === '' && $source === 'counter'
+            ? 'Walk-in'
+            : mb_substr($customerName, 0, 255);
+
+        $lines = collect($cart)
+            ->map(fn (array $line) => [
+                'id' => (int) ($line['id'] ?? 0),
+                'quantity' => (int) ($line['quantity'] ?? 0),
+                'note' => $this->sanitizeNote($line['note'] ?? null),
+                'modifiers' => collect($this->normalizeModifierIds($line['selectedModifiers'] ?? []))
+                    ->sort()
+                    ->values()
+                    ->all(),
+            ])
+            ->sortBy(fn (array $line) => json_encode($line, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+            ->values()
+            ->all();
+
+        return hash('sha256', json_encode([
+            'source' => in_array($source, ['guest', 'counter'], true) ? $source : 'guest',
+            'customer_name' => $customerName,
+            'loyalty_phone' => $this->normalizePhone($context['loyalty_phone'] ?? null),
+            'order_note' => $this->sanitizeOrderNote($context['order_note'] ?? null),
+            'cart' => $lines,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    private function idempotencyFingerprintMatches(Order $order, string $fingerprint): bool
+    {
+        return blank($order->idempotency_fingerprint)
+            || hash_equals((string) $order->idempotency_fingerprint, $fingerprint);
     }
 
     /**
