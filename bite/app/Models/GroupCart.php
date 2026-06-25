@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\DB;
 class GroupCart extends Model
 {
     protected $fillable = [
-        'shop_id',
         'group_token',
         'items',
         'participant_count',
         'expires_at',
+    ];
+
+    protected $guarded = [
+        'id',
+        'shop_id',
     ];
 
     protected $casts = [
