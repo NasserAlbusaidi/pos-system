@@ -124,6 +124,22 @@ class ForgeOperationalReadinessTest extends TestCase
         $this->assertStringNotContainsString('the 3 pilot columns', $runbook);
     }
 
+    public function test_sourdough_live_smoke_checklist_covers_issue_31(): void
+    {
+        $operationsGuide = $this->readRepoFile('docs/OPERATIONS.md');
+        $checklist = $this->readRepoFile('docs/SOURDOUGH-LIVE-SMOKE.md');
+
+        $this->assertStringContainsString('docs/SOURDOUGH-LIVE-SMOKE.md', $operationsGuide);
+        $this->assertStringContainsString('PIN login -> POS order -> cash payment -> KDS transitions -> guest QR order -> tracking', $checklist);
+        $this->assertStringContainsString('iOS Safari', $checklist);
+        $this->assertStringContainsString('Android Chrome', $checklist);
+        $this->assertStringContainsString('Arabic / RTL', $checklist);
+        $this->assertStringContainsString('Product image fallback + missing cover/logo', $checklist);
+        $this->assertStringContainsString('https://getbite.om/health', $checklist);
+        $this->assertStringContainsString('https://getbite.om/menu/sourdough', $checklist);
+        $this->assertStringContainsString('php artisan bite:handoff-check sourdough --minutes=60', $checklist);
+    }
+
     public function test_forge_guides_match_database_endpoint_readiness_gate(): void
     {
         $forgeGuide = $this->readRepoFile('docs/DEPLOYMENT-FORGE.md');

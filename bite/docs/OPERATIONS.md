@@ -228,6 +228,8 @@ Watch for:
 - [ ] `php artisan schedule:list --json` shows `orders.cancel-expired`,
       `group-carts.clean-expired`, and `webhook-events.prune-processed`
 - [ ] Guest menu loads at `https://getbite.om/menu/sourdough`
+- [ ] Run `docs/SOURDOUGH-LIVE-SMOKE.md` for the pilot counter, guest QR,
+      mobile browser, Arabic / RTL, and image fallback pass
 - [ ] Place a test order and confirm it appears on POS and KDS
 - [ ] Mark a test order ready and confirm the tracker updates
 - [ ] Leave an unpaid test order to expire and confirm it auto-cancels
