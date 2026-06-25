@@ -33,6 +33,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_returns_200_with_correct_json_shape_when_healthy(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         $response = $this->get('/health');
 
         $response->assertStatus(200);
@@ -76,6 +78,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_latency_ms_is_non_negative_integer(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         $response = $this->get('/health');
 
         $response->assertStatus(200);
@@ -88,6 +92,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_reports_storage_status(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         $response = $this->get('/health');
 
         $response->assertStatus(200);
@@ -98,6 +104,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_reports_database_backing_tables_when_configured(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         config([
             'session.driver' => 'database',
             'cache.default' => 'database',
@@ -184,6 +192,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_reports_gd_webp_status(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         $response = $this->get('/health');
 
         $response->assertStatus(200);
@@ -194,6 +204,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_does_not_require_jobs_table_for_sync_queue(): void
     {
+        $this->usePublicStorageFixture(linked: true);
+
         config(['queue.default' => 'sync']);
 
         DB::shouldReceive('select')
