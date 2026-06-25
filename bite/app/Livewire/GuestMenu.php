@@ -176,7 +176,7 @@ class GuestMenu extends Component
      */
     public function createGroup(): void
     {
-        $groupCart = GroupCart::create([
+        $groupCart = GroupCart::forceCreate([
             'shop_id' => $this->shop->id,
             'group_token' => (string) Str::uuid(),
             'items' => [],
